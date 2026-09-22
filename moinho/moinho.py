@@ -135,6 +135,13 @@ def preparar(linha, com_ocr=True):
 
     fonte = p.get('fonte', 'reddit')
     rid = hashlib.sha256(f"{fonte}:{p.get('id')}".encode()).hexdigest()[:16]
+    # O autor NUNCA é guardado: só o hash, que serve para saber se dois relatos
+    # são da mesma pessoa. Isto faltava aqui — só o backfill_autor.py preenchia,
+    # à mão, então tudo que o moinho moía depois ficava sem autor e as duas
+    # regras de duplicata que dependem dele não pegavam nada.
+    autor = (p.get('author') or '').strip()
+    autor_hash = (hashlib.sha256((fonte + ':' + autor).encode()).hexdigest()[:16]
+                  if autor and autor not in ('[deleted]', 'AutoModerator') else None)
     ts = p.get('created_utc') or 0
     import datetime
     data = datetime.datetime.utcfromtimestamp(ts).strftime('%Y-%m-%dT%H:%M:%SZ') if ts else None
@@ -143,6 +150,7 @@ def preparar(linha, com_ocr=True):
     return dict(fid=fid, rid=rid, fonte=fonte, sub=sub, data=data, idioma=idioma,
                 texto=texto, midia=midia, sonho=sonho, desejo=desejo, sofr=sofr,
                 quals=quals, idade=idade, genero=genero, eh_en=eh_en, nat=nat,
+                autor_hash=autor_hash,
                 emb=embed(texto), permalink=p.get('permalink'), oid=p.get('id'))
 
 
@@ -161,8 +169,8 @@ def gravar(con, r):
          tem_midia,midia_extraida,tem_relato_onirico,julgador,embedding,
          geo_pais,geo_regiao,geo_metodo,geo_confianca,
          sonhador_idade,sonhador_genero,demo_metodo,demo_confianca,
-         interno_url,interno_id_original)
-        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+         interno_url,interno_id_original,interno_autor_hash)
+        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (rid, fonte, sub, data, idioma, texto, tem_midia, extraida, sonho, ANOTADOR, r['emb'],
          None if eh_en else 'BR', UF_POR_SUB.get(sub),
          # o MÉTODO tem de dizer a verdade. No Bluesky não há comunidade nenhuma
@@ -176,7 +184,7 @@ def gravar(con, r):
          0.85 if (idade or genero) else None,
          ((('https://bsky.app' if fonte == 'bluesky' else 'https://www.reddit.com')
            + p['permalink']) if p.get('permalink') else None),
-         p.get('id')))
+         p.get('id'), r['autor_hash']))
     con.execute("""INSERT OR REPLACE INTO anotacoes (relato_id,anotador,versao,natureza_texto,
         tem_sonho_dormido,tem_desejo,tem_sofrimento,qualidades)
         VALUES (?,?,?,?,?,?,?,?)""", (rid, ANOTADOR, VERSAO, r['nat'], sonho,
