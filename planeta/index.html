@@ -195,6 +195,18 @@ let foco = 1;
 // Espessura da fatia em foco. Quanto mais perto, mais fina: de longe a bola
 // inteira conta, de perto só o punhado de relatos à volta do que se olha.
 const fatia = () => Math.min(1.7, Math.max(0.08, 1.7 / Math.pow(zoom, 0.7)));
+
+// A profundidade não se lê só no brilho: o que está longe do plano em foco vai
+// PERDENDO A COR aos poucos, até o cinza do fundo. Assim dá para distinguir o
+// que está um pouco atrás do que está muito atrás, em vez de só aceso/apagado.
+const CINZA = [122, 128, 150];
+const CINZA_MAX = 0.80;          // nem o mais distante perde a cor por inteiro
+const CLIQUE_CINZA = 0.10;       // até aqui o ponto ainda é seu: o olho vê, o dedo pega
+const alcance = () => Math.min(2.4, Math.max(0.30, 2.4 / Math.pow(zoom, 0.45)));
+// cúbico: perto do plano a cor quase não cede e só desbota quando a distância
+// já é grande. É o que produz a graduação — e o que faz 10% de cinza alcançar
+// 46% do alcance em profundidade, mais longe do que a fatia em foco.
+const cinzento = (dz, alc) => Math.min(CINZA_MAX, (dz / alc) ** 3);
 const ativos = {sonho:true, desejo:true, sofrer:true};
 const quais = {};
 const camadas = {meta:false, idiomatico:false, ruido:false};
@@ -330,7 +342,7 @@ function desenhar(t){
   const alfaBase = Math.min(0.95, (zoom < 1.5 ? 0.16 : (zoom < 3 ? 0.34 : Math.min(0.95, 0.8 + zoom*0.01)))
                                   * Math.pow(escalaPonto, 0.9));
   const redondo = raio >= 1.9;
-  const larg = fatia();
+  const larg = fatia(), alc = alcance();
   mostrarProfundidade();
   cx.globalCompositeOperation = 'lighter';
   let vis = 0;
@@ -343,10 +355,16 @@ function desenhar(t){
     const sx = cxx + rx*R, sy = cyy - ry*R;
     if (sx < -8 || sx > W+8 || sy < -8 || sy > H+8) continue;
     // a bola não é oca: o que está fora da fatia em foco recua mas não some.
-    // É a única pista de que há miolo — sem ela o volume vira mancha chapada.
+    // Duas pistas somadas — o brilho diz o que está em foco, o quanto de cor
+    // resta diz o quão longe está. Sem a segunda, tudo que sai do plano fica
+    // igualmente apagado e o miolo vira uma parede só.
     const t = (rz - foco) / larg;
     const prof = 0.07 + 0.93*Math.exp(-t*t);
+    const g = cinzento(Math.abs(rz - foco), alc);
     let [cr,cg,cb] = corDe(i);
+    if (g > 0.005){
+      cr += (CINZA[0]-cr)*g; cg += (CINZA[1]-cg)*g; cb += (CINZA[2]-cb)*g;
+    }
     let a = alfaBase*prof, r2 = raio;
     if (buscaSet){                       // véu: o achado acende, o resto recua
       if (buscaSet.has(i)){ a = Math.min(1, a*7); r2 = raio*1.9; }
@@ -389,13 +407,13 @@ function nomear(mx, my){
   // Na tela, o fundo da bola cai na mesma mancha que a frente, e os dois não
   // têm nada a ver um com o outro. O nome só vale se a vizinhança for de
   // verdade: conta apenas quem está na mesma fatia de profundidade em foco.
-  const larg = fatia();
+  const alc = alcance();
   const conta = new Map(); let n = 0;
   for (let i=0;i<N;i++){
     if (!visivel(i)) continue;
     const p = proj(i);
     if ((p.sx-mx)**2 + (p.sy-my)**2 > raio2) continue;
-    if (Math.abs(p.z - foco) > larg) continue;
+    if (cinzento(Math.abs(p.z - foco), alc) > CLIQUE_CINZA) continue;
     n++;
     for (let k=PAL_OFF[i]; k<PAL_OFF[i+1]; k++)
       conta.set(PAL[k], (conta.get(PAL[k])||0) + 1);
@@ -503,8 +521,10 @@ let ultimaProf = 9;
 function mostrarProfundidade(){
   if (Math.abs(foco - ultimaProf) < 0.01) return;
   ultimaProf = foco;
-  if (foco > 0.97){ dentroEl.hidden = true; return; }
-  const onde = foco > 0.35 ? 'entrando' : (foco > -0.35 ? 'no meio' : 'do outro lado');
+  // só avisa quando se está mesmo atravessando: o foco automático pousa logo
+  // abaixo da superfície o tempo todo, e avisar disso seria ruído
+  if (foco > 0.55){ dentroEl.hidden = true; return; }
+  const onde = foco > 0 ? 'entrando' : (foco > -0.5 ? 'no meio' : 'do outro lado');
   dentroEl.textContent = `dentro · ${onde}`;
   dentroEl.hidden = false;
 }
@@ -553,19 +573,19 @@ cv.addEventListener('touchend', ()=> pin=null);
 
 function tocar(mx,my){
   const tol = Math.max(14, Math.min(34, 14 * Math.sqrt(Math.max(1, zoom/3))));
-  const tol2 = tol*tol, larg = fatia();
+  const tol2 = tol*tol, alc = alcance();
   let melhor=-1, melhorNota=-9;
   for (let i=0;i<N;i++){
     if (!visivel(i)) continue;
     const p = proj(i);
     const d = (p.sx-mx)**2 + (p.sy-my)**2;
     if (d > tol2) continue;
-    // Só é clicável quem está na fatia em foco. Sem isso, um ponto de outro
-    // aglomerado lá atrás cai na mesma coluna da tela e rouba o clique — e
-    // quanto maior o zoom, mais fina a fatia, mais fiel o que se vê ao que pega.
-    const dz = Math.abs(p.z - foco);
-    if (dz > larg) continue;
-    const nota = -(d/tol2) - (dz/larg)*(dz/larg);
+    // O alcance do clique é o mesmo que o do olho: vale quem ainda guarda cor.
+    // Sem isso, um ponto de outro aglomerado lá atrás cai na mesma coluna da
+    // tela e rouba o clique de quem está na frente.
+    const g = cinzento(Math.abs(p.z - foco), alc);
+    if (g > CLIQUE_CINZA) continue;
+    const nota = -(d/tol2) - g/CLIQUE_CINZA;
     if (nota > melhorNota){ melhorNota=nota; melhor=i; }
   }
   sel = melhor;
