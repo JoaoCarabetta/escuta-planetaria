@@ -495,7 +495,14 @@ function girarParaTela(mx, my, fracao){
   MAT = mul(rotEixo([eixo[0]/n, eixo[1]/n, 0], ang), MAT);
 }
 const ZOOM_MAX = 60;
-function mergulhar(d){ foco = Math.max(-1, Math.min(1, foco + d)); }
+// O passo do mergulho é uma fração do que se enxerga em profundidade, não um
+// valor fixo. Com passo fixo, cada volta da roda pulava metade da faixa visível
+// quando já se estava bem perto — atravessava-se um aglomerado inteiro sem ver.
+// Assim, quanto mais fundo (mais zoom, faixa mais estreita), mais fino o passo.
+const passoMergulho = () => alcance() * 0.075;
+function mergulhar(fracao){
+  foco = Math.max(-1, Math.min(1, foco + fracao * passoMergulho()));
+}
 
 // Ampliar recorta uma coluna fina que atravessa a bola de lado a lado. Se o
 // foco ficasse preso na superfície, essa coluna quase não teria material lá
@@ -536,16 +543,16 @@ function mostrarProfundidade(){
 cv.addEventListener('wheel', e=>{
   e.preventDefault();
   const paraDentro = e.deltaY < 0;
-  if (e.shiftKey){ mergulhar(paraDentro ? -0.06 : 0.06); return; }
+  if (e.shiftKey){ mergulhar(paraDentro ? -1.3 : 1.3); return; }
   if (paraDentro){
     if (zoom < ZOOM_MAX){
       zoom = Math.min(ZOOM_MAX, zoom * 1.13);
       giroAlvo = null;
       girarParaTela(e.clientX, e.clientY, 0.30);
       focarSobCursor(e.clientX, e.clientY, 0.45);
-    } else mergulhar(-0.045);            // no teto, seguir rolando atravessa
+    } else mergulhar(-1);                // no teto, seguir rolando atravessa
   } else {
-    if (foco < 1 && zoom >= ZOOM_MAX) mergulhar(0.045);
+    if (foco < 1 && zoom >= ZOOM_MAX) mergulhar(1);
     else zoom = Math.max(.6, zoom * .885);
   }
   // de longe não se está dentro de nada: o olhar volta sozinho para a superfície
@@ -563,7 +570,7 @@ cv.addEventListener('touchmove', e=>{
       zoom = Math.max(.6, Math.min(ZOOM_MAX, zoom * d/pin));
       if (zoom > antes){ giroAlvo = null; girarParaTela(cxT, cyT, 0.25); }
       // no pinça, atravessar acontece quando a ampliação já não tem para onde ir
-      if (zoom === ZOOM_MAX && d > pin) mergulhar(-0.03);
+      if (zoom === ZOOM_MAX && d > pin) mergulhar(-0.7);
       else if (zoom > antes) focarSobCursor(cxT, cyT, 0.4);
       if (zoom < 3) foco += (1 - foco) * 0.3;
     }
