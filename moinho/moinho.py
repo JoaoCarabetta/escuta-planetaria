@@ -69,6 +69,48 @@ def baixar_e_ocr(url):
         return ''
 
 
+IMG_EXT = ('.jpg', '.jpeg', '.png', '.gif', '.webp')
+
+
+def url_de_imagem(u):
+    """URL direta da imagem a partir do que o post trouxe.
+
+    A versão anterior fazia `u.replace('imgur.com/', 'i.imgur.com/') + '.jpg'`
+    sempre que a url não tinha '/a/'. Mas 'imgur.com/' também está DENTRO de
+    'i.imgur.com/', então um link que já era direto virava 'i.i.imgur.com/…jpg.jpg'
+    — uma url inexistente. O OCR falhava calado e o relato ficava só com o
+    título, marcado como se a extração tivesse dado certo.
+    """
+    baixo = u.lower()
+    if baixo.endswith(IMG_EXT):
+        return u                                   # já é imagem direta
+    if 'imgur.com/' in baixo and '/a/' not in baixo and '/gallery/' not in baixo:
+        alvo = u if baixo.startswith(('http://i.', 'https://i.')) \
+            else u.replace('://imgur.com/', '://i.imgur.com/').replace('://www.imgur.com/',
+                                                                       '://i.imgur.com/')
+        return alvo + '.jpg'
+    return u
+
+
+def com_espera(fn, tentativas=6, espera=20):
+    """Refaz a operação enquanto o banco estiver ocupado, em vez de desistir.
+
+    O moinho escreve o tempo todo; régua, projeção e auditorias leem por
+    minutos. Em `journal_mode=delete` uma leitura longa tranca o escritor, e o
+    moinho morria de 'database is locked' no meio de um lote. O banco está em
+    WAL agora, o que já resolve quase tudo — isto é o cinto de segurança.
+    """
+    for k in range(tentativas):
+        try:
+            return fn()
+        except sqlite3.OperationalError as e:
+            if 'locked' not in str(e) and 'busy' not in str(e):
+                raise
+            if k == tentativas - 1:
+                raise
+            time.sleep(espera * (k + 1))
+
+
 def preparar(linha, com_ocr=True):
     fid, lote, payload = linha
     p = json.loads(payload)
@@ -81,10 +123,11 @@ def preparar(linha, com_ocr=True):
         u = p['url']
         if any(k in u for k in ('i.redd.it', 'imgur', '.jpg', '.png', '.jpeg')):
             midia = 1
-            extra = baixar_e_ocr(u if 'imgur.com/' not in u or '/a/' in u
-                                 else u.replace('imgur.com/', 'i.imgur.com/') + '.jpg')
+            extra = baixar_e_ocr(url_de_imagem(u))
             if extra:
                 texto += '\n\n[texto extraído da imagem] ' + extra
+            else:
+                midia = 2      # tinha mídia e a extração NÃO deu certo
 
     idioma, _ = detectar_idioma(texto)
     nat, sonho, desejo, sofr, quals = anotar_llm(texto)
@@ -106,7 +149,11 @@ def preparar(linha, com_ocr=True):
 def gravar(con, r):
     fid, rid, fonte, sub = r['fid'], r['rid'], r['fonte'], r['sub']
     data, idioma, texto = r['data'], r['idioma'], r['texto']
+    # tem_midia e midia_extraida são coisas DIFERENTES: a segunda dizia 'tentei',
+    # não 'consegui', e um OCR falho ficava registrado como extração bem-sucedida
     midia, sonho, eh_en = r['midia'], r['sonho'], r['eh_en']
+    tem_midia = 1 if midia else 0
+    extraida = 1 if midia == 1 else 0
     idade, genero = r['idade'], r['genero']
     p = {'permalink': r['permalink'], 'id': r['oid']}
     con.execute("""INSERT OR REPLACE INTO relatos
@@ -115,10 +162,16 @@ def gravar(con, r):
          geo_pais,geo_regiao,geo_metodo,geo_confianca,
          sonhador_idade,sonhador_genero,demo_metodo,demo_confianca,
          interno_url,interno_id_original)
-        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,'comunidade',?,?,?,?,?,?,?)""",
-        (rid, fonte, sub, data, idioma, texto, midia, midia, sonho, ANOTADOR, r['emb'],
+        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (rid, fonte, sub, data, idioma, texto, tem_midia, extraida, sonho, ANOTADOR, r['emb'],
          None if eh_en else 'BR', UF_POR_SUB.get(sub),
-         0.85 if sub in UF_POR_SUB else (0.3 if eh_en else 0.7),
+         # o MÉTODO tem de dizer a verdade. No Bluesky não há comunidade nenhuma
+         # apontando para o Brasil: o único sinal é o idioma do post, e português
+         # não é sinônimo de Brasil (Portugal, Angola, Moçambique, diáspora).
+         # Fica nulo porque o schema ainda não tem 'idioma' na lista permitida;
+         # o sinal em si está na coluna `idioma`, ao lado.
+         None if fonte == 'bluesky' else 'comunidade',
+         0.85 if sub in UF_POR_SUB else (0.3 if eh_en else (0.45 if fonte == 'bluesky' else 0.7)),
          idade, genero, 'declarado' if (idade or genero) else None,
          0.85 if (idade or genero) else None,
          ((('https://bsky.app' if fonte == 'bluesky' else 'https://www.reddit.com')
@@ -161,7 +214,7 @@ def main():
         BANDEIRA.unlink()
     filtro = "" if '--tudo' in sys.argv else \
         "AND lote NOT LIKE '%Dreams%' AND lote NOT LIKE '%Lucid%'"
-    t0, ok, err = time.time(), 0, 0
+    t0, ok, err, ultimo_aviso = time.time(), 0, 0, 0
     print('Moinho ligado. Pausar: touch moinho/PAUSAR')
     while True:
         if BANDEIRA.exists():
@@ -175,20 +228,32 @@ def main():
         for linha, res in resultados:
             if isinstance(res, dict):
                 try:
-                    gravar(con, res)
+                    com_espera(lambda: gravar(con, res))
                     ok += 1
-                    continue
+                except sqlite3.OperationalError as e:
+                    # banco ocupado depois de muita espera: o item FICA pendente.
+                    # Marcá-lo como erro o perderia para sempre por uma trava
+                    # passageira — e foi o que quase aconteceu quando a régua e
+                    # o moinho rodaram juntos.
+                    print(f'  banco ocupado em {linha[0]}: deixo pendente ({e})')
                 except Exception as e:
-                    res = e
-            err += 1
-            con.execute("UPDATE fila_brutos SET status='erro' WHERE id=?", (linha[0],))
-            con.commit()
-            if err <= 5:
-                print(f'  erro {linha[0]}: {type(res).__name__}: {res}')
-            if ok and ok % 100 == 0:
+                    err += 1
+                    con.rollback()   # descarta a gravação pela metade
+                    try:
+                        com_espera(lambda: (con.execute(
+                            "UPDATE fila_brutos SET status='erro' WHERE id=?", (linha[0],)),
+                            con.commit()))
+                    except sqlite3.OperationalError:
+                        pass          # fica pendente, será tentado de novo
+                    if err <= 5:
+                        print(f'  erro {linha[0]}: {type(e).__name__}: {e}')
+            # o ritmo se imprime SEMPRE — este bloco estava dentro do ramo de
+            # erro, então o moinho só dava notícia de si quando algo falhava
+            if ok and ok % 100 == 0 and ok != ultimo_aviso:
+                ultimo_aviso = ok
                 r = ok / (time.time() - t0)
                 falta = con.execute(f"SELECT COUNT(*) FROM fila_brutos WHERE status='pendente' {filtro}").fetchone()[0]
-                print(f'  {ok} moídos ({r:.2f}/s) · faltam {falta} · ~{falta/r/3600:.1f}h')
+                print(f'  {ok} moídos ({r:.2f}/s) · faltam {falta} · ~{falta/r/3600:.1f}h', flush=True)
 
 
 if __name__ == '__main__':

@@ -71,6 +71,52 @@ def reconciliar_urls(con, aplicar):
     return len(pares)
 
 
+def achatar_cadeias(con, passadas=6):
+    """Repete até estabilizar: uma passagem só usa o mapa antigo e não converge."""
+    for _ in range(passadas):
+        if _achatar_uma_vez(con) == 0:
+            return
+
+
+def _achatar_uma_vez(con):
+    """Todo duplicado aponta direto para o relato que sobrevive.
+
+    Cadeias A→B→C faziam A e B sumirem e só C ficar — o conteúdo se preserva,
+    mas quem lê `canonico_de` acha que A foi substituído por B, que também não
+    existe. Aqui cada um passa a apontar para a raiz. Se restar ciclo, quebra-se
+    pelo mais antigo, que é quem tem direito à data na linha do tempo.
+    """
+    pai = dict(con.execute("SELECT id, canonico_de FROM relatos WHERE canonico_de IS NOT NULL"))
+    data = dict(con.execute("SELECT id, data_relato FROM relatos"))
+    mudou, solta = [], set()
+    for x in list(pai):
+        visto, atual = {x}, pai[x]
+        while atual in pai:
+            if atual in visto:                       # ciclo: fica o mais antigo
+                anel = list(visto)
+                raiz = min(anel, key=lambda k: (data.get(k) or '9999'))
+                # a raiz precisa SOLTAR a própria marca, senão continua apontando
+                # de volta para dentro do anel e o ciclo nunca se desfaz
+                solta.add(raiz)
+                for m in anel:
+                    if m != raiz:
+                        mudou.append((raiz, m))
+                atual = raiz
+                break
+            visto.add(atual)
+            atual = pai[atual]
+        if atual != pai[x]:
+            mudou.append((atual, x))
+    mudou = [(r, m) for r, m in mudou if r != m and m not in solta]
+    if mudou or solta:
+        con.executemany("UPDATE relatos SET canonico_de=? WHERE id=?", mudou)
+        con.executemany("UPDATE relatos SET canonico_de=NULL WHERE id=?", [(r,) for r in solta])
+        con.execute("UPDATE relatos SET canonico_de=NULL WHERE canonico_de=id")
+        con.commit()
+    print(f'cadeias achatadas: {len(mudou)} ajustes')
+    return len(mudou) + len(solta)
+
+
 def impressao(texto):
     """Assinatura do texto, insensível a acento, caixa e espaço."""
     s = unicodedata.normalize('NFD', (texto or '').lower())
@@ -167,9 +213,19 @@ def main():
 
     con.executemany("""INSERT OR REPLACE INTO ecos (a,b,similaridade,tipo,mesmo_autor,dias_entre)
                        VALUES (?,?,?,?,?,?)""", achados)
+
+    # A régua RECALCULA tudo, então apaga as marcas antigas antes de escrever as
+    # novas. Marcar por cima com "AND canonico_de IS NULL" preservava o veredito
+    # de execuções passadas — e quando a regra de qual cópia é a canônica mudou,
+    # nasceram 670 CICLOS (A aponta para B e B para A). Como o planeta só mostra
+    # quem tem canonico_de nulo, nos ciclos os DOIS sumiam: o relato desaparecia
+    # inteiro em vez de sobrar um.
+    con.execute("UPDATE relatos SET canonico_de=NULL")
     for a, b, *_ , in [x for x in achados if x[3] == 'duplicata']:
         con.execute("UPDATE relatos SET canonico_de=? WHERE id=? AND canonico_de IS NULL", (a, b))
     con.commit()
+    reconciliar_urls(con, True)      # de novo: as marcas de URL foram apagadas acima
+    achatar_cadeias(con)
     print(f'{len(achados)} ligações gravadas em `ecos`')
 
 

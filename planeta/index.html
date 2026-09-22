@@ -310,20 +310,29 @@ async function carregar(){
 }
 
 // ——— visibilidade de um ponto ———
+// O critério em pedaços, para que contagem, desenho, clique e histograma NUNCA
+// discordem. Antes, os chips somavam o corpus inteiro enquanto o planeta
+// mostrava um recorte: o número dizia uma coisa e a tela mostrava outra.
+const okCom   = i => comOn[COM[i]] !== false;
+const okTempo = i => { const k = kDe(i); return k >= kIni && k <= kFim; };
+const okMarc  = i => { const b = BITS[i];
+  return !!(((b&1)&&ativos.sonho) || ((b&2)&&ativos.desejo) || ((b&4)&&ativos.sofrer)); };
+const okQuais = (i, menos) => { const b = BITS[i];
+  for (const q in quais){
+    if (!quais[q] || q === menos) continue;
+    if (!(b & (1 << (3 + META.qualidades.indexOf(q))))) return false;
+  }
+  return true; };
+
 function visivel(i){
   const nat = NAT[i];
   if (nat !== 0){
     const nome = ['relato','meta','idiomatico','ruido'][nat];
-    return camadas[nome] === true && comOn[COM[i]] !== false;
+    // a linha do tempo também vale para as camadas: acender "ruído comercial"
+    // trazia de volta pontos de fora do período escolhido
+    return camadas[nome] === true && okCom(i) && okTempo(i);
   }
-  if (comOn[COM[i]] === false) return false;
-  const b = BITS[i];
-  const marc = ((b&1)&&ativos.sonho) || ((b&2)&&ativos.desejo) || ((b&4)&&ativos.sofrer);
-  if (!marc) return false;
-  const k = kDe(i);
-  if (k < kIni || k > kFim) return false;
-  for (const q in quais) if (quais[q] && !(b & (1 << (3 + META.qualidades.indexOf(q))))) return false;
-  return true;
+  return okCom(i) && okMarc(i) && okTempo(i) && okQuais(i);
 }
 
 function corDe(i){
@@ -433,6 +442,7 @@ function proj(i){
           z: m[2][0]*x+m[2][1]*y+m[2][2]*z};
 }
 function marcarSel(R){
+  if (!visivel(sel)) return;          // não marca o que não está desenhado
   const p = proj(sel);
   cx.strokeStyle = 'rgba(230,234,244,.9)'; cx.lineWidth = 1;
   cx.beginPath(); cx.arc(p.sx, p.sy, 7, 0, 7); cx.stroke();
@@ -512,7 +522,9 @@ cv.addEventListener('pointerdown', e=>{arr={x:e.clientX,y:e.clientY}; moveu=fals
   // um relato junto: quem está fechando um menu não está escolhendo um sonho
   dispensouMenu = document.body.classList.contains('menu');
   menu(false);
-  cv.classList.add('arrastando'); cv.setPointerCapture(e.pointerId);});
+  cv.classList.add('arrastando');
+  try { cv.setPointerCapture(e.pointerId); } catch(_){}   // ponteiro já solto: segue sem capturar
+});
 cv.addEventListener('pointermove', e=>{
   if (arr){
     const dx=e.clientX-arr.x, dy=e.clientY-arr.y;
@@ -714,16 +726,17 @@ const chips = [], chipsFonte = [];
 function montarHUD(){
   const m = $('#marcadores');
   chips.push(chip(m,'sonho dormido',css('--sonho'),true,v=>ativos.sonho=v,
-    ()=>cont(i=>NAT[i]===0 && (BITS[i]&1))));
+    ()=>cont(i=>NAT[i]===0 && (BITS[i]&1) && okCom(i) && okTempo(i) && okQuais(i))));
   chips.push(chip(m,'desejo',css('--desejo'),true,v=>ativos.desejo=v,
-    ()=>cont(i=>NAT[i]===0 && (BITS[i]&2))));
+    ()=>cont(i=>NAT[i]===0 && (BITS[i]&2) && okCom(i) && okTempo(i) && okQuais(i))));
   chips.push(chip(m,'sofrimento',css('--sofrer'),true,v=>ativos.sofrer=v,
-    ()=>cont(i=>NAT[i]===0 && (BITS[i]&4))));
+    ()=>cont(i=>NAT[i]===0 && (BITS[i]&4) && okCom(i) && okTempo(i) && okQuais(i))));
   const q = $('#qualidades');
   META.qualidades.forEach((nome,j)=>{
     quais[nome] = false;
     chips.push(chip(q, QUAL_ROT[nome], '#9aa0b6', false, v=>quais[nome]=v,
-      ()=>cont(i=>NAT[i]===0 && (BITS[i] & (1<<(3+j))))));
+      ()=>cont(i=>NAT[i]===0 && (BITS[i] & (1<<(3+j)))
+                   && okCom(i) && okMarc(i) && okTempo(i) && okQuais(i, nome))));
   });
   // ——— de onde vem: comunidades agrupadas por fonte ———
   const cf = $('#fontesLista');
@@ -742,7 +755,11 @@ function montarHUD(){
       comOn[idx] = true;
       const rot = f === 'bluesky' ? 'bluesky' : 'r/' + META.comunidades[idx];
       const d = chip(g, rot, f === 'bluesky' ? '#8fb3ff' : '#ff9a6b', true,
-        v => comOn[idx] = v, ()=>cont(i=>COM[i]===idx));
+        v => comOn[idx] = v, ()=>cont(i=>{
+          if (COM[i] !== idx || !okTempo(i)) return false;
+          if (NAT[i] !== 0) return camadas[['relato','meta','idiomatico','ruido'][NAT[i]]] === true;
+          return okMarc(i) && okQuais(i);
+        }));
       chips.push(d); chipsFonte.push([d, idx]);
     }
   }
@@ -760,7 +777,7 @@ function montarHUD(){
   [['meta','meta-discussão'],['idiomatico','idiomático'],['ruido','ruído comercial']]
     .forEach(([k,rot],j)=>{
       chips.push(chip(c, rot, '#5b6376', false, v=>camadas[k]=v,
-        ()=>cont(i=>NAT[i]===j+1)));
+        ()=>cont(i=>NAT[i]===j+1 && okCom(i) && okTempo(i))));
     });
   atualizarContas();
 }
@@ -768,6 +785,7 @@ function cont(fn){ let n=0; for (let i=0;i<N;i++) if (fn(i)) n++; return n; }
 function atualizarContas(){
   for (const d of chips) d._em.textContent = d._conta().toLocaleString('pt-BR');
   recalcularEscala();
+  if (buscaSet) listar();      // mudar filtro muda o que está aceso na busca
 }
 
 // ——— busca ———
@@ -836,10 +854,8 @@ $('#q').addEventListener('input', e=>{
     const achou = await procurar(termo);
     if (minha !== vez) return;                 // já digitaram outra coisa
     buscaSet = achou;
-    $('#conta').textContent = buscaSet.size
-      ? `${buscaSet.size.toLocaleString('pt-BR')} acesos`
-      : 'nenhum com essa palavra';
-    listar();
+    listar();          // é a listar() que escreve o contador: ela sabe
+                       // quantos estão acesos e quantos os filtros escondem
     if (!buscaSet.size) buscaSet = null;
   }, 200);
 });
@@ -847,7 +863,17 @@ $('#q').addEventListener('input', e=>{
 function listar(){
   const cont = $('#achados'); cont.innerHTML = '';
   if (!buscaSet || !buscaSet.size) return;
-  const ids = [...buscaSet].slice(0, 60);
+  // só entra na lista quem está aceso no planeta. Antes, clicar num achado que
+  // os filtros escondiam abria a ficha e girava o globo até um ponto que não
+  // estava desenhado — o anel de seleção ficava boiando no vazio.
+  const acesos = [...buscaSet].filter(visivel);
+  const escondidos = buscaSet.size - acesos.length;
+  $('#conta').textContent = acesos.length
+    ? `${acesos.length.toLocaleString('pt-BR')} aceso${acesos.length>1?'s':''}`
+      + (escondidos ? ` · ${escondidos.toLocaleString('pt-BR')} fora dos filtros` : '')
+    : (escondidos ? `${escondidos.toLocaleString('pt-BR')} achados, todos fora dos filtros`
+                  : 'nenhum com essa palavra');
+  const ids = acesos.slice(0, 60);
   for (const i of ids){
     const [r,g,b] = corDe(i);
     const d = document.createElement('div');
@@ -873,8 +899,14 @@ function desenharLinha(){
   const g = c.getContext('2d'); g.setTransform(d,0,0,d,0,0);
   const anos = META.ano_max - META.ano_min + 1;
   const meses = new Array(anos*12).fill(0);
+  // o histograma é o eixo do tempo: mostra a distribuição do que os OUTROS
+  // filtros deixaram passar, para se poder escolher o período vendo onde há
+  // material. Antes somava o corpus inteiro e não reagia a filtro nenhum.
   for (let i=0;i<N;i++){
-    if (NAT[i]!==0) continue;
+    if (!okCom(i)) continue;
+    if (NAT[i]!==0){
+      if (camadas[['relato','meta','idiomatico','ruido'][NAT[i]]] !== true) continue;
+    } else if (!okMarc(i) || !okQuais(i)) continue;
     const k = (ANO[i]-META.ano_min)*12 + (MES[i]-1);
     if (k>=0 && k<meses.length) meses[k]++;
   }
@@ -950,7 +982,7 @@ function pintarCursor(e){
   selCv.style.cursor = linCv.style.cursor = c;
 }
 function aoPressionar(e){
-  e.currentTarget.setPointerCapture(e.pointerId);
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch(_){}
   const z = zonaEm(e), k = kEm(e);
   if (z === 'ini' || z === 'fim') modo = z;
   else if (z === 'meio'){ modo = 'meio'; pegou = k; }
@@ -961,8 +993,11 @@ function aoPressionar(e){
 function aoMover(e){
   if (!modo){ pintarCursor(e); return; }
   const k = kEm(e);
-  if (modo === 'ini') kIni = Math.min(k, kFim);
-  else if (modo === 'fim') kFim = Math.max(k, kIni);
+  // as alças podem se cruzar e trocar de papel. Antes, com as duas coladas
+  // (depois de um duplo-clique, por exemplo) o clique sempre pegava a esquerda
+  // e arrastar para a direita não fazia nada: a alça direita ficava inalcançável.
+  if (modo === 'ini'){ kIni = k; if (kIni > kFim){ const t=kFim; kFim=kIni; kIni=t; modo='fim'; } }
+  else if (modo === 'fim'){ kFim = k; if (kFim < kIni){ const t=kIni; kIni=kFim; kFim=t; modo='ini'; } }
   else if (modo === 'novo'){ kIni = Math.min(pegou, k); kFim = Math.max(pegou, k); }
   else {                                        // desloca o intervalo inteiro
     const larg = kFim - kIni, d = k - pegou;
@@ -984,5 +1019,14 @@ for (const el of [selCv, linCv]){
 
 function aplicar(){ rotuloTempo(); desenharSel(); desenharLinha(); atualizarContas(); }
 
-carregar();
+carregar().catch(e => {
+  // sem isto, qualquer falha de rede deixava a tela presa em "recolhendo a
+  // atmosfera…" para sempre, com o erro só no console de quem soubesse abrir
+  console.error(e);
+  const el = $('#carregando');
+  el.hidden = false;
+  el.style.whiteSpace = 'pre-line';
+  el.textContent = 'não consegui carregar a atmosfera.\n' + (e && e.message ? e.message : e)
+                 + '\n\nrecarregue a página.';
+});
 </script>
