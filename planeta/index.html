@@ -230,7 +230,7 @@ const estrelas = Array.from({length:180},()=>[Math.random(),Math.random(),.05+Ma
 function desenhar(t){
   cx.fillStyle = css('--vazio'); cx.fillRect(0,0,W,H);
   for (const [x,y,a] of estrelas){ cx.fillStyle = `rgba(190,196,220,${a})`; cx.fillRect(x*W,y*H,1,1); }
-  if (girando && sel<0 && !pausa && !giroAlvo) MAT = mul(rotY(0.0009), MAT);
+  if (girando && sel<0 && !pausa && !giroAlvo) MAT = mul(rotY(0.0009 / Math.max(1, Math.sqrt(zoom))), MAT);
   if (giroAlvo){
     const passo = Math.max(0.035, giroAlvo.resta*0.14);
     MAT = mul(rotEixo(giroAlvo.eixo, Math.min(passo, giroAlvo.resta)), MAT);
@@ -244,9 +244,9 @@ function desenhar(t){
   halo.addColorStop(0,'rgba(24,30,48,.30)'); halo.addColorStop(1,'rgba(24,30,48,0)');
   cx.fillStyle = halo; cx.beginPath(); cx.arc(cxx,cyy,R*1.3,0,7); cx.fill();
   // densidade: soma luminosa. Raio cresce com o zoom (três resoluções).
-  const zr = zoom < 1.5 ? 1.1 : (zoom < 3 ? 1.7 : 2.8);
+  const zr = zoom < 1.5 ? 1.1 : (zoom < 3 ? 1.7 : Math.min(9, 2.8 * Math.pow(zoom/3, 0.42)));
   const raio = zr * escalaPonto;
-  const alfaBase = Math.min(0.95, (zoom < 1.5 ? 0.16 : (zoom < 3 ? 0.34 : 0.8))
+  const alfaBase = Math.min(0.95, (zoom < 1.5 ? 0.16 : (zoom < 3 ? 0.34 : Math.min(0.95, 0.8 + zoom*0.01)))
                                   * Math.pow(escalaPonto, 0.9));
   const redondo = raio >= 1.9;
   cx.globalCompositeOperation = 'lighter';
@@ -351,7 +351,8 @@ cv.addEventListener('pointermove', e=>{
   if (arr){
     const dx=e.clientX-arr.x, dy=e.clientY-arr.y;
     if (Math.abs(dx)+Math.abs(dy) > 4) moveu = true;
-    MAT = mul(mul(rotX(dy*0.005), rotY(dx*0.005)), MAT);
+    const s = 0.005 / Math.max(1, Math.sqrt(zoom));   // perto, o gesto é mais fino
+    MAT = mul(mul(rotX(dy*s), rotY(dx*s)), MAT);
     arr = {x:e.clientX, y:e.clientY};
     return;
   }
@@ -364,19 +365,20 @@ cv.addEventListener('pointerup', e=>{
 });
 cv.addEventListener('pointerleave', ()=>{pausa=false; nomeEl.hidden=true;});
 cv.addEventListener('wheel', e=>{e.preventDefault();
-  zoom = Math.max(.6, Math.min(6, zoom * (e.deltaY<0 ? 1.08 : .93)));}, {passive:false});
+  zoom = Math.max(.6, Math.min(60, zoom * (e.deltaY<0 ? 1.13 : .885)));}, {passive:false});
 let pin = null;
 cv.addEventListener('touchmove', e=>{
   if (e.touches.length===2){ e.preventDefault();
     const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
                          e.touches[0].clientY-e.touches[1].clientY);
-    if (pin) zoom = Math.max(.6, Math.min(6, zoom * d/pin));
+    if (pin) zoom = Math.max(.6, Math.min(60, zoom * d/pin));
     pin = d; }
 }, {passive:false});
 cv.addEventListener('touchend', ()=> pin=null);
 
 function tocar(mx,my){
-  let melhor=-1, md=16*16;
+  const tol = Math.max(14, Math.min(34, 14 * Math.sqrt(Math.max(1, zoom/3))));
+  let melhor=-1, md=tol*tol;
   for (let i=0;i<N;i++){
     if (!visivel(i)) continue;
     const p = proj(i);
