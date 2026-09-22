@@ -42,6 +42,9 @@
   #busca input::placeholder{color:var(--fraco)}
   #conta{font-size:10px;color:var(--fraco);margin-top:6px;min-height:12px}
   #achados{max-height:34vh;overflow-y:auto;margin-top:5px}
+  #fontes{max-height:30vh;overflow-y:auto}
+  #fontes .grupo{margin-top:7px;padding-top:6px;border-top:1px solid rgba(26,30,44,.9)}
+  #fontes .grupo:first-of-type{margin-top:0;padding-top:0;border-top:0}
   #achados div{padding:4px 0;border-top:1px solid rgba(26,30,44,.7);cursor:pointer;
     font-size:11px;line-height:1.4;color:var(--fraco);display:flex;gap:6px}
   #achados div:hover{color:var(--texto)}
@@ -98,6 +101,7 @@
   </div>
   <div class="caixa" id="marcadores"><h2>o que carrega</h2></div>
   <div class="caixa" id="qualidades"><h2>qualidades do sonho</h2></div>
+  <div class="caixa" id="fontes"><h2>de onde vem</h2></div>
   <div class="caixa" id="camadas"><h2>camadas</h2></div>
 </div>
 
@@ -133,6 +137,7 @@ let MAT = null, zoom = 1, girando = true, sel = -1, buscaSet = null, pausa = fal
 const ativos = {sonho:true, desejo:true, sofrer:true};
 const quais = {};
 const camadas = {meta:false, idiomatico:false, ruido:false};
+const comOn = {};                 // índice da comunidade → visível
 let kIni = 0, kFim = 0;                 // meses absolutos desde ano_min
 const kDe = i => (ANO[i]-META.ano_min)*12 + (MES[i]-1);
 let nVisiveis = 0, escalaPonto = 1;
@@ -193,8 +198,9 @@ function visivel(i){
   const nat = NAT[i];
   if (nat !== 0){
     const nome = ['relato','meta','idiomatico','ruido'][nat];
-    return camadas[nome] === true;
+    return camadas[nome] === true && comOn[COM[i]] !== false;
   }
+  if (comOn[COM[i]] === false) return false;
   const b = BITS[i];
   const marc = ((b&1)&&ativos.sonho) || ((b&2)&&ativos.desejo) || ((b&4)&&ativos.sofrer);
   if (!marc) return false;
@@ -435,6 +441,27 @@ function montarHUD(){
     chips.push(chip(q, QUAL_ROT[nome], '#9aa0b6', false, v=>quais[nome]=v,
       ()=>cont(i=>NAT[i]===0 && (BITS[i] & (1<<(3+j))))));
   });
+  // ——— de onde vem: comunidades agrupadas por fonte ———
+  const cf = $('#fontes');
+  const porFonte = {};
+  for (let i=0;i<N;i++){
+    const f = META.fontes[FONTE[i]], k = COM[i];
+    (porFonte[f] = porFonte[f] || {})[k] = (porFonte[f][k] || 0) + 1;
+  }
+  for (const f of Object.keys(porFonte).sort()){
+    const g = document.createElement('div');
+    g.className = 'grupo';
+    cf.appendChild(g);
+    const coms = Object.entries(porFonte[f]).sort((a,b)=>b[1]-a[1]);
+    for (const [k, n] of coms){
+      const idx = +k;
+      comOn[idx] = true;
+      const rot = f === 'bluesky' ? 'bluesky' : 'r/' + META.comunidades[idx];
+      chips.push(chip(g, rot, f === 'bluesky' ? '#8fb3ff' : '#ff9a6b', true,
+        v => comOn[idx] = v, ()=>cont(i=>COM[i]===idx)));
+    }
+  }
+
   const c = $('#camadas');
   [['meta','meta-discussão'],['idiomatico','idiomático'],['ruido','ruído comercial']]
     .forEach(([k,rot],j)=>{
