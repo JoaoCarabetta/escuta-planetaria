@@ -9,31 +9,26 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ENV_NAME="$(basename "$REMOTE_DIR")"
-
-RSYNC_SSH=(ssh -o StrictHostKeyChecking=yes)
-RSYNC_EXCLUDES=(
-  --exclude '.git/'
-  --exclude '.github/'
-  --exclude 'deploy/'
-  --exclude 'arquivo/'
-  --exclude 'coleta/'
-  --exclude 'moinho/'
-  --exclude 'treino/'
-  --exclude 'rubrica/'
-  --exclude '*.py'
-  --exclude '.gitignore'
-  --exclude 'README.md'
-  --exclude 'nginx/'
-)
+SSH_TARGET="${SSH_USER}@${SSH_HOST}"
 
 rsync -az --delete \
-  "${RSYNC_EXCLUDES[@]}" \
-  -e "${RSYNC_SSH[*]}" \
+  --exclude '.git/' \
+  --exclude '.github/' \
+  --exclude 'deploy/' \
+  --exclude 'arquivo/' \
+  --exclude 'coleta/' \
+  --exclude 'moinho/' \
+  --exclude 'treino/' \
+  --exclude 'rubrica/' \
+  --exclude '*.py' \
+  --exclude '.gitignore' \
+  --exclude 'README.md' \
+  --exclude 'nginx/' \
+  -e ssh \
   "${ROOT}/" \
-  "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
+  "${SSH_TARGET}:${REMOTE_DIR}/"
 
-# Environment marker for smoke checks
-printf '%s\n' "$ENV_NAME" | ssh "${RSYNC_SSH[@]}" "${SSH_USER}@${SSH_HOST}" \
+printf '%s\n' "$ENV_NAME" | ssh "$SSH_TARGET" \
   "cat > '${REMOTE_DIR}/.deploy-env' && chown www-data:www-data '${REMOTE_DIR}/.deploy-env' 2>/dev/null || true"
 
-echo "Deployed ${ENV_NAME} → ${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}"
+echo "Deployed ${ENV_NAME} → ${SSH_TARGET}:${REMOTE_DIR}"
