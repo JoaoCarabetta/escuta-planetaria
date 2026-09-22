@@ -50,8 +50,18 @@ def main():
     con.execute('PRAGMA busy_timeout=600000')
     print('lendo embeddings…', flush=True)
     linhas = con.execute("""SELECT r.id, r.embedding FROM relatos r
-        JOIN anotacoes a ON a.relato_id = r.id
-        WHERE a.versao='v2.1' AND a.anotador LIKE 'ollama%' AND r.embedding IS NOT NULL
+        JOIN anotacoes a ON a.id = (
+            -- UMA anotação por relato. Sem isto, os 216 relatos que sobraram
+            -- dos testes A/B entre modelos (gemma4, qwen 2b/4b/9b) viravam 2, 3
+            -- ou 4 pontos na MESMA posição do planeta — e a régua chegava a
+            -- comparar um relato com a própria cópia e marcá-lo como duplicata
+            -- de si mesmo, fazendo-o sumir. Prefere o juiz de produção.
+            SELECT a2.id FROM anotacoes a2
+            WHERE a2.relato_id = r.id AND a2.versao = 'v2.1'
+              AND a2.anotador LIKE 'ollama%'
+            ORDER BY CASE WHEN a2.anotador = 'ollama:qwen3.5-9b' THEN 0 ELSE 1 END, a2.id
+            LIMIT 1)
+        WHERE r.embedding IS NOT NULL
           AND r.canonico_de IS NULL     -- repost da mesma pessoa não vira dois pontos
         ORDER BY r.data_relato""").fetchall()
     ids = [l[0] for l in linhas]

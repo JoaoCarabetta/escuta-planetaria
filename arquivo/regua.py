@@ -84,7 +84,17 @@ def main():
     reconciliar_urls(con, APLICAR)
     linhas = con.execute("""SELECT r.id, r.embedding, r.interno_autor_hash, r.data_relato,
                r.texto
-        FROM relatos r JOIN anotacoes a ON a.relato_id = r.id
+        FROM relatos r JOIN anotacoes a ON a.id = (
+            -- UMA anotação por relato. Sem isto, os 216 relatos que sobraram
+            -- dos testes A/B entre modelos (gemma4, qwen 2b/4b/9b) viravam 2, 3
+            -- ou 4 pontos na MESMA posição do planeta — e a régua chegava a
+            -- comparar um relato com a própria cópia e marcá-lo como duplicata
+            -- de si mesmo, fazendo-o sumir. Prefere o juiz de produção.
+            SELECT a2.id FROM anotacoes a2
+            WHERE a2.relato_id = r.id AND a2.versao = 'v2.1'
+              AND a2.anotador LIKE 'ollama%'
+            ORDER BY CASE WHEN a2.anotador = 'ollama:qwen3.5-9b' THEN 0 ELSE 1 END, a2.id
+            LIMIT 1)
         WHERE r.embedding IS NOT NULL AND a.natureza_texto = 'relato'""").fetchall()
     if not linhas:
         print('nenhum relato com embedding ainda'); return

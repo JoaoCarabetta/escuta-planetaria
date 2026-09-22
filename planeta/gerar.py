@@ -118,8 +118,18 @@ def main():
         SELECT r.id, r.texto, r.fonte, r.comunidade, r.data_relato,
                a.natureza_texto, a.tem_sonho_dormido, a.tem_desejo, a.tem_sofrimento,
                a.qualidades, r.interno_url IS NOT NULL
-        FROM relatos r JOIN anotacoes a ON a.relato_id = r.id
-        WHERE a.versao='v2.1' AND a.anotador LIKE 'ollama%' AND r.embedding IS NOT NULL
+        FROM relatos r JOIN anotacoes a ON a.id = (
+            -- UMA anotação por relato. Sem isto, os 216 relatos que sobraram
+            -- dos testes A/B entre modelos (gemma4, qwen 2b/4b/9b) viravam 2, 3
+            -- ou 4 pontos na MESMA posição do planeta — e a régua chegava a
+            -- comparar um relato com a própria cópia e marcá-lo como duplicata
+            -- de si mesmo, fazendo-o sumir. Prefere o juiz de produção.
+            SELECT a2.id FROM anotacoes a2
+            WHERE a2.relato_id = r.id AND a2.versao = 'v2.1'
+              AND a2.anotador LIKE 'ollama%'
+            ORDER BY CASE WHEN a2.anotador = 'ollama:qwen3.5-9b' THEN 0 ELSE 1 END, a2.id
+            LIMIT 1)
+        WHERE r.embedding IS NOT NULL
           -- a mesma pessoa repostando entra uma vez só; duas pessoas sonhando
           -- a mesma coisa entram as duas — isso é o achado, não ruído
           AND r.canonico_de IS NULL
