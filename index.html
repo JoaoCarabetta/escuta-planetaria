@@ -1,0 +1,73 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Escuta Planetária</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;1,200&family=IBM+Plex+Mono:wght@300;400&display=swap">
+<style>
+  :root{--vazio:#05060b;--linha:#1a1e2c;--texto:#c6c9d6;--fraco:#6f7488;--acento:#6ba8ff}
+  body{margin:0;background:var(--vazio);color:var(--texto);
+    font:400 13.5px/1.7 "IBM Plex Mono",ui-monospace,monospace;
+    padding:clamp(28px,7vw,72px) clamp(20px,6vw,56px) 64px;-webkit-font-smoothing:antialiased}
+  main{max-width:64ch;margin:0 auto}
+  h1{font:italic 200 clamp(30px,6vw,46px)/1.05 Spectral,Georgia,serif;margin:0 0 4px;
+    letter-spacing:.01em;text-wrap:balance}
+  .sub{color:var(--fraco);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 34px}
+  p{margin:0 0 17px;color:#b4b8c8}
+  b{color:var(--texto);font-weight:400}
+  a{color:var(--acento);text-decoration:none;border-bottom:1px solid rgba(107,168,255,.3)}
+  a:hover{border-bottom-color:var(--acento)}
+  .entrar{display:block;margin:32px 0;padding:19px 22px;border:1px solid var(--linha);
+    border-radius:3px;background:rgba(9,11,19,.6);border-bottom:1px solid var(--linha)}
+  .entrar:hover{border-color:#39415c}
+  .entrar strong{display:block;font:italic 200 25px/1.2 Spectral,serif;color:#e6e8f0;margin-bottom:5px}
+  .entrar span{color:var(--fraco);font-size:11.5px}
+  table{width:100%;border-collapse:collapse;margin:26px 0;font-size:12px}
+  td{padding:6px 0;border-bottom:1px solid rgba(26,30,44,.8);vertical-align:top}
+  td:first-child{color:var(--fraco);width:15ch;padding-right:14px}
+  td b{font-variant-numeric:tabular-nums}
+  .nota{color:var(--fraco);font-size:11.5px;line-height:1.65;margin-top:38px;
+    border-top:1px solid var(--linha);padding-top:18px}
+  h2{font:400 10px/1 "IBM Plex Mono",monospace;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--fraco);margin:36px 0 12px}
+</style>
+<main>
+  <h1>Escuta Planetária</h1>
+  <p class="sub">arquivo de sonhos e desejos públicos · 2015–2026</p>
+
+  <p>Um sistema que escuta a internet aberta em busca de relatos de sonho — o que se sonha
+  dormindo e o que se sonha acordado — e os cataloga de forma anônima, com data, lugar
+  provável e o que cada relato carrega.</p>
+
+  <p>Tudo é processado localmente, em máquina própria: <b>nenhum relato passa por
+  serviço de terceiros</b> para ser lido, julgado ou classificado.</p>
+
+  <a class="entrar" href="planeta/">
+    <strong>Atmosfera Onírica →</strong>
+    <span>o arquivo como campo de densidade navegável</span>
+  </a>
+
+  <h2>o que há dentro</h2>
+  <table>
+    <tr><td>relatos</td><td><b>105.751</b> catalogados, de 2015 a 2026</td></tr>
+    <tr><td>fontes</td><td>Reddit brasileiro (11 anos) e Bluesky (2 anos)</td></tr>
+    <tr><td>pulso</td><td>3.996 medidas de busca do Google Trends, por estado</td></tr>
+    <tr><td>anotação</td><td>natureza do texto, três marcadores independentes
+      (sonho, desejo, sofrimento) e seis qualidades do sonho</td></tr>
+    <tr><td>geografia</td><td>país sempre, estado quando a comunidade permite —
+      com o método da inferência gravado junto</td></tr>
+  </table>
+
+  <h2>como foi feito</h2>
+  <p>Coletores por fonte enchem uma fila; um moinho local passa cada relato por
+  identificação de idioma, extração de texto em imagens, julgamento por modelo de
+  linguagem rodando na própria máquina, e transformação em vetor semântico. É esse vetor
+  que dá a posição de cada ponto no planeta: <b>proximidade é semelhança de conteúdo,
+  e nada mais significa</b>.</p>
+
+  <p>O código está <a href="https://github.com/fitipe/escuta-planetaria">neste repositório</a>.
+  O banco de dados não — ele guarda os vínculos de auditoria e fica só na máquina de origem.</p>
+
+  <p class="nota">Em construção, e em teste. Os relatos já eram públicos em suas fontes;
+  reuni-los é outro gesto, e este arquivo ainda está aprendendo a ser um.
+  Parte do doutorado de <a href="https://github.com/fitipe">Fitipe</a> no PPGCA/UFF,
+  em conversa com <a href="https://carabetta.xyz/sonhos/">João Carabetta</a>.</p>
+</main>
