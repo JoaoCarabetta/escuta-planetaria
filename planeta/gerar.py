@@ -25,7 +25,7 @@ SAIDA = AQUI / 'dados'
 SAIDA.mkdir(exist_ok=True)
 
 QUALIDADES = ['recorrente', 'lucido', 'premonitorio', 'visita_de_morto', 'paralisia', 'erotico']
-MAX_TEXTO = 1500         # 83% dos relatos cabem inteiros; o resto trunca
+MAX_TEXTO = 40000        # sem corte: no GitHub Pages nao ha o teto de 64MB do Artifacts
 STOP = set("""a o e de da do das dos em um uma que com para por nao não mais eu me minha meu se
 ela ele isso essa esse sua seu você vc ja já como mas ou foi era ser ter tem tinha muito muita
 quando sempre pra pro também depois até anos ano dia hoje ontem noite the a an and of to in that
