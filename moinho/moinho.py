@@ -119,13 +119,19 @@ def preparar(linha, com_ocr=True):
 
     # extração multimodal
     midia = 0
-    if com_ocr and p.get('url') and len((p.get('selftext') or '').strip()) < 40:
-        u = p['url']
+    if com_ocr and len((p.get('selftext') or '').strip()) < 40:
+        # imagem única no `url`, ou galeria em `imagens` (que a camada 0 agora
+        # preserva — antes ela guardava só um booleano e as urls se perdiam)
+        alvos = []
+        u = p.get('url') or ''
         if any(k in u for k in ('i.redd.it', 'imgur', '.jpg', '.png', '.jpeg')):
+            alvos.append(url_de_imagem(u))
+        alvos += list(p.get('imagens') or [])
+        if alvos:
             midia = 1
-            extra = baixar_e_ocr(url_de_imagem(u))
-            if extra:
-                texto += '\n\n[texto extraído da imagem] ' + extra
+            partes = [t for t in (baixar_e_ocr(a) for a in alvos[:4]) if t]
+            if partes:
+                texto += '\n\n[texto extraído da imagem] ' + '\n'.join(partes)
             else:
                 midia = 2      # tinha mídia e a extração NÃO deu certo
 
