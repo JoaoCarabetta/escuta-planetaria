@@ -508,7 +508,11 @@ cv.addEventListener('pointermove', e=>{
     // material em foco anda para o mesmo gesto: no centro, 80px de arrasto o
     // moviam 5px. Dividir pelo foco devolve o passo; o que fica fora de foco
     // passa mais rápido, e essa paralaxe é mais uma pista de profundidade.
-    const s = 1 / (Math.min(W,H) * 0.36 * zoom * Math.max(0.3, foco));
+    // O sinal vem junto: passado o centro, o verso gira ao contrário, e a
+    // divisão por um foco negativo inverte o gesto na mesma medida — de modo
+    // que o que se está olhando continua andando para o lado do dedo.
+    const alavanca = (foco < 0 ? -1 : 1) * Math.max(0.3, Math.abs(foco));
+    const s = 1 / (Math.min(W,H) * 0.36 * zoom * alavanca);
     MAT = mul(mul(rotX(dy*s), rotY(dx*s)), MAT);
     arr = {x:e.clientX, y:e.clientY};
     return;
@@ -545,11 +549,13 @@ const ZOOM_MAX = 60;
 // quando já se estava bem perto — atravessava-se um aglomerado inteiro sem ver.
 // Assim, quanto mais fundo (mais zoom, faixa mais estreita), mais fino o passo.
 const passoMergulho = () => alcance() * 0.075;
-// O mergulho pára no CENTRO. Passar dele punha em foco o hemisfério de trás, e
-// numa esfera o verso gira ao contrário da frente: arrastar para a direita
-// levava o que se estava olhando para a esquerda. Não se perde nada — a bola
-// gira livre, então o que está do lado de lá se traz para cá girando 180°.
-const FOCO_MIN = 0;
+// O mergulho atravessa a bola inteira. Já parou no centro uma vez, para curar a
+// inversão do arrasto no hemisfério de trás — mas isso deixava mais da metade
+// do que aparece na tela fora de alcance: no zoom máximo, 113 dos 142 pontos
+// visíveis ficavam inclicáveis, todos atrás do centro. A inversão se cura sozinha
+// pelo ganho do arrasto, que é dividido pelo foco COM SINAL: do outro lado o
+// gesto se inverte junto com a geometria e continua seguindo o que se olha.
+const FOCO_MIN = -1;
 function mergulhar(fracao){
   foco = Math.max(FOCO_MIN, Math.min(1, foco + fracao * passoMergulho()));
 }
@@ -570,8 +576,7 @@ function focarSobCursor(mx, my, fracao){
     if (nota < melhorNota){ melhorNota = nota; melhor = i; }
   }
   if (melhor < 0) return;
-  const alvo = Math.max(FOCO_MIN, proj(melhor).z);   // nunca pousa no verso
-  foco = Math.max(FOCO_MIN, foco + (alvo - foco) * fracao);
+  foco += (proj(melhor).z - foco) * fracao;
 }
 
 const dentroEl = $('#dentro');
@@ -582,7 +587,8 @@ function mostrarProfundidade(){
   // só avisa quando se está mesmo atravessando: o foco automático pousa logo
   // abaixo da superfície o tempo todo, e avisar disso seria ruído
   if (foco > 0.55){ dentroEl.hidden = true; return; }
-  const onde = foco > 0.18 ? 'entrando' : 'no centro';
+  const onde = foco > 0.18 ? 'entrando'
+             : (foco > -0.18 ? 'no centro' : 'do outro lado');
   dentroEl.textContent = `dentro · ${onde}`;
   dentroEl.hidden = false;
 }
