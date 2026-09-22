@@ -1,0 +1,613 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atmosfera Onírica</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;1,200&family=IBM+Plex+Mono:wght@300;400&display=swap">
+<style>
+  :root{
+    --vazio:#05060b; --linha:#1a1e2c; --texto:#c6c9d6; --fraco:#6f7488;
+    --sonho:#6ba8ff; --desejo:#ffbe5c; --sofrer:#ff6376; --outro:#5b6376;
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--vazio);color:var(--texto);overflow:hidden;
+    font:400 13px/1.5 "IBM Plex Mono",ui-monospace,monospace;-webkit-font-smoothing:antialiased}
+  canvas{position:fixed;inset:0;display:block;cursor:grab;touch-action:none}
+  canvas.arrastando{cursor:grabbing}
+
+  header{position:fixed;top:calc(env(safe-area-inset-top,0px) + 20px);left:22px;z-index:4;
+    pointer-events:none;max-width:30ch}
+  h1{font:italic 200 clamp(24px,4.2vw,34px)/1 Spectral,Georgia,serif;margin:0;letter-spacing:.01em}
+  header p{margin:7px 0 0;color:var(--fraco);font-size:11px;line-height:1.55}
+  header b{color:var(--texto);font-weight:400}
+
+  #hud{position:fixed;z-index:4;right:18px;top:calc(env(safe-area-inset-top,0px) + 20px);
+    width:min(232px,calc(100vw - 36px));display:flex;flex-direction:column;gap:9px}
+  .caixa{background:rgba(9,11,19,.82);border:1px solid var(--linha);border-radius:3px;
+    padding:9px 11px;backdrop-filter:blur(7px)}
+  .caixa h2{margin:0 0 7px;font:400 9.5px/1 "IBM Plex Mono",monospace;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--fraco)}
+  .ch{display:flex;align-items:center;gap:7px;padding:2.5px 0;cursor:pointer;
+    font-size:11.5px;color:var(--fraco);user-select:none}
+  .ch:hover{color:var(--texto)}
+  .ch.on{color:var(--texto)}
+  .ch i{width:7px;height:7px;border-radius:50%;flex:none;background:var(--cor,var(--outro));
+    opacity:.28;transition:opacity .15s}
+  .ch.on i{opacity:1}
+  .ch em{margin-left:auto;font-style:normal;font-size:9.5px;color:var(--fraco);
+    font-variant-numeric:tabular-nums}
+
+  #busca input{width:100%;box-sizing:border-box;background:transparent;border:0;
+    border-bottom:1px solid var(--linha);padding:3px 0 6px;color:var(--texto);
+    font:400 12px "IBM Plex Mono",monospace;outline:none}
+  #busca input:focus{border-color:#39415c}
+  #busca input::placeholder{color:var(--fraco)}
+  #conta{font-size:10px;color:var(--fraco);margin-top:6px;min-height:12px}
+  #achados{max-height:34vh;overflow-y:auto;margin-top:5px}
+  #achados div{padding:4px 0;border-top:1px solid rgba(26,30,44,.7);cursor:pointer;
+    font-size:11px;line-height:1.4;color:var(--fraco);display:flex;gap:6px}
+  #achados div:hover{color:var(--texto)}
+  #achados i{width:5px;height:5px;border-radius:50%;flex:none;margin-top:5px}
+  #achados span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;
+    -webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+  #tempo{position:fixed;left:22px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
+    z-index:4;width:min(330px,calc(100vw - 44px))}
+  #tempo .faixa{position:relative;height:26px;margin-top:5px}
+  #tempo .regua{position:relative;height:16px;margin-top:2px}
+  #tempo .regua canvas{cursor:default}
+  #tempo canvas{position:absolute;inset:0;width:100%;height:100%}
+  #tempo .rot{display:flex;justify-content:space-between;font-size:9.5px;color:var(--fraco);
+    font-variant-numeric:tabular-nums}
+
+  #nome{position:fixed;z-index:5;pointer-events:none;font:200 italic 15px Spectral,serif;
+    color:#e6e8f0;text-shadow:0 0 14px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,1);letter-spacing:.02em}
+  #relato{position:fixed;z-index:6;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);
+    transform:translateX(-50%);width:min(560px,calc(100vw - 44px));
+    background:rgba(9,11,19,.95);border:1px solid var(--linha);border-radius:3px;padding:15px 17px}
+  #relato .top{display:flex;gap:9px;align-items:center;font-size:9.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--fraco);margin-bottom:9px;flex-wrap:wrap}
+  #relato .top i{width:7px;height:7px;border-radius:50%;flex:none}
+  #relato p{margin:0;font:300 15.5px/1.6 Spectral,Georgia,serif;color:#dfe2ec}
+  #relato button{position:absolute;top:7px;right:10px;background:none;border:0;
+    color:var(--fraco);cursor:pointer;font-size:15px;padding:3px}
+  #carregando[hidden],#relato[hidden],#nome[hidden]{display:none}
+  #carregando{position:fixed;inset:0;display:grid;place-items:center;z-index:9;
+    background:var(--vazio);color:var(--fraco);font-size:11.5px;letter-spacing:.1em}
+  @media (max-width:760px){
+    #hud{right:12px;left:12px;width:auto;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
+      flex-direction:row;flex-wrap:wrap;gap:7px}
+    .caixa{flex:1 1 42%;padding:7px 9px}
+    #tempo{display:none}
+    header{max-width:60vw}
+    #relato{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 96px)}
+  }
+</style>
+
+<canvas id="ceu"></canvas>
+<header>
+  <h1>Atmosfera Onírica</h1>
+  <p><b id="total">—</b> relatos públicos de sonho e desejo, 2015–2026.
+     A posição vem só da semelhança entre eles — <b>nada mais significa</b>.</p>
+</header>
+
+<div id="hud">
+  <div class="caixa" id="busca">
+    <h2>buscar</h2>
+    <input type="search" id="q" placeholder="uma palavra…" autocomplete="off">
+    <div id="conta"></div>
+    <div id="achados"></div>
+  </div>
+  <div class="caixa" id="marcadores"><h2>o que carrega</h2></div>
+  <div class="caixa" id="qualidades"><h2>qualidades do sonho</h2></div>
+  <div class="caixa" id="camadas"><h2>camadas</h2></div>
+</div>
+
+<div id="tempo">
+  <div class="rot"><span id="t0">2015</span><span id="tsel"></span><span id="t1">2026</span></div>
+  <div class="faixa"><canvas id="linha"></canvas></div>
+  <div class="regua"><canvas id="sel"></canvas></div>
+</div>
+
+<div id="nome" hidden></div>
+<div id="relato" hidden>
+  <button aria-label="fechar">×</button>
+  <div class="top"></div>
+  <p></p>
+</div>
+<div id="carregando">recolhendo a atmosfera…</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const QUAL_ROT = {recorrente:'recorrente', lucido:'lúcido', premonitorio:'premonitório',
+                  visita_de_morto:'visita de morto', paralisia:'paralisia do sono', erotico:'erótico'};
+
+const BLOCOS = {};   // texto carregado sob demanda, um bloco por vez
+async function pegarTexto(i){
+  const b = Math.floor(i / META.por_arquivo);
+  if (!BLOCOS[b]) BLOCOS[b] = fetch(`textos${b}.json`).then(r=>r.json());
+  const d = await BLOCOS[b];
+  return d.textos[i - d.i0];
+}
+let META, N, POS, NAT, FONTE, COM, ANO, MES, BITS, PAL_OFF, PAL, TEXTOS = [];
+let MAT = null, zoom = 1, girando = true, sel = -1, buscaSet = null, pausa = false;
+const ativos = {sonho:true, desejo:true, sofrer:true};
+const quais = {};
+const camadas = {meta:false, idiomatico:false, ruido:false};
+let kIni = 0, kFim = 0;                 // meses absolutos desde ano_min
+const kDe = i => (ANO[i]-META.ano_min)*12 + (MES[i]-1);
+let nVisiveis = 0, escalaPonto = 1;
+function recalcularEscala(){
+  nVisiveis = 0;
+  for (let i=0;i<N;i++) if (visivel(i)) nVisiveis++;
+  // poucos pontos → grandes e nítidos; muitos → finos, para a densidade aparecer
+  escalaPonto = Math.max(1, Math.min(7, Math.sqrt(60000 / Math.max(nVisiveis, 40))));
+}
+
+// ——— matriz de rotação livre ———
+const mul = (A,B) => A.map((_,i)=>[0,1,2].map(j=>A[i][0]*B[0][j]+A[i][1]*B[1][j]+A[i][2]*B[2][j]));
+const rotX = a => {const c=Math.cos(a),s=Math.sin(a);return [[1,0,0],[0,c,-s],[0,s,c]]};
+const rotY = a => {const c=Math.cos(a),s=Math.sin(a);return [[c,0,s],[0,1,0],[-s,0,c]]};
+MAT = mul(rotX(-0.22), rotY(0.5));
+
+async function carregar(){
+  META = await (await fetch('meta.json')).json();
+  const b64 = (await (await fetch('pontos.json')).json()).b64;
+  const bin = atob(b64); const u8 = new Uint8Array(bin.length);
+  for (let i=0;i<bin.length;i++) u8[i] = bin.charCodeAt(i);
+  const buf = u8.buffer;
+  const dv = new DataView(buf);
+  N = dv.getUint32(0, true);
+  POS = new Float32Array(N*3); NAT = new Uint8Array(N); FONTE = new Uint8Array(N);
+  COM = new Uint8Array(N); ANO = new Uint16Array(N); MES = new Uint8Array(N);
+  BITS = new Uint16Array(N);
+  let o = 4;
+  for (let i=0;i<N;i++){
+    POS[i*3]=dv.getFloat32(o,true); POS[i*3+1]=dv.getFloat32(o+4,true); POS[i*3+2]=dv.getFloat32(o+8,true);
+    NAT[i]=dv.getUint8(o+12); FONTE[i]=dv.getUint8(o+13); COM[i]=dv.getUint8(o+14);
+    ANO[i]=dv.getUint16(o+15,true); MES[i]=dv.getUint8(o+17); BITS[i]=dv.getUint16(o+18,true);
+    o += 20;
+  }
+  PAL_OFF = new Uint32Array(N+1); const tmp = [];
+  for (let i=0;i<N;i++){
+    const k = dv.getUint8(o); o++;
+    PAL_OFF[i] = tmp.length;
+    for (let j=0;j<k;j++){ tmp.push(dv.getUint32(o,true)); o += 4; }
+  }
+  PAL_OFF[N] = tmp.length; PAL = Uint32Array.from(tmp);
+
+  $('#total').textContent = N.toLocaleString('pt-BR');
+  $('#t0').textContent = META.ano_min; $('#t1').textContent = META.ano_max;
+  kIni = 0; kFim = (META.ano_max - META.ano_min + 1)*12 - 1;
+  montarHUD();
+  recalcularEscala();
+  $('#carregando').hidden = true;
+  requestAnimationFrame(desenhar);
+  nMeses = (META.ano_max - META.ano_min + 1)*12;
+  kFim = nMeses - 1;
+  desenharLinha(); desenharSel();
+
+}
+
+// ——— visibilidade de um ponto ———
+function visivel(i){
+  const nat = NAT[i];
+  if (nat !== 0){
+    const nome = ['relato','meta','idiomatico','ruido'][nat];
+    return camadas[nome] === true;
+  }
+  const b = BITS[i];
+  const marc = ((b&1)&&ativos.sonho) || ((b&2)&&ativos.desejo) || ((b&4)&&ativos.sofrer);
+  if (!marc) return false;
+  const k = kDe(i);
+  if (k < kIni || k > kFim) return false;
+  for (const q in quais) if (quais[q] && !(b & (1 << (3 + META.qualidades.indexOf(q))))) return false;
+  return true;
+}
+
+function corDe(i){
+  const b = BITS[i];
+  if (NAT[i] !== 0) return [91,99,118];
+  let r=0,g=0,bl=0,n=0;
+  if (b&1){ r+=107; g+=168; bl+=255; n++; }
+  if (b&2){ r+=255; g+=190; bl+=92;  n++; }
+  if (b&4){ r+=255; g+=99;  bl+=118; n++; }
+  if (!n) return [91,99,118];
+  return [r/n|0, g/n|0, bl/n|0];
+}
+
+// ——— desenho ———
+const cv = $('#ceu'), cx = cv.getContext('2d', {alpha:false});
+let W,H,DPR;
+function medir(){
+  DPR = Math.min(2, devicePixelRatio||1); W = innerWidth; H = innerHeight;
+  cv.width = W*DPR; cv.height = H*DPR; cv.style.width = W+'px'; cv.style.height = H+'px';
+  cx.setTransform(DPR,0,0,DPR,0,0);
+}
+addEventListener('resize', ()=>{medir(); desenharLinha(); desenharSel();}); medir();
+
+const estrelas = Array.from({length:180},()=>[Math.random(),Math.random(),.05+Math.random()*.16]);
+
+function desenhar(t){
+  cx.fillStyle = css('--vazio'); cx.fillRect(0,0,W,H);
+  for (const [x,y,a] of estrelas){ cx.fillStyle = `rgba(190,196,220,${a})`; cx.fillRect(x*W,y*H,1,1); }
+  if (girando && sel<0 && !pausa && !giroAlvo) MAT = mul(rotY(0.0009), MAT);
+  if (giroAlvo){
+    const passo = Math.max(0.035, giroAlvo.resta*0.14);
+    MAT = mul(rotEixo(giroAlvo.eixo, Math.min(passo, giroAlvo.resta)), MAT);
+    giroAlvo.resta -= passo;
+    if (giroAlvo.resta <= 0.01) giroAlvo = null;
+  }
+
+  const R = Math.min(W,H)*0.36*zoom;
+  const m = MAT, cxx = W/2, cyy = H/2;
+  const halo = cx.createRadialGradient(cxx,cyy,R*0.55,cxx,cyy,R*1.3);
+  halo.addColorStop(0,'rgba(24,30,48,.30)'); halo.addColorStop(1,'rgba(24,30,48,0)');
+  cx.fillStyle = halo; cx.beginPath(); cx.arc(cxx,cyy,R*1.3,0,7); cx.fill();
+  // densidade: soma luminosa. Raio cresce com o zoom (três resoluções).
+  const zr = zoom < 1.5 ? 1.1 : (zoom < 3 ? 1.7 : 2.8);
+  const raio = zr * escalaPonto;
+  const alfaBase = Math.min(0.95, (zoom < 1.5 ? 0.16 : (zoom < 3 ? 0.34 : 0.8))
+                                  * Math.pow(escalaPonto, 0.9));
+  const redondo = raio >= 1.9;
+  cx.globalCompositeOperation = 'lighter';
+  let vis = 0;
+  for (let i=0;i<N;i++){
+    if (!visivel(i)) continue;
+    const x=POS[i*3], y=POS[i*3+1], z=POS[i*3+2];
+    const rz = m[2][0]*x + m[2][1]*y + m[2][2]*z;
+    if (rz < -0.15) continue;                       // verso: só o que aflora
+    const rx = m[0][0]*x + m[0][1]*y + m[0][2]*z;
+    const ry = m[1][0]*x + m[1][1]*y + m[1][2]*z;
+    const sx = cxx + rx*R, sy = cyy - ry*R;
+    if (sx < -8 || sx > W+8 || sy < -8 || sy > H+8) continue;
+    const prof = 0.22 + 0.78*Math.max(0, rz)**1.6;   // frente pesa muito mais
+    let [cr,cg,cb] = corDe(i);
+    let a = alfaBase*prof, r2 = raio;
+    if (buscaSet){                       // véu: o achado acende, o resto recua
+      if (buscaSet.has(i)){ a = Math.min(1, a*7); r2 = raio*1.9; }
+      else { a *= 0.16; cr=(cr+120)>>1; cg=(cg+126)>>1; cb=(cb+146)>>1; }
+    }
+    cx.fillStyle = `rgba(${cr},${cg},${cb},${a})`;
+    if (redondo){                       // círculo só quando o ponto é grande o bastante
+      cx.beginPath(); cx.arc(sx, sy, r2/2, 0, 6.2832); cx.fill();
+    } else {
+      cx.fillRect(sx-r2/2, sy-r2/2, r2, r2);   // abaixo de ~2px a forma não se distingue
+    }
+    vis++;
+  }
+  cx.globalCompositeOperation = 'source-over';
+
+  if (sel >= 0) marcarSel(R);
+  requestAnimationFrame(desenhar);
+}
+
+function proj(i){
+  const m=MAT, R=Math.min(W,H)*0.36*zoom;
+  const x=POS[i*3], y=POS[i*3+1], z=POS[i*3+2];
+  return {sx: W/2 + (m[0][0]*x+m[0][1]*y+m[0][2]*z)*R,
+          sy: H/2 - (m[1][0]*x+m[1][1]*y+m[1][2]*z)*R,
+          z: m[2][0]*x+m[2][1]*y+m[2][2]*z};
+}
+function marcarSel(R){
+  const p = proj(sel);
+  if (p.z < -0.15) return;
+  cx.strokeStyle = 'rgba(230,234,244,.9)'; cx.lineWidth = 1;
+  cx.beginPath(); cx.arc(p.sx, p.sy, 7, 0, 7); cx.stroke();
+}
+
+// ——— nome emergente: a palavra que esta vizinhança tem e o resto não ———
+const nomeEl = $('#nome');
+let ultimoNome = 0;
+function nomear(mx, my){
+  if (performance.now() - ultimoNome < 90) return;
+  ultimoNome = performance.now();
+  const raio2 = (Math.min(W,H)*0.09)**2;
+  const conta = new Map(); let n = 0;
+  for (let i=0;i<N;i++){
+    if (!visivel(i)) continue;
+    const p = proj(i);
+    if (p.z < 0) continue;
+    const d = (p.sx-mx)**2 + (p.sy-my)**2;
+    if (d > raio2) continue;
+    n++;
+    for (let k=PAL_OFF[i]; k<PAL_OFF[i+1]; k++)
+      conta.set(PAL[k], (conta.get(PAL[k])||0) + 1);
+  }
+  if (n < 12){ nomeEl.hidden = true; return; }
+  let melhor = -1, melhorN = 2;
+  for (const [w,c] of conta) if (c > melhorN){ melhorN = c; melhor = w; }
+  if (melhor < 0){ nomeEl.hidden = true; return; }
+  nomeEl.textContent = META.vocab[melhor];
+  nomeEl.hidden = false;
+  nomeEl.style.left = (mx + 16) + 'px';
+  nomeEl.style.top = (my - 8) + 'px';
+}
+
+// ——— giro até um ponto (Rodrigues) ———
+let giroAlvo = null;
+function rotEixo(u, a){
+  const [x,y,z]=u, c=Math.cos(a), s=Math.sin(a), C=1-c;
+  return [[c+x*x*C, x*y*C-z*s, x*z*C+y*s],
+          [y*x*C+z*s, c+y*y*C, y*z*C-x*s],
+          [z*x*C-y*s, z*y*C+x*s, c+z*z*C]];
+}
+function girarPara(i){
+  const m=MAT, x=POS[i*3], y=POS[i*3+1], z=POS[i*3+2];
+  const v=[m[0][0]*x+m[0][1]*y+m[0][2]*z, m[1][0]*x+m[1][1]*y+m[1][2]*z,
+           m[2][0]*x+m[2][1]*y+m[2][2]*z];
+  const ang = Math.acos(Math.max(-1, Math.min(1, v[2])));
+  if (ang < 0.02){ giroAlvo = null; return; }
+  let eixo = [v[1], -v[0], 0];                 // v × (0,0,1)
+  const n = Math.hypot(eixo[0], eixo[1]);
+  eixo = n < 1e-6 ? [0,1,0] : [eixo[0]/n, eixo[1]/n, 0];
+  giroAlvo = {eixo, resta: ang};
+}
+
+// ——— interação ———
+let arr = null, moveu = false;
+cv.addEventListener('pointerdown', e=>{arr={x:e.clientX,y:e.clientY}; moveu=false;
+  cv.classList.add('arrastando'); cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove', e=>{
+  if (arr){
+    const dx=e.clientX-arr.x, dy=e.clientY-arr.y;
+    if (Math.abs(dx)+Math.abs(dy) > 4) moveu = true;
+    MAT = mul(mul(rotX(dy*0.005), rotY(dx*0.005)), MAT);
+    arr = {x:e.clientX, y:e.clientY};
+    return;
+  }
+  if (e.pointerType === 'mouse'){ pausa = true; nomear(e.clientX, e.clientY); }
+});
+cv.addEventListener('pointerup', e=>{
+  cv.classList.remove('arrastando');
+  if (!moveu) tocar(e.clientX, e.clientY);
+  arr = null;
+});
+cv.addEventListener('pointerleave', ()=>{pausa=false; nomeEl.hidden=true;});
+cv.addEventListener('wheel', e=>{e.preventDefault();
+  zoom = Math.max(.6, Math.min(6, zoom * (e.deltaY<0 ? 1.08 : .93)));}, {passive:false});
+let pin = null;
+cv.addEventListener('touchmove', e=>{
+  if (e.touches.length===2){ e.preventDefault();
+    const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
+                         e.touches[0].clientY-e.touches[1].clientY);
+    if (pin) zoom = Math.max(.6, Math.min(6, zoom * d/pin));
+    pin = d; }
+}, {passive:false});
+cv.addEventListener('touchend', ()=> pin=null);
+
+function tocar(mx,my){
+  let melhor=-1, md=16*16;
+  for (let i=0;i<N;i++){
+    if (!visivel(i)) continue;
+    const p = proj(i);
+    if (p.z < 0) continue;
+    const d = (p.sx-mx)**2 + (p.sy-my)**2;
+    if (d < md){ md=d; melhor=i; }
+  }
+  sel = melhor;
+  mostrar(melhor);
+}
+
+const rel = $('#relato');
+function mostrar(i){
+  if (i < 0){ rel.hidden = true; return; }
+  const b = BITS[i], [r,g,bl] = corDe(i);
+  const marcs = [];
+  if (b&1) marcs.push('sonho'); if (b&2) marcs.push('desejo'); if (b&4) marcs.push('sofrimento');
+  const qs = META.qualidades.filter((q,j)=> b & (1<<(3+j))).map(q=>QUAL_ROT[q]);
+  const mes = String(MES[i]).padStart(2,'0');
+  rel.querySelector('.top').innerHTML =
+    `<i style="background:rgb(${r},${g},${bl})"></i>` +
+    `<span>${ANO[i]}/${mes}</span><span>${META.comunidades[COM[i]]}</span>` +
+    `<span>${marcs.join(' · ')}</span>` +
+    (qs.length ? `<span style="color:#9aa0b6">${qs.join(' · ')}</span>` : '');
+  const alvo = rel.querySelector('p');
+  alvo.textContent = '…';
+  rel.hidden = false;
+  pegarTexto(i).then(t=>{ if (sel === i) alvo.textContent = t || '(relato indisponível)'; });
+}
+rel.querySelector('button').onclick = ()=>{ sel=-1; rel.hidden=true; };
+
+// ——— HUD ———
+function chip(pai, rot, cor, ligado, onda, contaFn){
+  const d = document.createElement('div');
+  d.className = 'ch' + (ligado ? ' on' : '');
+  d.innerHTML = `<i style="--cor:${cor}"></i>${rot}<em></em>`;
+  d.onclick = ()=>{ d.classList.toggle('on'); onda(d.classList.contains('on')); atualizarContas(); };
+  pai.appendChild(d);
+  d._conta = contaFn; d._em = d.querySelector('em');
+  return d;
+}
+const chips = [];
+function montarHUD(){
+  const m = $('#marcadores');
+  chips.push(chip(m,'sonho dormido',css('--sonho'),true,v=>ativos.sonho=v,
+    ()=>cont(i=>NAT[i]===0 && (BITS[i]&1))));
+  chips.push(chip(m,'desejo',css('--desejo'),true,v=>ativos.desejo=v,
+    ()=>cont(i=>NAT[i]===0 && (BITS[i]&2))));
+  chips.push(chip(m,'sofrimento',css('--sofrer'),true,v=>ativos.sofrer=v,
+    ()=>cont(i=>NAT[i]===0 && (BITS[i]&4))));
+  const q = $('#qualidades');
+  META.qualidades.forEach((nome,j)=>{
+    quais[nome] = false;
+    chips.push(chip(q, QUAL_ROT[nome], '#9aa0b6', false, v=>quais[nome]=v,
+      ()=>cont(i=>NAT[i]===0 && (BITS[i] & (1<<(3+j))))));
+  });
+  const c = $('#camadas');
+  [['meta','meta-discussão'],['idiomatico','idiomático'],['ruido','ruído comercial']]
+    .forEach(([k,rot],j)=>{
+      chips.push(chip(c, rot, '#5b6376', false, v=>camadas[k]=v,
+        ()=>cont(i=>NAT[i]===j+1)));
+    });
+  atualizarContas();
+}
+function cont(fn){ let n=0; for (let i=0;i<N;i++) if (fn(i)) n++; return n; }
+function atualizarContas(){
+  for (const d of chips) d._em.textContent = d._conta().toLocaleString('pt-BR');
+  recalcularEscala();
+}
+
+// ——— busca ———
+let tq = null;
+$('#q').addEventListener('input', e=>{
+  clearTimeout(tq);
+  tq = setTimeout(()=>{
+    const termo = e.target.value.trim().toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g,'');
+    if (termo.length < 3){ buscaSet = null; $('#conta').textContent=''; return; }
+    const alvos = new Set();
+    META.vocab.forEach((w,i)=>{ if (w.includes(termo)) alvos.add(i); });
+    buscaSet = new Set();
+    for (let i=0;i<N;i++)
+      for (let k=PAL_OFF[i]; k<PAL_OFF[i+1]; k++)
+        if (alvos.has(PAL[k])){ buscaSet.add(i); break; }
+    $('#conta').textContent = buscaSet.size
+      ? `${buscaSet.size.toLocaleString('pt-BR')} acesos`
+      : 'nenhum com essa palavra';
+    listar();
+    if (!buscaSet.size) buscaSet = null;
+  }, 200);
+});
+
+function listar(){
+  const cont = $('#achados'); cont.innerHTML = '';
+  if (!buscaSet || !buscaSet.size) return;
+  const ids = [...buscaSet].slice(0, 60);
+  for (const i of ids){
+    const [r,g,b] = corDe(i);
+    const d = document.createElement('div');
+    d.innerHTML = `<i style="background:rgb(${r},${g},${b})"></i><span>${ANO[i]} · carregando…</span>`;
+    const sp = d.querySelector('span');
+    pegarTexto(i).then(t=>{ sp.textContent = `${ANO[i]} · ${(t||'').slice(0,110)}`; });
+    d.onclick = ()=>{ sel = i; mostrar(i); girarPara(i); };
+    cont.appendChild(d);
+  }
+  if (buscaSet.size > 60){
+    const m = document.createElement('div');
+    m.innerHTML = `<span style="opacity:.7">…e mais ${(buscaSet.size-60).toLocaleString('pt-BR')} acesos no planeta</span>`;
+    m.style.cursor = 'default';
+    cont.appendChild(m);
+  }
+}
+
+// ——— linha do tempo ———
+function desenharLinha(){
+  const c = $('#linha'); if (!META) return;
+  const w = c.clientWidth, h = c.clientHeight, d = Math.min(2, devicePixelRatio||1);
+  c.width = w*d; c.height = h*d;
+  const g = c.getContext('2d'); g.setTransform(d,0,0,d,0,0);
+  const anos = META.ano_max - META.ano_min + 1;
+  const meses = new Array(anos*12).fill(0);
+  for (let i=0;i<N;i++){
+    if (NAT[i]!==0) continue;
+    const k = (ANO[i]-META.ano_min)*12 + (MES[i]-1);
+    if (k>=0 && k<meses.length) meses[k]++;
+  }
+  const max = Math.max(...meses, 1);
+  g.clearRect(0,0,w,h);
+  for (let k=0;k<meses.length;k++){
+    const x = k/meses.length*w, bw = w/meses.length;
+    const dentro = k >= kIni && k <= kFim;
+    g.fillStyle = dentro ? 'rgba(107,168,255,.62)' : 'rgba(107,168,255,.14)';
+    const alt = (Math.log1p(meses[k]) / Math.log1p(max)) * (h-2);
+    g.fillRect(x, h-alt, Math.max(bw-0.4,0.6), alt);
+  }
+}
+const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const selCv = $('#sel');
+let nMeses = 0;
+
+function rotuloTempo(){
+  const r = document.getElementById('tsel');
+  if (kIni === 0 && kFim === nMeses-1){ r.textContent = ''; return; }
+  const f = k => `${MESES[k%12]}/${META.ano_min + Math.floor(k/12)}`;
+  r.textContent = kIni === kFim ? f(kIni) : `${f(kIni)} – ${f(kFim)}`;
+}
+
+function desenharSel(){
+  if (!META) return;
+  nMeses = (META.ano_max - META.ano_min + 1)*12;
+  const c = selCv, w = c.clientWidth, h = c.clientHeight, d = Math.min(2, devicePixelRatio||1);
+  c.width = w*d; c.height = h*d;
+  const g = c.getContext('2d'); g.setTransform(d,0,0,d,0,0);
+  g.clearRect(0,0,w,h);
+  const y = h/2;
+  const px = k => (k/(nMeses-1)) * (w-14) + 7;    // 7px de folga p/ as alças
+  // trilho escuro
+  g.strokeStyle = 'rgba(26,30,44,1)'; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(7,y); g.lineTo(w-7,y); g.stroke();
+  // faixa acesa entre as alças
+  const xa = px(kIni), xb = px(kFim);
+  g.strokeStyle = 'rgba(200,214,255,.72)'; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(xa,y); g.lineTo(xb,y); g.stroke();
+  // alças em ⊢ e ⊣
+  g.strokeStyle = 'rgba(226,232,246,.95)'; g.lineWidth = 1.6;
+  for (const [x,dir] of [[xa,1],[xb,-1]]){
+    g.beginPath();
+    g.moveTo(x, y-6); g.lineTo(x, y+6);          // haste vertical
+    g.moveTo(x, y);   g.lineTo(x + dir*5, y);     // pé horizontal, virado p/ dentro
+    g.stroke();
+  }
+}
+
+// ——— arrastar: alça esquerda, alça direita, ou o intervalo inteiro ———
+let modo = null, pegou = 0;
+const linCv = $('#linha');
+const kEm = e => {
+  const r = selCv.getBoundingClientRect(), w = r.width;
+  const f = (e.clientX - r.left - 7) / Math.max(w-14, 1);
+  return Math.max(0, Math.min(nMeses-1, Math.round(f*(nMeses-1))));
+};
+const zonaEm = e => {                     // onde o ponteiro está: alça, miolo ou fora
+  const k = kEm(e), tol = Math.max(2, Math.round(nMeses*0.025));
+  if (Math.abs(k-kIni) <= tol) return 'ini';
+  if (Math.abs(k-kFim) <= tol) return 'fim';
+  return (k > kIni && k < kFim) ? 'meio' : 'fora';
+};
+const CURSOR = {ini:'ew-resize', fim:'ew-resize', meio:'grab', fora:'crosshair'};
+function pintarCursor(e){
+  if (modo){                              // enquanto arrasta, o cursor não muda de ideia
+    const c = modo === 'meio' ? 'grabbing' : (modo === 'fora' ? 'crosshair' : 'ew-resize');
+    selCv.style.cursor = linCv.style.cursor = c;
+    return;
+  }
+  const c = CURSOR[zonaEm(e)];
+  selCv.style.cursor = linCv.style.cursor = c;
+}
+function aoPressionar(e){
+  e.currentTarget.setPointerCapture(e.pointerId);
+  const z = zonaEm(e), k = kEm(e);
+  if (z === 'ini' || z === 'fim') modo = z;
+  else if (z === 'meio'){ modo = 'meio'; pegou = k; }
+  else { modo = 'novo'; pegou = k; kIni = kFim = k; }
+  pintarCursor(e);
+  aplicar();
+}
+function aoMover(e){
+  if (!modo){ pintarCursor(e); return; }
+  const k = kEm(e);
+  if (modo === 'ini') kIni = Math.min(k, kFim);
+  else if (modo === 'fim') kFim = Math.max(k, kIni);
+  else if (modo === 'novo'){ kIni = Math.min(pegou, k); kFim = Math.max(pegou, k); }
+  else {                                        // desloca o intervalo inteiro
+    const larg = kFim - kIni, d = k - pegou;
+    let a = kIni + d;
+    a = Math.max(0, Math.min(nMeses-1-larg, a));
+    kIni = a; kFim = a + larg; pegou = k;
+  }
+  pintarCursor(e);
+  aplicar();
+}
+function aoSoltar(e){ modo = null; pintarCursor(e); }
+for (const el of [selCv, linCv]){
+  el.addEventListener('pointerdown', aoPressionar);
+  el.addEventListener('pointermove', aoMover);
+  el.addEventListener('pointerup', aoSoltar);
+  el.addEventListener('pointerleave', ()=>{ if (!modo) el.style.cursor = 'default'; });
+  el.addEventListener('dblclick', ()=>{ kIni = 0; kFim = nMeses-1; aplicar(); });
+}
+
+function aplicar(){ rotuloTempo(); desenharSel(); desenharLinha(); atualizarContas(); }
+
+carregar();
+</script>

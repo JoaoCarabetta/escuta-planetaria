@@ -1,0 +1,14 @@
+# a oficina não sobe: banco de 850MB, embeddings, modelos, brutos
+arquivo/arquivo.db
+arquivo/arquivo.db-*
+modelos/
+treino/dados/
+treino/laya-sonhario/
+piloto/raw/
+piloto/embeddings.npy
+piloto/midia/
+planeta/dados/
+__pycache__/
+*.pyc
+.DS_Store
+PAUSAR*

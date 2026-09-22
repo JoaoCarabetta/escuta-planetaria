@@ -1,0 +1,409 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Escuta Planetária</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap">
+<style>
+  :root{
+    --fundo:#06070d; --fundo2:#0b0d17; --linha:#1c2030; --texto:#c9cbd8; --texto2:#7a7f92;
+    --c1:#7fb8ff; --c2:#ffc46b; --c3:#ff6b7a; --c4:#565d6e; --c5:#4d5a52; --c6:#6ee7c7; --c7:#a08fe0;
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--fundo);color:var(--texto);
+    font:400 14px/1.5 "IBM Plex Sans",system-ui,sans-serif;overflow:hidden}
+  #ceu{position:fixed;inset:0;cursor:grab;touch-action:none}
+  #ceu.arrastando{cursor:grabbing}
+
+  header{position:fixed;top:calc(env(safe-area-inset-top,0px) + 18px);left:20px;pointer-events:none;z-index:3}
+  h1{font:italic 300 clamp(22px,4vw,32px)/1.1 Spectral,Georgia,serif;margin:0;letter-spacing:.02em}
+  header p{margin:4px 0 0;color:var(--texto2);font-size:12px;max-width:34ch}
+
+  #filtros{position:fixed;left:0;right:0;bottom:0;z-index:3;display:flex;flex-wrap:wrap;gap:6px;
+    padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 12px);
+    background:linear-gradient(transparent,rgba(6,7,13,.9) 40%)}
+  .chip{border:1px solid var(--linha);border-radius:999px;padding:4px 11px;font-size:11.5px;
+    color:var(--texto2);background:rgba(11,13,23,.7);cursor:pointer;user-select:none;
+    display:inline-flex;align-items:center;gap:6px;transition:opacity .15s}
+  .chip .ponto{width:7px;height:7px;border-radius:50%;background:var(--cor)}
+  .chip.ativo{color:var(--texto);border-color:color-mix(in srgb,var(--cor) 45%,var(--linha))}
+  .chip:not(.ativo){opacity:.38}
+  .chip.utils{margin-left:auto}
+
+  #painel{position:fixed;z-index:4;right:16px;top:50%;transform:translateY(-50%);width:min(340px,calc(100vw - 32px));
+    background:rgba(11,13,23,.94);border:1px solid var(--linha);border-radius:10px;padding:16px 18px;
+    backdrop-filter:blur(6px)}
+  #painel .cat{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;display:inline-flex;align-items:center;gap:7px}
+  #painel .cat .ponto{width:8px;height:8px;border-radius:50%}
+  #painel .meta{color:var(--texto2);font-size:11.5px;margin:6px 0 10px}
+  #painel .txt{font:300 15px/1.55 Spectral,Georgia,serif;max-height:38vh;overflow-y:auto}
+  #painel .fechar{position:absolute;top:8px;right:12px;color:var(--texto2);cursor:pointer;font-size:16px;
+    background:none;border:none;padding:4px}
+  #dica{position:fixed;z-index:5;pointer-events:none;background:rgba(11,13,23,.92);
+    border:1px solid var(--linha);border-radius:6px;padding:4px 9px;font-size:11.5px;
+    color:var(--texto);white-space:nowrap}
+
+  #busca{position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 18px);right:16px;
+    width:min(260px,calc(100vw - 32px))}
+  #busca input{width:100%;box-sizing:border-box;background:rgba(11,13,23,.85);
+    border:1px solid var(--linha);border-radius:8px;padding:8px 12px;color:var(--texto);
+    font:400 13px "IBM Plex Sans",sans-serif;outline:none}
+  #busca input:focus{border-color:#39415c}
+  #busca input::placeholder{color:var(--texto2)}
+  #resultados{margin-top:6px;background:rgba(11,13,23,.94);border:1px solid var(--linha);
+    border-radius:8px;max-height:44vh;overflow-y:auto;backdrop-filter:blur(6px)}
+  #resultados .conta{padding:7px 12px;font-size:11px;color:var(--texto2);
+    border-bottom:1px solid var(--linha)}
+  #resultados .res{padding:8px 12px;cursor:pointer;font-size:12px;line-height:1.4;
+    border-bottom:1px solid rgba(28,32,48,.5);display:flex;gap:8px;align-items:baseline}
+  #resultados .res:hover{background:rgba(28,32,48,.5)}
+  #resultados .res .ponto{width:6px;height:6px;border-radius:50%;flex:none;position:relative;top:-1px}
+  #resultados .res .trecho{color:var(--texto2);overflow:hidden;text-overflow:ellipsis;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  @media (max-width:640px){
+    #busca{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 104px)}
+    #resultados{max-height:26vh}
+  }
+  @media (max-width:640px){
+    #painel{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 58px);transform:none;left:16px;right:16px;width:auto}
+    #painel .txt{max-height:26vh}
+  }
+</style>
+
+<canvas id="ceu"></canvas>
+<header>
+  <h1>Escuta Planetária</h1>
+  <p>491 relatos públicos (piloto, Reddit 2015–2026). A posição vem só da afinidade de conteúdo — nada mais significa.</p>
+</header>
+<div id="filtros"></div>
+<div id="busca">
+  <input type="search" id="buscaInput" placeholder="buscar palavra nos sonhos…" autocomplete="off">
+  <div id="resultados" hidden></div>
+</div>
+<div id="dica" hidden></div>
+<div id="painel" hidden>
+  <button class="fechar" aria-label="fechar">×</button>
+  <span class="cat"><span class="ponto"></span><span class="nome"></span></span>
+  <div class="meta"></div>
+  <div class="txt"></div>
+</div>
+
+<script id="dados" type="application/json">__DATA__</script>
+<script>
+const DADOS = JSON.parse(document.getElementById('dados').textContent);
+const CORES = {1:'--c1',2:'--c2',3:'--c3',4:'--c4',5:'--c5',6:'--c6',7:'--c7'};
+const NOMES = {1:'relato onírico',2:'desejo',3:'pesadelo · angústia',4:'idiomático',
+               5:'ruído comercial',6:'indecidível',7:'meta-discussão'};
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+const canvas = document.getElementById('ceu');
+const ctx = canvas.getContext('2d');
+let W, H, DPR;
+function medir(){
+  DPR = Math.min(2, devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+addEventListener('resize', medir); medir();
+
+// câmera: matriz de rotação livre (trackball, sem trava de eixo)
+function rotXm(a){const c=Math.cos(a),s=Math.sin(a);return [[1,0,0],[0,c,-s],[0,s,c]]}
+function rotYm(a){const c=Math.cos(a),s=Math.sin(a);return [[c,0,s],[0,1,0],[-s,0,c]]}
+function matMul(A,B){
+  const M=[[0,0,0],[0,0,0],[0,0,0]];
+  for(let i=0;i<3;i++)for(let j=0;j<3;j++)
+    M[i][j]=A[i][0]*B[0][j]+A[i][1]*B[1][j]+A[i][2]*B[2][j];
+  return M;
+}
+let MAT = matMul(rotXm(-0.25), rotYm(0.6));
+let giroAlvo = null;  // {eixo:[x,y,z], resta:ângulo} — animação de ir até um ponto
+function rotEixo(u, a){  // Rodrigues: rotação de ângulo a em torno do eixo unitário u
+  const [x,y,z] = u, c = Math.cos(a), s = Math.sin(a), C = 1-c;
+  return [
+    [c+x*x*C,   x*y*C-z*s, x*z*C+y*s],
+    [y*x*C+z*s, c+y*y*C,   y*z*C-x*s],
+    [z*x*C-y*s, z*y*C+x*s, c+z*z*C],
+  ];
+}
+function girarPara(p){
+  const v = rodar(p.p);  // posição atual do ponto no espaço da câmera
+  const alvo = [0,0,1];
+  const dot = Math.max(-1, Math.min(1, v[2]));
+  const ang = Math.acos(dot);
+  if (ang < 0.02) return;
+  let eixo = [v[1]*alvo[2]-v[2]*alvo[1], v[2]*alvo[0]-v[0]*alvo[2], v[0]*alvo[1]-v[1]*alvo[0]];
+  const n = Math.hypot(...eixo);
+  if (n < 1e-6){ eixo = [0,1,0]; } else { eixo = eixo.map(c=>c/n); }
+  giroAlvo = {eixo, resta: ang};
+}
+let zoom = 1, girando = true, selecionado = null, pausaHover = false;
+const ativos = new Set([1,2,3,4,5,6,7]);
+let mostrarRotulos = true;
+
+// cores das categorias em RGB (p/ mistura de profundidade)
+const RGB = {};
+for (const c in CORES){
+  const hex = css(CORES[c]).replace('#','');
+  RGB[c] = [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)];
+}
+const CINZA = [98,102,116];
+function corMista(cat, f){ // f=0: cor plena, f=1: cinza
+  const [r,g,b] = RGB[cat];
+  return `rgb(${Math.round(r+(CINZA[0]-r)*f)},${Math.round(g+(CINZA[1]-g)*f)},${Math.round(b+(CINZA[2]-b)*f)})`;
+}
+
+// busca: texto normalizado por ponto (sem acentos, minúsculas)
+const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+DADOS.pontos.forEach(p => {
+  p.norm = norm((p.tf || p.t) + ' ' + (p.kw || []).join(' '));
+});
+let buscaSet = null;  // null = busca inativa; Set de pontos acesos
+
+// estrelas de fundo fixas
+const estrelas = Array.from({length:130},()=>({x:Math.random(),y:Math.random(),a:.08+Math.random()*.22}));
+// fase de pulso por ponto (vagalumes)
+DADOS.pontos.forEach(p => p.fase = Math.random()*Math.PI*2);
+
+function rodar(p){
+  const [x,y,z] = p;
+  return [
+    MAT[0][0]*x + MAT[0][1]*y + MAT[0][2]*z,
+    MAT[1][0]*x + MAT[1][1]*y + MAT[1][2]*z,
+    MAT[2][0]*x + MAT[2][1]*y + MAT[2][2]*z,
+  ];
+}
+function projetar([x,y,z]){
+  const R = Math.min(W,H) * 0.34 * zoom;
+  return {sx: W/2 + x*R, sy: H/2 - y*R, z};
+}
+
+function desenhar(t){
+  ctx.fillStyle = css('--fundo');
+  ctx.fillRect(0,0,W,H);
+  for (const e of estrelas){
+    ctx.fillStyle = `rgba(200,205,225,${e.a})`;
+    ctx.fillRect(e.x*W, e.y*H, 1, 1);
+  }
+  if (girando && !selecionado && !pausaHover && !giroAlvo) MAT = matMul(rotYm(0.0012), MAT);
+  if (giroAlvo){
+    const passo = Math.max(0.03, giroAlvo.resta * 0.16);
+    MAT = matMul(rotEixo(giroAlvo.eixo, Math.min(passo, giroAlvo.resta)), MAT);
+    giroAlvo.resta -= passo;
+    if (giroAlvo.resta <= 0.01) giroAlvo = null;
+  }
+
+  // halo do planeta
+  const R = Math.min(W,H)*0.34*zoom;
+  const g = ctx.createRadialGradient(W/2,H/2,R*.5,W/2,H/2,R*1.55);
+  g.addColorStop(0,'rgba(28,32,48,.24)'); g.addColorStop(1,'rgba(28,32,48,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(W/2,H/2,R*1.55,0,7); ctx.fill();
+
+  const vis = [];
+  for (const p of DADOS.pontos){
+    if (!ativos.has(p.cat)) continue;
+    const r = rodar(p.p), pr = projetar(r);
+    vis.push({p, ...pr});
+  }
+  vis.sort((a,b)=>a.z-b.z);
+  for (const v of vis){
+    const frente = v.z > 0;
+    const pulso = .75 + .25*Math.sin(t*0.0012 + v.p.fase);
+    let base = frente ? .95 : .5;
+    let cinza = frente ? 0 : .62;
+    let escala = 1;
+    if (buscaSet){
+      if (buscaSet.has(v.p)){ base = Math.min(1, base*1.15); escala = 1.25; }
+      else { base *= .22; cinza = Math.min(.85, cinza + .5); }
+    }
+    // trás: menor (mais distante) e acinzentado
+    const raio = 2.6 * (0.72 + 0.32*v.z) * escala * (v.p===selecionado ? 1.9 : 1);
+    ctx.globalAlpha = base * pulso;
+    ctx.fillStyle = cinza ? corMista(v.p.cat, cinza) : css(CORES[v.p.cat]);
+    ctx.beginPath(); ctx.arc(v.sx, v.sy, Math.max(raio,0.9), 0, 7); ctx.fill();
+    if (v.p === selecionado){
+      ctx.globalAlpha = .9; ctx.strokeStyle = css(CORES[v.p.cat]);
+      ctx.beginPath(); ctx.arc(v.sx, v.sy, raio+5, 0, 7); ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  if (mostrarRotulos){
+    ctx.font = '11px "IBM Plex Sans",sans-serif';
+    ctx.textAlign = 'center';
+    for (const c of DADOS.clusters){
+      const r = rodar(c.c);
+      if (r[2] < 0.15) continue;
+      const pr = projetar(r);
+      ctx.globalAlpha = Math.min(.8, (r[2]-0.1)*1.4);
+      ctx.fillStyle = css('--texto2');
+      ctx.fillText(c.nome || c.words.slice(0,2).join(' · '), pr.sx, pr.sy - 10);
+    }
+    ctx.globalAlpha = 1;
+  }
+  requestAnimationFrame(desenhar);
+}
+requestAnimationFrame(desenhar);
+
+// interação: arrastar / zoom / tocar
+let arrasto = null, moveu = false;
+canvas.addEventListener('pointerdown', e => {
+  arrasto = {x:e.clientX, y:e.clientY}; moveu = false;
+  canvas.classList.add('arrastando'); canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove', e => {
+  if (arrasto){
+    const dx = e.clientX - arrasto.x, dy = e.clientY - arrasto.y;
+    if (Math.abs(dx)+Math.abs(dy) > 4) moveu = true;
+    // rotação livre: incrementos nos eixos da tela, sem trava
+    MAT = matMul(matMul(rotXm(dy*0.005), rotYm(dx*0.005)), MAT);
+    arrasto = {x:e.clientX, y:e.clientY};
+    return;
+  }
+  if (e.pointerType === 'mouse') pairar(e.clientX, e.clientY);
+});
+canvas.addEventListener('pointerup', e => {
+  canvas.classList.remove('arrastando');
+  if (!moveu) tocar(e.clientX, e.clientY);
+  arrasto = null;
+});
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  zoom = Math.max(.5, Math.min(2.6, zoom * (e.deltaY < 0 ? 1.07 : 0.93)));
+}, {passive:false});
+let pinca = null;
+canvas.addEventListener('touchmove', e => {
+  if (e.touches.length === 2){
+    e.preventDefault();
+    const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    if (pinca) zoom = Math.max(.5, Math.min(2.6, zoom * d/pinca));
+    pinca = d;
+  }
+}, {passive:false});
+canvas.addEventListener('touchend', ()=> pinca = null);
+
+function maisProximo(mx, my, alcance){
+  let melhor = null, md = alcance*alcance;
+  for (const p of DADOS.pontos){
+    if (!ativos.has(p.cat)) continue;
+    const r = rodar(p.p);
+    if (r[2] < 0) continue;
+    const pr = projetar(r);
+    const d = (pr.sx-mx)**2 + (pr.sy-my)**2;
+    if (d < md){ md = d; melhor = p; }
+  }
+  return melhor;
+}
+function tocar(mx, my){
+  selecionado = maisProximo(mx, my, 18);
+  mostrarPainel(selecionado);
+}
+
+// hover: keywords do ponto + pausa do giro
+const dica = document.getElementById('dica');
+function pairar(mx, my){
+  const p = maisProximo(mx, my, 14);
+  pausaHover = !!p;
+  canvas.style.cursor = p ? 'pointer' : (arrasto ? 'grabbing' : 'grab');
+  if (!p){ dica.hidden = true; return; }
+  dica.textContent = (p.kw && p.kw.length ? p.kw.join(' · ') : NOMES[p.cat]);
+  dica.hidden = false;
+  const dx = mx > W - 180 ? -12 - dica.offsetWidth : 14;
+  dica.style.left = (mx + dx) + 'px';
+  dica.style.top = (my - 10) + 'px';
+}
+canvas.addEventListener('pointerleave', () => { dica.hidden = true; pausaHover = false; });
+
+const painel = document.getElementById('painel');
+function mostrarPainel(p){
+  if (!p){ painel.hidden = true; return; }
+  painel.hidden = false;
+  painel.querySelector('.cat .ponto').style.background = css(CORES[p.cat]);
+  painel.querySelector('.cat .nome').textContent = NOMES[p.cat];
+  const idioma = p.b.includes('sonhos') || p.b.includes('desabafos') ? 'PT · Brasil (inferido)' : 'EN · anglosfera';
+  const meta = painel.querySelector('.meta');
+  meta.textContent = `${p.d} · r/${p.b.split('_')[0]} · ${idioma}`;
+  if (p.u){
+    const a = document.createElement('a');
+    a.href = p.u; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = 'fonte ↗'; a.style.cssText = 'color:inherit;margin-left:8px';
+    meta.appendChild(a);
+  }
+  painel.querySelector('.txt').textContent = p.tf || p.t;
+}
+painel.querySelector('.fechar').onclick = () => { selecionado = null; painel.hidden = true; };
+
+// chips de filtro
+const filtros = document.getElementById('filtros');
+for (const c of [1,2,3,7,6,4,5]){
+  const chip = document.createElement('button');
+  chip.className = 'chip ativo';
+  chip.style.setProperty('--cor', css(CORES[c]));
+  chip.innerHTML = `<span class="ponto"></span>${NOMES[c]}`;
+  chip.onclick = () => {
+    ativos.has(c) ? ativos.delete(c) : ativos.add(c);
+    chip.classList.toggle('ativo');
+    if (selecionado && !ativos.has(selecionado.cat)){ selecionado = null; painel.hidden = true; }
+  };
+  filtros.appendChild(chip);
+}
+const rot = document.createElement('button');
+rot.className = 'chip ativo utils';
+rot.textContent = 'rótulos';
+rot.onclick = () => { mostrarRotulos = !mostrarRotulos; rot.classList.toggle('ativo'); };
+filtros.appendChild(rot);
+
+// ——— busca por palavra ———
+const buscaInput = document.getElementById('buscaInput');
+const resultados = document.getElementById('resultados');
+let buscaTimer = null;
+
+function rodarBusca(){
+  const termos = norm(buscaInput.value).split(/\s+/).filter(t => t.length >= 2);
+  if (!termos.length){
+    buscaSet = null;
+    resultados.hidden = true;
+    resultados.innerHTML = '';
+    return;
+  }
+  const achados = DADOS.pontos.filter(p => termos.every(t => p.norm.includes(t)));
+  buscaSet = new Set(achados);
+  resultados.innerHTML = '';
+  const conta = document.createElement('div');
+  conta.className = 'conta';
+  conta.textContent = achados.length
+    ? `${achados.length} sonho${achados.length > 1 ? 's' : ''} encontrados`
+    : 'nenhum sonho com essa palavra';
+  resultados.appendChild(conta);
+  for (const p of achados.slice(0, 40)){
+    const div = document.createElement('div');
+    div.className = 'res';
+    const bola = document.createElement('span');
+    bola.className = 'ponto';
+    bola.style.background = css(CORES[p.cat]);
+    const trecho = document.createElement('span');
+    trecho.className = 'trecho';
+    trecho.textContent = (p.tf || p.t).slice(0, 130);
+    div.append(bola, trecho);
+    div.onclick = () => {
+      selecionado = p;
+      mostrarPainel(p);
+      girarPara(p);
+    };
+    resultados.appendChild(div);
+  }
+  if (achados.length > 40){
+    const mais = document.createElement('div');
+    mais.className = 'conta';
+    mais.textContent = `… e mais ${achados.length - 40} acesos no planeta`;
+    resultados.appendChild(mais);
+  }
+  resultados.hidden = false;
+}
+buscaInput.addEventListener('input', () => {
+  clearTimeout(buscaTimer);
+  buscaTimer = setTimeout(rodarBusca, 180);
+});
+buscaInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ buscaInput.value = ''; rodarBusca(); buscaInput.blur(); }
+});
+</script>
