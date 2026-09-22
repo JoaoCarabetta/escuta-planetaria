@@ -19,12 +19,22 @@
   header p{margin:7px 0 0;color:var(--fraco);font-size:11px;line-height:1.55}
   header b{color:var(--texto);font-weight:400}
 
+  /* O HUD tem teto: com 22 fontes na lista ele empurrava "camadas" para fora da
+     tela sem aviso. As caixas de tamanho fixo não encolhem; quem absorve o que
+     sobra e rola por dentro é a lista de fontes, que é a única que cresce
+     sozinha conforme o arquivo ganha comunidades novas. */
   #hud{position:fixed;z-index:4;right:18px;top:calc(env(safe-area-inset-top,0px) + 20px);
-    width:min(232px,calc(100vw - 36px));display:flex;flex-direction:column;gap:9px}
+    width:min(232px,calc(100vw - 36px));display:flex;flex-direction:column;gap:9px;
+    max-height:calc(100vh - env(safe-area-inset-top,0px) - 40px);
+    overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+  #hud::-webkit-scrollbar{width:0}
   .caixa{background:rgba(9,11,19,.82);border:1px solid var(--linha);border-radius:3px;
-    padding:9px 11px;backdrop-filter:blur(7px)}
+    padding:9px 11px;backdrop-filter:blur(7px);box-sizing:border-box;flex:none;min-height:0}
   .caixa h2{margin:0 0 7px;font:400 9.5px/1 "IBM Plex Mono",monospace;letter-spacing:.18em;
-    text-transform:uppercase;color:var(--fraco)}
+    text-transform:uppercase;color:var(--fraco);flex:none;display:flex;align-items:baseline}
+  .caixa h2 a{margin-left:auto;color:var(--fraco);text-decoration:none;
+    border-bottom:1px solid var(--linha);letter-spacing:.1em}
+  .caixa h2 a:hover{color:var(--texto)}
   .ch{display:flex;align-items:center;gap:7px;padding:2.5px 0;cursor:pointer;
     font-size:11.5px;color:var(--fraco);user-select:none}
   .ch:hover{color:var(--texto)}
@@ -41,10 +51,21 @@
   #busca input:focus{border-color:#39415c}
   #busca input::placeholder{color:var(--fraco)}
   #conta{font-size:10px;color:var(--fraco);margin-top:6px;min-height:12px}
-  #achados{max-height:34vh;overflow-y:auto;margin-top:5px}
-  #fontes{max-height:30vh;overflow-y:auto}
-  #fontes .grupo{margin-top:7px;padding-top:6px;border-top:1px solid rgba(26,30,44,.9)}
-  #fontes .grupo:first-of-type{margin-top:0;padding-top:0;border-top:0}
+  /* Busca e fontes disputam a mesma sobra. Cada uma tem um piso — três linhas —
+     para que nenhuma esmague a outra: com busca aberta as duas encolhem juntas,
+     sem busca a lista de achados tem altura zero e as fontes ficam com tudo. */
+  /* min-height:auto anula o min-height:0 herdado de .caixa — sem isso a caixa
+     encolhe abaixo do próprio conteúdo e o piso dos achados não vale nada */
+  #busca{display:flex;flex-direction:column;flex:0 1 auto;min-height:auto}
+  #achados{flex:1 1 auto;min-height:0;max-height:26vh;overflow-y:auto;margin-top:5px}
+  #achados:not(:empty){min-height:110px}
+  #fontes{flex:1 1 auto;display:flex;flex-direction:column;min-height:140px}
+  #fontesLista{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px}
+  #achados::-webkit-scrollbar,#fontesLista::-webkit-scrollbar{width:4px}
+  #achados::-webkit-scrollbar-thumb,#fontesLista::-webkit-scrollbar-thumb{
+    background:rgba(160,168,196,.3);border-radius:2px}
+  #fontesLista .grupo{margin-top:7px;padding-top:6px;border-top:1px solid rgba(26,30,44,.9)}
+  #fontesLista .grupo:first-of-type{margin-top:0;padding-top:0;border-top:0}
   #achados div{padding:4px 0;border-top:1px solid rgba(26,30,44,.7);cursor:pointer;
     font-size:11px;line-height:1.4;color:var(--fraco);display:flex;gap:6px}
   #achados div:hover{color:var(--texto)}
@@ -85,8 +106,11 @@
     background:var(--vazio);color:var(--fraco);font-size:11.5px;letter-spacing:.1em}
   @media (max-width:760px){
     #hud{right:12px;left:12px;width:auto;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
-      flex-direction:row;flex-wrap:wrap;gap:7px}
+      flex-direction:row;flex-wrap:wrap;gap:7px;
+      max-height:46vh;overflow-y:auto;overscroll-behavior:contain}
     .caixa{flex:1 1 42%;padding:7px 9px}
+    #fontes,#busca{flex:1 1 42%}
+    #fontesLista{max-height:26vh}
     #tempo{display:none}
     header{max-width:60vw}
     #relato{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 96px);
@@ -110,8 +134,11 @@
   </div>
   <div class="caixa" id="marcadores"><h2>o que carrega</h2></div>
   <div class="caixa" id="qualidades"><h2>qualidades do sonho</h2></div>
-  <div class="caixa" id="fontes"><h2>de onde vem</h2></div>
   <div class="caixa" id="camadas"><h2>camadas</h2></div>
+  <div class="caixa" id="fontes">
+    <h2>de onde vem <a id="todasFontes" href="#">nenhuma</a></h2>
+    <div id="fontesLista"></div>
+  </div>
 </div>
 
 <div id="tempo">
@@ -484,7 +511,7 @@ function chip(pai, rot, cor, ligado, onda, contaFn){
   d._conta = contaFn; d._em = d.querySelector('em');
   return d;
 }
-const chips = [];
+const chips = [], chipsFonte = [];
 function montarHUD(){
   const m = $('#marcadores');
   chips.push(chip(m,'sonho dormido',css('--sonho'),true,v=>ativos.sonho=v,
@@ -500,7 +527,7 @@ function montarHUD(){
       ()=>cont(i=>NAT[i]===0 && (BITS[i] & (1<<(3+j))))));
   });
   // ——— de onde vem: comunidades agrupadas por fonte ———
-  const cf = $('#fontes');
+  const cf = $('#fontesLista');
   const porFonte = {};
   for (let i=0;i<N;i++){
     const f = META.fontes[FONTE[i]], k = COM[i];
@@ -515,10 +542,20 @@ function montarHUD(){
       const idx = +k;
       comOn[idx] = true;
       const rot = f === 'bluesky' ? 'bluesky' : 'r/' + META.comunidades[idx];
-      chips.push(chip(g, rot, f === 'bluesky' ? '#8fb3ff' : '#ff9a6b', true,
-        v => comOn[idx] = v, ()=>cont(i=>COM[i]===idx)));
+      const d = chip(g, rot, f === 'bluesky' ? '#8fb3ff' : '#ff9a6b', true,
+        v => comOn[idx] = v, ()=>cont(i=>COM[i]===idx));
+      chips.push(d); chipsFonte.push([d, idx]);
     }
   }
+  // 22 fontes: acender ou apagar uma a uma é trabalho demais para isolar uma só
+  const todas = $('#todasFontes');
+  todas.onclick = e => {
+    e.preventDefault();
+    const ligar = chipsFonte.some(([d]) => !d.classList.contains('on'));
+    for (const [d, idx] of chipsFonte){ d.classList.toggle('on', ligar); comOn[idx] = ligar; }
+    todas.textContent = ligar ? 'nenhuma' : 'todas';
+    atualizarContas();
+  };
 
   const c = $('#camadas');
   [['meta','meta-discussão'],['idiomatico','idiomático'],['ruido','ruído comercial']]
