@@ -65,11 +65,19 @@
     color:#e6e8f0;text-shadow:0 0 14px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,1);letter-spacing:.02em}
   #relato{position:fixed;z-index:6;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);
     transform:translateX(-50%);width:min(560px,calc(100vw - 44px));
-    background:rgba(9,11,19,.95);border:1px solid var(--linha);border-radius:3px;padding:15px 17px}
+    background:rgba(9,11,19,.95);border:1px solid var(--linha);border-radius:3px;padding:15px 17px;
+    /* teto: relatos longos rolam dentro da ficha em vez de crescer para fora da tela.
+       border-box porque sem ele o padding e a borda ficam FORA do max-height e a
+       caixa estoura 32px por cima — que era o corte que sobrava. */
+    box-sizing:border-box;max-height:calc(100vh - 150px);display:flex;flex-direction:column}
   #relato .top{display:flex;gap:9px;align-items:center;font-size:9.5px;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--fraco);margin-bottom:9px;flex-wrap:wrap}
+    text-transform:uppercase;color:var(--fraco);margin-bottom:9px;flex-wrap:wrap;flex:none;
+    padding-right:22px}
   #relato .top i{width:7px;height:7px;border-radius:50%;flex:none}
-  #relato p{margin:0;font:300 15.5px/1.6 Spectral,Georgia,serif;color:#dfe2ec}
+  #relato p{margin:0;font:300 15.5px/1.6 Spectral,Georgia,serif;color:#dfe2ec;
+    overflow-y:auto;overscroll-behavior:contain;padding-right:6px;flex:1 1 auto;min-height:0}
+  #relato p::-webkit-scrollbar{width:4px}
+  #relato p::-webkit-scrollbar-thumb{background:rgba(160,168,196,.3);border-radius:2px}
   #relato button{position:absolute;top:7px;right:10px;background:none;border:0;
     color:var(--fraco);cursor:pointer;font-size:15px;padding:3px}
   #carregando[hidden],#relato[hidden],#nome[hidden]{display:none}
@@ -81,7 +89,8 @@
     .caixa{flex:1 1 42%;padding:7px 9px}
     #tempo{display:none}
     header{max-width:60vw}
-    #relato{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 96px)}
+    #relato{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 96px);
+      max-height:calc(100vh - env(safe-area-inset-top,0px) - 240px)}
   }
 </style>
 
@@ -128,7 +137,7 @@ const QUAL_ROT = {recorrente:'recorrente', lucido:'lúcido', premonitorio:'premo
 const BLOCOS = {};   // texto carregado sob demanda, um bloco por vez
 async function pegarTexto(i){
   const b = Math.floor(i / META.por_arquivo);
-  if (!BLOCOS[b]) BLOCOS[b] = fetch(`textos${b}.json`).then(r=>r.json());
+  if (!BLOCOS[b]) BLOCOS[b] = dado(`textos${b}.json`).then(r=>r.json());
   const d = await BLOCOS[b];
   return d.textos[i - d.i0];
 }
@@ -154,12 +163,14 @@ const rotX = a => {const c=Math.cos(a),s=Math.sin(a);return [[1,0,0],[0,c,-s],[0
 const rotY = a => {const c=Math.cos(a),s=Math.sin(a);return [[c,0,s],[0,1,0],[-s,0,c]]};
 MAT = mul(rotX(-0.22), rotY(0.5));
 
+// Lê direto de dados/, que é o que o gerar.py escreve. Antes havia uma cópia
+// em base64 ao lado do index (os Artifacts não servem .bin) e era ela que a
+// página lia — quando o arquivo era regerado, a página continuava mostrando o
+// mundo anterior sem avisar. 'no-cache' revalida: 304 quando nada mudou.
+const dado = p => fetch('dados/' + p, {cache: 'no-cache'});
 async function carregar(){
-  META = await (await fetch('meta.json')).json();
-  const b64 = (await (await fetch('pontos.json')).json()).b64;
-  const bin = atob(b64); const u8 = new Uint8Array(bin.length);
-  for (let i=0;i<bin.length;i++) u8[i] = bin.charCodeAt(i);
-  const buf = u8.buffer;
+  META = await (await dado('meta.json')).json();
+  const buf = await (await dado('pontos.bin')).arrayBuffer();
   const dv = new DataView(buf);
   N = dv.getUint32(0, true);
   POS = new Float32Array(N*3); NAT = new Uint8Array(N); FONTE = new Uint8Array(N);
@@ -261,12 +272,13 @@ function desenhar(t){
     if (!visivel(i)) continue;
     const x=POS[i*3], y=POS[i*3+1], z=POS[i*3+2];
     const rz = m[2][0]*x + m[2][1]*y + m[2][2]*z;
-    if (rz < -0.15) continue;                       // verso: só o que aflora
     const rx = m[0][0]*x + m[0][1]*y + m[0][2]*z;
     const ry = m[1][0]*x + m[1][1]*y + m[1][2]*z;
     const sx = cxx + rx*R, sy = cyy - ry*R;
     if (sx < -8 || sx > W+8 || sy < -8 || sy > H+8) continue;
-    const prof = 0.22 + 0.78*Math.max(0, rz)**1.6;   // frente pesa muito mais
+    // a bola não é oca: o fundo não desaparece, recua. A profundidade é a única
+    // pista de que há miolo — sem ela o volume vira uma mancha chapada.
+    const prof = 0.14 + 0.86*((rz + 1) / 2)**1.7;
     let [cr,cg,cb] = corDe(i);
     let a = alfaBase*prof, r2 = raio;
     if (buscaSet){                       // véu: o achado acende, o resto recua
@@ -296,7 +308,6 @@ function proj(i){
 }
 function marcarSel(R){
   const p = proj(sel);
-  if (p.z < -0.15) return;
   cx.strokeStyle = 'rgba(230,234,244,.9)'; cx.lineWidth = 1;
   cx.beginPath(); cx.arc(p.sx, p.sy, 7, 0, 7); cx.stroke();
 }
@@ -308,13 +319,20 @@ function nomear(mx, my){
   if (performance.now() - ultimoNome < 90) return;
   ultimoNome = performance.now();
   const raio2 = (Math.min(W,H)*0.09)**2;
-  const conta = new Map(); let n = 0;
+  // Na tela, o fundo da bola cai na mesma mancha que a frente, e os dois não
+  // têm nada a ver um com o outro. O nome só vale se a vizinhança for de
+  // verdade: primeiro acha a camada da frente, depois só conta quem está nela.
+  const perto = []; let zMax = -9;
   for (let i=0;i<N;i++){
     if (!visivel(i)) continue;
     const p = proj(i);
-    if (p.z < 0) continue;
-    const d = (p.sx-mx)**2 + (p.sy-my)**2;
-    if (d > raio2) continue;
+    if ((p.sx-mx)**2 + (p.sy-my)**2 > raio2) continue;
+    perto.push([i, p.z]);
+    if (p.z > zMax) zMax = p.z;
+  }
+  const conta = new Map(); let n = 0;
+  for (const [i, z] of perto){
+    if (zMax - z > 0.30) continue;             // fatia de profundidade
     n++;
     for (let k=PAL_OFF[i]; k<PAL_OFF[i+1]; k++)
       conta.set(PAL[k], (conta.get(PAL[k])||0) + 1);
@@ -339,8 +357,11 @@ function rotEixo(u, a){
 }
 function girarPara(i){
   const m=MAT, x=POS[i*3], y=POS[i*3+1], z=POS[i*3+2];
-  const v=[m[0][0]*x+m[0][1]*y+m[0][2]*z, m[1][0]*x+m[1][1]*y+m[1][2]*z,
-           m[2][0]*x+m[2][1]*y+m[2][2]*z];
+  let v=[m[0][0]*x+m[0][1]*y+m[0][2]*z, m[1][0]*x+m[1][1]*y+m[1][2]*z,
+         m[2][0]*x+m[2][1]*y+m[2][2]*z];
+  // pontos do miolo têm raio < 1: normaliza antes do ângulo, senão o acos mente
+  const rr = Math.hypot(v[0], v[1], v[2]) || 1;
+  v = [v[0]/rr, v[1]/rr, v[2]/rr];
   const ang = Math.acos(Math.max(-1, Math.min(1, v[2])));
   if (ang < 0.02){ giroAlvo = null; return; }
   let eixo = [v[1], -v[0], 0];                 // v × (0,0,1)
@@ -357,7 +378,9 @@ cv.addEventListener('pointermove', e=>{
   if (arr){
     const dx=e.clientX-arr.x, dy=e.clientY-arr.y;
     if (Math.abs(dx)+Math.abs(dy) > 4) moveu = true;
-    const s = 0.005 / Math.max(1, Math.sqrt(zoom));   // perto, o gesto é mais fino
+    // 1:1 com os pixels: arrastar N px gira o tanto que move o ponto sob o dedo
+    // N px na tela. Sem isso, a 60× de zoom um gesto mínimo jogava tudo fora.
+    const s = 1 / (Math.min(W,H) * 0.36 * zoom);
     MAT = mul(mul(rotX(dy*s), rotY(dx*s)), MAT);
     arr = {x:e.clientX, y:e.clientY};
     return;
@@ -370,27 +393,57 @@ cv.addEventListener('pointerup', e=>{
   arr = null;
 });
 cv.addEventListener('pointerleave', ()=>{pausa=false; nomeEl.hidden=true;});
+// Zoom na direção do mouse, à maneira do Google Earth: num globo isso não é
+// deslocar o centro (o que descentralizaria o giro) — é GIRAR, trazendo o que
+// está sob o cursor até o meio. Cada passo anda uma fração do caminho, então a
+// aproximação é suave e o eixo nunca sai do lugar.
+function girarParaTela(mx, my, fracao){
+  const R = Math.min(W,H)*0.36*zoom;
+  let nx = (mx - W/2)/R, ny = -(my - H/2)/R;
+  const d = Math.hypot(nx, ny);
+  if (d < 0.02) return;                       // já está no meio
+  if (d > 1){ nx /= d; ny /= d; }             // fora da borda: mira no limbo
+  const nz = Math.sqrt(Math.max(0, 1 - nx*nx - ny*ny));
+  const ang = Math.acos(Math.max(-1, Math.min(1, nz))) * fracao;
+  let eixo = [ny, -nx, 0];                    // v × (0,0,1)
+  const n = Math.hypot(eixo[0], eixo[1]);
+  if (n < 1e-6) return;
+  MAT = mul(rotEixo([eixo[0]/n, eixo[1]/n, 0], ang), MAT);
+}
 cv.addEventListener('wheel', e=>{e.preventDefault();
-  zoom = Math.max(.6, Math.min(60, zoom * (e.deltaY<0 ? 1.13 : .885)));}, {passive:false});
-let pin = null;
+  const antes = zoom;
+  zoom = Math.max(.6, Math.min(60, zoom * (e.deltaY<0 ? 1.13 : .885)));
+  if (zoom > antes){ giroAlvo = null; girarParaTela(e.clientX, e.clientY, 0.30); }
+}, {passive:false});
+let pin = null, pinXY = null;
 cv.addEventListener('touchmove', e=>{
   if (e.touches.length===2){ e.preventDefault();
     const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
                          e.touches[0].clientY-e.touches[1].clientY);
-    if (pin) zoom = Math.max(.6, Math.min(60, zoom * d/pin));
-    pin = d; }
+    const cxT = (e.touches[0].clientX+e.touches[1].clientX)/2,
+          cyT = (e.touches[0].clientY+e.touches[1].clientY)/2;
+    if (pin){
+      const antes = zoom;
+      zoom = Math.max(.6, Math.min(60, zoom * d/pin));
+      if (zoom > antes){ giroAlvo = null; girarParaTela(cxT, cyT, 0.25); }
+    }
+    pin = d; pinXY = [cxT, cyT]; }
 }, {passive:false});
 cv.addEventListener('touchend', ()=> pin=null);
 
 function tocar(mx,my){
   const tol = Math.max(14, Math.min(34, 14 * Math.sqrt(Math.max(1, zoom/3))));
-  let melhor=-1, md=tol*tol;
+  const tol2 = tol*tol;
+  let melhor=-1, melhorNota=-9;
   for (let i=0;i<N;i++){
     if (!visivel(i)) continue;
     const p = proj(i);
-    if (p.z < 0) continue;
     const d = (p.sx-mx)**2 + (p.sy-my)**2;
-    if (d < md){ md=d; melhor=i; }
+    if (d > tol2) continue;
+    // numa bola há pontos empilhados na mesma coluna: pega o da frente, que é
+    // o que o olho vê mais aceso, sem ignorar de todo a mira
+    const nota = p.z - 0.9*(d/tol2);
+    if (nota > melhorNota){ melhorNota=nota; melhor=i; }
   }
   sel = melhor;
   mostrar(melhor);
@@ -411,8 +464,13 @@ function mostrar(i){
     (qs.length ? `<span style="color:#9aa0b6">${qs.join(' · ')}</span>` : '');
   const alvo = rel.querySelector('p');
   alvo.textContent = '…';
+  alvo.scrollTop = 0;                  // todo relato abre pelo começo
   rel.hidden = false;
-  pegarTexto(i).then(t=>{ if (sel === i) alvo.textContent = t || '(relato indisponível)'; });
+  pegarTexto(i).then(t=>{
+    if (sel !== i) return;
+    alvo.textContent = t || '(relato indisponível)';
+    alvo.scrollTop = 0;
+  });
 }
 rel.querySelector('button').onclick = ()=>{ sel=-1; rel.hidden=true; };
 
@@ -477,19 +535,71 @@ function atualizarContas(){
 }
 
 // ——— busca ———
-let tq = null;
+// O índice invertido está partido em 256 gavetas em dados/busca/. A lista de
+// palavras vem uma vez (permite casar pedaço de palavra); as gavetas, só as
+// que as palavras casadas pedem. Várias palavras na caixa = todas juntas no
+// mesmo relato.
+let LEXICO = null;
+const GAVETAS = {};
+const TETO_PALAVRAS = 400;      // 'ca' casaria milhares: pára antes de baixar tudo
+
+async function gaveta(g){
+  if (!GAVETAS[g]) GAVETAS[g] = dado(`busca/${g}.json`).then(r=>r.json());
+  return GAVETAS[g];
+}
+
+async function acesosDe(termo){
+  if (!LEXICO) LEXICO = await (await dado('busca/lexico.json')).json();
+  const exatos = [], contidos = [];
+  for (let i=0;i<LEXICO.length;i++){
+    if (LEXICO[i] === termo) exatos.push(i);
+    else if (LEXICO[i].includes(termo)) contidos.push(i);
+  }
+  const casou = exatos.concat(contidos).slice(0, TETO_PALAVRAS);
+  const porGaveta = new Map();
+  for (const j of casou){
+    const g = j % 256;
+    if (!porGaveta.has(g)) porGaveta.set(g, []);
+    porGaveta.get(g).push(j);
+  }
+  const achados = new Set();
+  await Promise.all([...porGaveta].map(async ([g, js])=>{
+    const gav = await gaveta(g);
+    for (const j of js){
+      const deltas = gav[j];
+      if (!deltas) continue;
+      let d = 0;
+      for (const passo of deltas){ d += passo; achados.add(d); }
+    }
+  }));
+  return achados;
+}
+
+async function procurar(consulta){
+  const termos = consulta.split(/\s+/).filter(t => t.length >= 3);
+  if (!termos.length) return new Set();
+  let acc = null;
+  for (const t of termos){
+    const s = await acesosDe(t);
+    if (acc === null) acc = s;
+    else for (const i of acc) if (!s.has(i)) acc.delete(i);   // todas as palavras
+    if (!acc.size) break;
+  }
+  return acc || new Set();
+}
+
+let tq = null, vez = 0;
 $('#q').addEventListener('input', e=>{
   clearTimeout(tq);
-  tq = setTimeout(()=>{
+  const minha = ++vez;      // gaveta que demora não pode passar na frente
+  tq = setTimeout(async ()=>{
     const termo = e.target.value.trim().toLowerCase()
       .normalize('NFD').replace(/[̀-ͯ]/g,'');
-    if (termo.length < 3){ buscaSet = null; $('#conta').textContent=''; return; }
-    const alvos = new Set();
-    META.vocab.forEach((w,i)=>{ if (w.includes(termo)) alvos.add(i); });
-    buscaSet = new Set();
-    for (let i=0;i<N;i++)
-      for (let k=PAL_OFF[i]; k<PAL_OFF[i+1]; k++)
-        if (alvos.has(PAL[k])){ buscaSet.add(i); break; }
+    if (termo.length < 3){ buscaSet = null; $('#conta').textContent=''; listar(); return; }
+    $('#conta').textContent = 'procurando…';
+    const achou = await procurar(termo);
+    if (minha !== vez) return;                 // já digitaram outra coisa
+    buscaSet = achou;
     $('#conta').textContent = buscaSet.size
       ? `${buscaSet.size.toLocaleString('pt-BR')} acesos`
       : 'nenhum com essa palavra';

@@ -11,11 +11,13 @@ for rid, oid in con.execute("""SELECT id, interno_id_original FROM relatos
     row = con.execute("SELECT payload FROM fila_brutos WHERE id_original=?", (oid,)).fetchone()
     if not row:
         continue
-    autor = (json.loads(row[0]).get('author') or '').strip()
+    p = json.loads(row[0])
+    autor = (p.get('author') or '').strip()
     if not autor or autor in ('[deleted]', 'AutoModerator'):
         continue
+    fonte = p.get('fonte', 'reddit')
     con.execute("UPDATE relatos SET interno_autor_hash=? WHERE id=?",
-                (hashlib.sha256(('reddit:' + autor).encode()).hexdigest()[:16], rid))
+                (hashlib.sha256((fonte + ':' + autor).encode()).hexdigest()[:16], rid))
     n += 1
 con.commit()
 print(f'{n} hashes de autor gravados')

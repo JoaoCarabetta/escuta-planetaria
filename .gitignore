@@ -7,8 +7,12 @@ treino/laya-sonhario/
 piloto/raw/
 piloto/embeddings.npy
 piloto/midia/
-planeta/dados/
 __pycache__/
 *.pyc
 .DS_Store
 PAUSAR*
+
+# planeta/dados/ SOBE (é o que o index.html lê). Só ficam de fora os
+# intermediários da projeção: grandes e reconstruíveis com projetar.py.
+planeta/dados/projecao.npy
+planeta/dados/projecao_ids.txt
