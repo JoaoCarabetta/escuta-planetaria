@@ -207,11 +207,25 @@ const QUAL_ROT = {recorrente:'recorrente', lucido:'lúcido', premonitorio:'premo
                   visita_de_morto:'visita de morto', paralisia:'paralisia do sono', erotico:'erótico'};
 
 const BLOCOS = {};   // texto carregado sob demanda, um bloco por vez
-async function pegarTexto(i){
+async function bloco(i){
   const b = Math.floor(i / META.por_arquivo);
   if (!BLOCOS[b]) BLOCOS[b] = dado(`textos${b}.json`).then(r=>r.json());
-  const d = await BLOCOS[b];
-  return d.textos[i - d.i0];
+  return await BLOCOS[b];
+}
+async function pegarTexto(i){ const d = await bloco(i); return d.textos[i - d.i0]; }
+async function pegarQuando(i){ const d = await bloco(i); return (d.quando || [])[i - d.i0]; }
+
+// O carimbo vem em UTC e é mostrado no horário de BRASÍLIA — não no fuso de
+// quem olha. A hora aqui é a de quem sonhou, e 99,7% do arquivo é do Brasil;
+// usar o fuso do visitante faria o mesmo relato mostrar horas diferentes para
+// cada pessoa. E a hora importa: um sonho contado às 4 da manhã não é a mesma
+// coisa que um contado às 4 da tarde.
+function formatarQuando(iso){
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  return d.toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo',
+                                    day:'2-digit', month:'2-digit', year:'numeric',
+                                    hour:'2-digit', minute:'2-digit', second:'2-digit'});
 }
 let META, N, POS, NAT, FONTE, COM, ANO, MES, BITS, PAL_OFF, PAL, TEXTOS = [];
 let MAT = null, zoom = 1, girando = true, sel = -1, buscaSet = null, pausa = false;
@@ -666,13 +680,18 @@ function mostrar(i){
   const mes = String(MES[i]).padStart(2,'0');
   rel.querySelector('.top').innerHTML =
     `<i style="background:rgb(${r},${g},${bl})"></i>` +
-    `<span>${ANO[i]}/${mes}</span><span>${META.comunidades[COM[i]]}</span>` +
+    `<span class="quando">${ANO[i]}/${mes}</span><span>${META.comunidades[COM[i]]}</span>` +
     `<span>${marcs.join(' · ')}</span>` +
     (qs.length ? `<span style="color:#9aa0b6">${qs.join(' · ')}</span>` : '');
   const alvo = rel.querySelector('p');
   alvo.textContent = '…';
   alvo.scrollTop = 0;                  // todo relato abre pelo começo
   rel.hidden = false;
+  pegarQuando(i).then(q => {
+    const el = rel.querySelector('.quando');
+    const bonito = q && formatarQuando(q);
+    if (sel === i && bonito && el) el.textContent = bonito;
+  });
   pegarTexto(i).then(t=>{
     if (sel !== i) return;
     alvo.textContent = t || '(relato indisponível)';

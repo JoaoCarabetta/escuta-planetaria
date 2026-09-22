@@ -128,6 +128,16 @@ def gravar(con, r):
         tem_sonho_dormido,tem_desejo,tem_sofrimento,qualidades)
         VALUES (?,?,?,?,?,?,?,?)""", (rid, ANOTADOR, VERSAO, r['nat'], sonho,
                                        r['desejo'], r['sofr'], r['quals']))
+    # Mesma URL = mesmo post. O piloto gravou 491 relatos com id de 10 caracteres
+    # e sem autor; quando o moinho alcança um desses posts na fila, ele grava de
+    # novo com o id novo e nascem dois pontos colados no planeta. Aqui a linha
+    # velha é apontada para a nova na hora, em vez de esperar a régua.
+    url = (('https://bsky.app' if fonte == 'bluesky' else 'https://www.reddit.com')
+           + p['permalink']) if p.get('permalink') else None
+    if url:
+        con.execute("""UPDATE relatos SET canonico_de=? WHERE interno_url=? AND id<>?
+                       AND canonico_de IS NULL AND length(id) < length(?)""",
+                    (rid, url, rid, rid))
     con.execute("UPDATE fila_brutos SET status='triado' WHERE id=?", (fid,))
     con.commit()
 

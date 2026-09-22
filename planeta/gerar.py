@@ -143,7 +143,7 @@ def main():
     # ————— empacota posições e marcadores em binário —————
     NAT = {'relato': 0, 'meta': 1, 'idiomatico': 2, 'ruido': 3}
     FONTES, COMUNIDADES = {}, {}
-    registros, textos, anos = [], [], []
+    registros, textos, quandos = [], [], []
     conta_palavra = Counter()
     docs_palavras = []
 
@@ -155,6 +155,7 @@ def main():
         # o Bluesky deixa forjar createdAt: datas fora da janela real são grampeadas
         ano = int((data or '2015')[:4]) if data else 2015
         mes = int((data or '2015-01')[5:7]) if data and len(data) > 6 else 1
+        grampeado = ano < 2015 or ano > 2026
         if ano < 2015: ano, mes = 2015, 1
         if ano > 2026: ano, mes = 2026, 12
         bits = ((sonho or 0) | ((desejo or 0) << 1) | ((sofr or 0) << 2))
@@ -162,6 +163,10 @@ def main():
             bits |= (1 << (3 + j)) if q in qs else 0
         registros.append((esfera[i], NAT.get(nat, 0), f, c, ano, mes, bits))
         textos.append(texto[:MAX_TEXTO])
+        # carimbo completo UTC, para a ficha mostrar hora, minuto e segundo.
+        # Vazio quando a data foi grampeada: ali o ano do ponto é uma correção
+        # nossa, e mostrar o carimbo forjado contradiria a linha do tempo.
+        quandos.append('' if grampeado else (data or ''))
         ps = set(palavras(texto[:600]))
         docs_palavras.append(ps)
         conta_palavra.update(ps)
@@ -195,7 +200,8 @@ def main():
     POR_ARQ = 8000
     n_arq = 0
     for i0 in range(0, len(textos), POR_ARQ):
-        json.dump({'i0': i0, 'textos': textos[i0:i0 + POR_ARQ]},
+        json.dump({'i0': i0, 'textos': textos[i0:i0 + POR_ARQ],
+                   'quando': quandos[i0:i0 + POR_ARQ]},
                   open(SAIDA / f'textos{n_arq}.json', 'w'), ensure_ascii=False)
         n_arq += 1
     json.dump({
