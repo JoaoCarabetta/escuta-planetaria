@@ -609,23 +609,23 @@ cv.addEventListener('wheel', e=>{
   // de longe não se está dentro de nada: o olhar volta sozinho para a superfície
   if (zoom < 3) foco += (1 - foco) * 0.3;
 }, {passive:false});
-let pin = null, pinXY = null;
+let pin = null;
 cv.addEventListener('touchmove', e=>{
   if (e.touches.length===2){ e.preventDefault();
     const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
                          e.touches[0].clientY-e.touches[1].clientY);
-    const cxT = (e.touches[0].clientX+e.touches[1].clientX)/2,
-          cyT = (e.touches[0].clientY+e.touches[1].clientY)/2;
     if (pin){
       const antes = zoom;
       zoom = Math.max(.6, Math.min(ZOOM_MAX, zoom * d/pin));
-      if (zoom > antes){ giroAlvo = null; girarParaTela(cxT, cyT, 0.25); }
-      // no pinça, atravessar acontece quando a ampliação já não tem para onde ir
+      // No toque a pinça amplia pelo CENTRO, sem puxar o giro atrás dos dedos:
+      // o dedo já move o planeta arrastando, e as duas coisas juntas faziam a
+      // imagem fugir da mão. Só o foco em profundidade continua automático, e
+      // pelo meio da tela, senão a ampliação cairia no vazio do polo.
       if (zoom === ZOOM_MAX && d > pin) mergulhar(-0.7);
-      else if (zoom > antes) focarSobCursor(cxT, cyT, 0.4);
+      else if (zoom > antes) focarSobCursor(W/2, H/2, 0.4);
       if (zoom < 3) foco += (1 - foco) * 0.3;
     }
-    pin = d; pinXY = [cxT, cyT]; }
+    pin = d; }
 }, {passive:false});
 cv.addEventListener('touchend', ()=> pin=null);
 
