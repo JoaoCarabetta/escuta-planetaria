@@ -462,9 +462,12 @@ cv.addEventListener('pointermove', e=>{
   if (arr){
     const dx=e.clientX-arr.x, dy=e.clientY-arr.y;
     if (Math.abs(dx)+Math.abs(dy) > 4) moveu = true;
-    // 1:1 com os pixels: arrastar N px gira o tanto que move o ponto sob o dedo
-    // N px na tela. Sem isso, a 60× de zoom um gesto mínimo jogava tudo fora.
-    const s = 1 / (Math.min(W,H) * 0.36 * zoom);
+    // 1:1 com os pixels — mas 1:1 com o QUE SE OLHA, não com a superfície. O
+    // giro tem o centro por pivô, então quanto mais fundo o foco, menos o
+    // material em foco anda para o mesmo gesto: no centro, 80px de arrasto o
+    // moviam 5px. Dividir pelo foco devolve o passo; o que fica fora de foco
+    // passa mais rápido, e essa paralaxe é mais uma pista de profundidade.
+    const s = 1 / (Math.min(W,H) * 0.36 * zoom * Math.max(0.3, foco));
     MAT = mul(mul(rotX(dy*s), rotY(dx*s)), MAT);
     arr = {x:e.clientX, y:e.clientY};
     return;
@@ -500,8 +503,13 @@ const ZOOM_MAX = 60;
 // quando já se estava bem perto — atravessava-se um aglomerado inteiro sem ver.
 // Assim, quanto mais fundo (mais zoom, faixa mais estreita), mais fino o passo.
 const passoMergulho = () => alcance() * 0.075;
+// O mergulho pára no CENTRO. Passar dele punha em foco o hemisfério de trás, e
+// numa esfera o verso gira ao contrário da frente: arrastar para a direita
+// levava o que se estava olhando para a esquerda. Não se perde nada — a bola
+// gira livre, então o que está do lado de lá se traz para cá girando 180°.
+const FOCO_MIN = 0;
 function mergulhar(fracao){
-  foco = Math.max(-1, Math.min(1, foco + fracao * passoMergulho()));
+  foco = Math.max(FOCO_MIN, Math.min(1, foco + fracao * passoMergulho()));
 }
 
 // Ampliar recorta uma coluna fina que atravessa a bola de lado a lado. Se o
@@ -520,7 +528,8 @@ function focarSobCursor(mx, my, fracao){
     if (nota < melhorNota){ melhorNota = nota; melhor = i; }
   }
   if (melhor < 0) return;
-  foco += (proj(melhor).z - foco) * fracao;
+  const alvo = Math.max(FOCO_MIN, proj(melhor).z);   // nunca pousa no verso
+  foco = Math.max(FOCO_MIN, foco + (alvo - foco) * fracao);
 }
 
 const dentroEl = $('#dentro');
@@ -531,7 +540,7 @@ function mostrarProfundidade(){
   // só avisa quando se está mesmo atravessando: o foco automático pousa logo
   // abaixo da superfície o tempo todo, e avisar disso seria ruído
   if (foco > 0.55){ dentroEl.hidden = true; return; }
-  const onde = foco > 0 ? 'entrando' : (foco > -0.5 ? 'no meio' : 'do outro lado');
+  const onde = foco > 0.18 ? 'entrando' : 'no centro';
   dentroEl.textContent = `dentro · ${onde}`;
   dentroEl.hidden = false;
 }
