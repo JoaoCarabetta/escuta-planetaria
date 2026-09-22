@@ -19,15 +19,20 @@
   header p{margin:7px 0 0;color:var(--fraco);font-size:11px;line-height:1.55}
   header b{color:var(--texto);font-weight:400}
 
-  /* O HUD tem teto: com 22 fontes na lista ele empurrava "camadas" para fora da
-     tela sem aviso. As caixas de tamanho fixo não encolhem; quem absorve o que
-     sobra e rola por dentro é a lista de fontes, que é a única que cresce
-     sozinha conforme o arquivo ganha comunidades novas. */
-  #hud{position:fixed;z-index:4;right:18px;top:calc(env(safe-area-inset-top,0px) + 20px);
-    width:min(232px,calc(100vw - 36px));display:flex;flex-direction:column;gap:9px;
+  /* Duas colunas: busca à esquerda sob o título, filtros à direita (fixos,
+     nunca se mexem). Cada uma tem teto e rola por dentro — com 22 fontes na
+     lista, antes elas eram empurradas para fora da tela sem aviso. */
+  #esquerda,#direita{position:fixed;z-index:4;display:flex;flex-direction:column;gap:9px;
+    width:min(232px,calc(100vw - 36px));overscroll-behavior:contain}
+  #direita{right:18px;top:calc(env(safe-area-inset-top,0px) + 20px);
     max-height:calc(100vh - env(safe-area-inset-top,0px) - 40px);
-    overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
-  #hud::-webkit-scrollbar{width:0}
+    overflow-y:auto;scrollbar-width:none}
+  #direita::-webkit-scrollbar{width:0}
+  /* começa abaixo do título e pára antes da linha do tempo: o topo e a altura
+     vêm do medir(), porque o título quebra em uma ou duas linhas conforme a
+     largura e número fixo aqui erra sempre */
+  #esquerda{left:22px;top:calc(env(safe-area-inset-top,0px) + 104px);
+    max-height:calc(100vh - env(safe-area-inset-top,0px) - 216px)}
   .caixa{background:rgba(9,11,19,.82);border:1px solid var(--linha);border-radius:3px;
     padding:9px 11px;backdrop-filter:blur(7px);box-sizing:border-box;flex:none;min-height:0}
   .caixa h2{margin:0 0 7px;font:400 9.5px/1 "IBM Plex Mono",monospace;letter-spacing:.18em;
@@ -51,15 +56,13 @@
   #busca input:focus{border-color:#39415c}
   #busca input::placeholder{color:var(--fraco)}
   #conta{font-size:10px;color:var(--fraco);margin-top:6px;min-height:12px}
-  /* Busca e fontes disputam a mesma sobra. Cada uma tem um piso — três linhas —
-     para que nenhuma esmague a outra: com busca aberta as duas encolhem juntas,
-     sem busca a lista de achados tem altura zero e as fontes ficam com tudo. */
-  /* min-height:auto anula o min-height:0 herdado de .caixa — sem isso a caixa
-     encolhe abaixo do próprio conteúdo e o piso dos achados não vale nada */
-  #busca{display:flex;flex-direction:column;flex:0 1 auto;min-height:auto}
-  #achados{flex:1 1 auto;min-height:0;max-height:26vh;overflow-y:auto;margin-top:5px}
-  #achados:not(:empty){min-height:110px}
-  #fontes{flex:1 1 auto;display:flex;flex-direction:column;min-height:140px}
+  /* a busca ocupa toda a coluna da esquerda; quem rola é a lista de achados,
+     por dentro, para que se possa percorrer todos sem a caixa crescer */
+  #busca{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+  #achados{flex:1 1 auto;min-height:0;overflow-y:auto;margin-top:5px}
+  /* na coluna da direita, a lista de fontes é a única que cresce sozinha
+     conforme o arquivo ganha comunidades: é ela que absorve a sobra e rola */
+  #fontes{flex:1 1 auto;display:flex;flex-direction:column;min-height:104px}
   #fontesLista{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px}
   #achados::-webkit-scrollbar,#fontesLista::-webkit-scrollbar{width:4px}
   #achados::-webkit-scrollbar-thumb,#fontesLista::-webkit-scrollbar-thumb{
@@ -101,16 +104,25 @@
   #relato p::-webkit-scrollbar-thumb{background:rgba(160,168,196,.3);border-radius:2px}
   #relato button{position:absolute;top:7px;right:10px;background:none;border:0;
     color:var(--fraco);cursor:pointer;font-size:15px;padding:3px}
-  #carregando[hidden],#relato[hidden],#nome[hidden]{display:none}
+  /* só aparece quando se está atravessando o miolo — lá dentro não há borda
+     nenhuma para dizer onde se está */
+  #dentro{position:fixed;z-index:5;top:calc(env(safe-area-inset-top,0px) + 22px);
+    left:50%;transform:translateX(-50%);pointer-events:none;
+    font:400 9.5px "IBM Plex Mono",monospace;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--fraco);white-space:nowrap}
+  #carregando[hidden],#relato[hidden],#nome[hidden],#dentro[hidden]{display:none}
   #carregando{position:fixed;inset:0;display:grid;place-items:center;z-index:9;
     background:var(--vazio);color:var(--fraco);font-size:11.5px;letter-spacing:.1em}
   @media (max-width:760px){
-    #hud{right:12px;left:12px;width:auto;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
-      flex-direction:row;flex-wrap:wrap;gap:7px;
-      max-height:46vh;overflow-y:auto;overscroll-behavior:contain}
+    /* no celular não há duas margens: as colunas voltam a ser uma só, deitada */
+    #esquerda,#direita{right:12px;left:12px;width:auto;top:auto;
+      flex-direction:row;flex-wrap:wrap;gap:7px;overflow-y:auto}
+    #esquerda{bottom:calc(env(safe-area-inset-bottom,0px) + 12px);max-height:30vh}
+    #direita{bottom:calc(env(safe-area-inset-bottom,0px) + 16px + 30vh);max-height:34vh}
     .caixa{flex:1 1 42%;padding:7px 9px}
     #fontes,#busca{flex:1 1 42%}
-    #fontesLista{max-height:26vh}
+    #fontesLista{max-height:22vh}
+    #achados{max-height:22vh}
     #tempo{display:none}
     header{max-width:60vw}
     #relato{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 96px);
@@ -121,17 +133,23 @@
 <canvas id="ceu"></canvas>
 <header>
   <h1>Atmosfera Onírica</h1>
-  <p><b id="total">—</b> relatos públicos de sonho e desejo, 2015–2026.
-     A posição vem só da semelhança entre eles — <b>nada mais significa</b>.</p>
+  <p><b id="total">—</b> relatos públicos de sonho e desejo, 2015–2026.</p>
 </header>
 
-<div id="hud">
+<div id="dentro" hidden></div>
+
+<!-- Busca à esquerda, sob o título; filtros à direita. Em colunas separadas a
+     lista de achados cresce sem empurrar os filtros para fora da tela. -->
+<div id="esquerda">
   <div class="caixa" id="busca">
     <h2>buscar</h2>
     <input type="search" id="q" placeholder="uma palavra…" autocomplete="off">
     <div id="conta"></div>
     <div id="achados"></div>
   </div>
+</div>
+
+<div id="direita">
   <div class="caixa" id="marcadores"><h2>o que carrega</h2></div>
   <div class="caixa" id="qualidades"><h2>qualidades do sonho</h2></div>
   <div class="caixa" id="camadas"><h2>camadas</h2></div>
@@ -170,6 +188,13 @@ async function pegarTexto(i){
 }
 let META, N, POS, NAT, FONTE, COM, ANO, MES, BITS, PAL_OFF, PAL, TEXTOS = [];
 let MAT = null, zoom = 1, girando = true, sel = -1, buscaSet = null, pausa = false;
+// Onde estou olhando DENTRO da bola: +1 é a superfície de cá, 0 o centro,
+// −1 a superfície do lado oposto, vista por dentro. Sem isso, o clique pegava
+// um ponto de outro aglomerado lá atrás e a aproximação parava na casca.
+let foco = 1;
+// Espessura da fatia em foco. Quanto mais perto, mais fina: de longe a bola
+// inteira conta, de perto só o punhado de relatos à volta do que se olha.
+const fatia = () => Math.min(1.7, Math.max(0.08, 1.7 / Math.pow(zoom, 0.7)));
 const ativos = {sonho:true, desejo:true, sofrer:true};
 const quais = {};
 const camadas = {meta:false, idiomatico:false, ruido:false};
@@ -266,6 +291,18 @@ function medir(){
   DPR = Math.min(2, devicePixelRatio||1); W = innerWidth; H = innerHeight;
   cv.width = W*DPR; cv.height = H*DPR; cv.style.width = W+'px'; cv.style.height = H+'px';
   cx.setTransform(DPR,0,0,DPR,0,0);
+  // os filtros começam logo abaixo do cabeçalho de verdade: o título quebra em
+  // uma ou duas linhas conforme a largura, então número fixo aqui sempre erra
+  const esq = $('#esquerda');
+  if (W > 760){
+    // encosta no rodapé do cabeçalho e pára acima da linha do tempo
+    const topo = Math.round(document.querySelector('header').getBoundingClientRect().bottom + 16);
+    const fundo = $('#tempo').getBoundingClientRect().top;
+    esq.style.top = topo + 'px';
+    esq.style.maxHeight = Math.max(120, Math.round(fundo - topo - 16)) + 'px';
+  } else {
+    esq.style.top = esq.style.maxHeight = '';
+  }
 }
 addEventListener('resize', ()=>{medir(); desenharLinha(); desenharSel();}); medir();
 
@@ -293,6 +330,8 @@ function desenhar(t){
   const alfaBase = Math.min(0.95, (zoom < 1.5 ? 0.16 : (zoom < 3 ? 0.34 : Math.min(0.95, 0.8 + zoom*0.01)))
                                   * Math.pow(escalaPonto, 0.9));
   const redondo = raio >= 1.9;
+  const larg = fatia();
+  mostrarProfundidade();
   cx.globalCompositeOperation = 'lighter';
   let vis = 0;
   for (let i=0;i<N;i++){
@@ -303,9 +342,10 @@ function desenhar(t){
     const ry = m[1][0]*x + m[1][1]*y + m[1][2]*z;
     const sx = cxx + rx*R, sy = cyy - ry*R;
     if (sx < -8 || sx > W+8 || sy < -8 || sy > H+8) continue;
-    // a bola não é oca: o fundo não desaparece, recua. A profundidade é a única
-    // pista de que há miolo — sem ela o volume vira uma mancha chapada.
-    const prof = 0.14 + 0.86*((rz + 1) / 2)**1.7;
+    // a bola não é oca: o que está fora da fatia em foco recua mas não some.
+    // É a única pista de que há miolo — sem ela o volume vira mancha chapada.
+    const t = (rz - foco) / larg;
+    const prof = 0.07 + 0.93*Math.exp(-t*t);
     let [cr,cg,cb] = corDe(i);
     let a = alfaBase*prof, r2 = raio;
     if (buscaSet){                       // véu: o achado acende, o resto recua
@@ -348,18 +388,14 @@ function nomear(mx, my){
   const raio2 = (Math.min(W,H)*0.09)**2;
   // Na tela, o fundo da bola cai na mesma mancha que a frente, e os dois não
   // têm nada a ver um com o outro. O nome só vale se a vizinhança for de
-  // verdade: primeiro acha a camada da frente, depois só conta quem está nela.
-  const perto = []; let zMax = -9;
+  // verdade: conta apenas quem está na mesma fatia de profundidade em foco.
+  const larg = fatia();
+  const conta = new Map(); let n = 0;
   for (let i=0;i<N;i++){
     if (!visivel(i)) continue;
     const p = proj(i);
     if ((p.sx-mx)**2 + (p.sy-my)**2 > raio2) continue;
-    perto.push([i, p.z]);
-    if (p.z > zMax) zMax = p.z;
-  }
-  const conta = new Map(); let n = 0;
-  for (const [i, z] of perto){
-    if (zMax - z > 0.30) continue;             // fatia de profundidade
+    if (Math.abs(p.z - foco) > larg) continue;
     n++;
     for (let k=PAL_OFF[i]; k<PAL_OFF[i+1]; k++)
       conta.set(PAL[k], (conta.get(PAL[k])||0) + 1);
@@ -389,6 +425,9 @@ function girarPara(i){
   // pontos do miolo têm raio < 1: normaliza antes do ângulo, senão o acos mente
   const rr = Math.hypot(v[0], v[1], v[2]) || 1;
   v = [v[0]/rr, v[1]/rr, v[2]/rr];
+  // o giro traz o ponto para o eixo, à distância do próprio raio: o foco vai
+  // junto, senão o relato escolhido cai fora da fatia e o clique não o alcança
+  foco = rr;
   const ang = Math.acos(Math.max(-1, Math.min(1, v[2])));
   if (ang < 0.02){ giroAlvo = null; return; }
   let eixo = [v[1], -v[0], 0];                 // v × (0,0,1)
@@ -430,17 +469,67 @@ function girarParaTela(mx, my, fracao){
   const d = Math.hypot(nx, ny);
   if (d < 0.02) return;                       // já está no meio
   if (d > 1){ nx /= d; ny /= d; }             // fora da borda: mira no limbo
-  const nz = Math.sqrt(Math.max(0, 1 - nx*nx - ny*ny));
-  const ang = Math.acos(Math.max(-1, Math.min(1, nz))) * fracao;
+  const nz = foco;                            // o plano onde se está olhando
+  const ang = Math.atan2(d, nz) * fracao;
   let eixo = [ny, -nx, 0];                    // v × (0,0,1)
   const n = Math.hypot(eixo[0], eixo[1]);
   if (n < 1e-6) return;
   MAT = mul(rotEixo([eixo[0]/n, eixo[1]/n, 0], ang), MAT);
 }
-cv.addEventListener('wheel', e=>{e.preventDefault();
-  const antes = zoom;
-  zoom = Math.max(.6, Math.min(60, zoom * (e.deltaY<0 ? 1.13 : .885)));
-  if (zoom > antes){ giroAlvo = null; girarParaTela(e.clientX, e.clientY, 0.30); }
+const ZOOM_MAX = 60;
+function mergulhar(d){ foco = Math.max(-1, Math.min(1, foco + d)); }
+
+// Ampliar recorta uma coluna fina que atravessa a bola de lado a lado. Se o
+// foco ficasse preso na superfície, essa coluna quase não teria material lá
+// (o polo é rarefeito) e se veria um monte de ponto impossível de clicar.
+// Então aproximar também é focar: o olhar pousa no que estiver sob o cursor.
+function focarSobCursor(mx, my, fracao){
+  const tol2 = Math.pow(Math.max(34, Math.min(W,H)*0.11), 2);
+  let melhor = -1, melhorNota = 1e18;
+  for (let i=0;i<N;i++){
+    if (!visivel(i)) continue;
+    const p = proj(i);
+    const d = (p.sx-mx)**2 + (p.sy-my)**2;
+    if (d > tol2) continue;
+    const nota = d/tol2 - 0.55*p.z;          // perto da mira, e de preferência à frente
+    if (nota < melhorNota){ melhorNota = nota; melhor = i; }
+  }
+  if (melhor < 0) return;
+  foco += (proj(melhor).z - foco) * fracao;
+}
+
+const dentroEl = $('#dentro');
+let ultimaProf = 9;
+function mostrarProfundidade(){
+  if (Math.abs(foco - ultimaProf) < 0.01) return;
+  ultimaProf = foco;
+  if (foco > 0.97){ dentroEl.hidden = true; return; }
+  const onde = foco > 0.35 ? 'entrando' : (foco > -0.35 ? 'no meio' : 'do outro lado');
+  dentroEl.textContent = `dentro · ${onde}`;
+  dentroEl.hidden = false;
+}
+
+// A roda continua sendo aproximação, só que agora ela não pára na casca: ao
+// bater no zoom máximo, seguir rolando faz o olhar atravessar o miolo até a
+// superfície do lado oposto, vista por dentro. Rolar para trás desfaz na mesma
+// ordem. Shift+roda entra e sai direto, em qualquer zoom.
+cv.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const paraDentro = e.deltaY < 0;
+  if (e.shiftKey){ mergulhar(paraDentro ? -0.06 : 0.06); return; }
+  if (paraDentro){
+    if (zoom < ZOOM_MAX){
+      zoom = Math.min(ZOOM_MAX, zoom * 1.13);
+      giroAlvo = null;
+      girarParaTela(e.clientX, e.clientY, 0.30);
+      focarSobCursor(e.clientX, e.clientY, 0.45);
+    } else mergulhar(-0.045);            // no teto, seguir rolando atravessa
+  } else {
+    if (foco < 1 && zoom >= ZOOM_MAX) mergulhar(0.045);
+    else zoom = Math.max(.6, zoom * .885);
+  }
+  // de longe não se está dentro de nada: o olhar volta sozinho para a superfície
+  if (zoom < 3) foco += (1 - foco) * 0.3;
 }, {passive:false});
 let pin = null, pinXY = null;
 cv.addEventListener('touchmove', e=>{
@@ -451,8 +540,12 @@ cv.addEventListener('touchmove', e=>{
           cyT = (e.touches[0].clientY+e.touches[1].clientY)/2;
     if (pin){
       const antes = zoom;
-      zoom = Math.max(.6, Math.min(60, zoom * d/pin));
+      zoom = Math.max(.6, Math.min(ZOOM_MAX, zoom * d/pin));
       if (zoom > antes){ giroAlvo = null; girarParaTela(cxT, cyT, 0.25); }
+      // no pinça, atravessar acontece quando a ampliação já não tem para onde ir
+      if (zoom === ZOOM_MAX && d > pin) mergulhar(-0.03);
+      else if (zoom > antes) focarSobCursor(cxT, cyT, 0.4);
+      if (zoom < 3) foco += (1 - foco) * 0.3;
     }
     pin = d; pinXY = [cxT, cyT]; }
 }, {passive:false});
@@ -460,16 +553,19 @@ cv.addEventListener('touchend', ()=> pin=null);
 
 function tocar(mx,my){
   const tol = Math.max(14, Math.min(34, 14 * Math.sqrt(Math.max(1, zoom/3))));
-  const tol2 = tol*tol;
+  const tol2 = tol*tol, larg = fatia();
   let melhor=-1, melhorNota=-9;
   for (let i=0;i<N;i++){
     if (!visivel(i)) continue;
     const p = proj(i);
     const d = (p.sx-mx)**2 + (p.sy-my)**2;
     if (d > tol2) continue;
-    // numa bola há pontos empilhados na mesma coluna: pega o da frente, que é
-    // o que o olho vê mais aceso, sem ignorar de todo a mira
-    const nota = p.z - 0.9*(d/tol2);
+    // Só é clicável quem está na fatia em foco. Sem isso, um ponto de outro
+    // aglomerado lá atrás cai na mesma coluna da tela e rouba o clique — e
+    // quanto maior o zoom, mais fina a fatia, mais fiel o que se vê ao que pega.
+    const dz = Math.abs(p.z - foco);
+    if (dz > larg) continue;
+    const nota = -(d/tol2) - (dz/larg)*(dz/larg);
     if (nota > melhorNota){ melhorNota=nota; melhor=i; }
   }
   sel = melhor;
