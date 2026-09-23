@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atmosfera Onírica — nave</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;1,200&family=IBM+Plex+Mono:wght@300;400&display=swap">
+<style>
+  :root{
+    --vazio:#05060b; --linha:#1a1e2c; --texto:#c6c9d6; --fraco:#6f7488;
+    --sonho:#6ba8ff; --desejo:#ffbe5c; --sofrer:#ff6376;
+  }
+  html,body{height:100%;margin:0;background:var(--vazio);color:var(--texto);
+    font:400 12px/1.5 "IBM Plex Mono",ui-monospace,monospace;overflow:hidden;
+    -webkit-font-smoothing:antialiased}
+  #cena{position:fixed;inset:0;display:block;cursor:crosshair}
+  #cena.lock{cursor:none}
+
+  header{position:fixed;top:calc(env(safe-area-inset-top,0px) + 18px);left:20px;z-index:4;
+    pointer-events:none;max-width:34ch}
+  h1{font:italic 200 clamp(22px,3.8vw,32px)/1 Spectral,Georgia,serif;margin:0;letter-spacing:.01em}
+  header p{margin:6px 0 0;color:var(--fraco);font-size:11px;line-height:1.55}
+  header b{color:var(--texto);font-weight:400}
+
+  #hud{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);
+    transform:translateX(-50%);z-index:4;text-align:center;pointer-events:none;
+    color:var(--fraco);font-size:10.5px;letter-spacing:.04em}
+  #hud kbd{display:inline-block;border:1px solid var(--linha);border-radius:2px;
+    padding:1px 5px;margin:0 1px;color:var(--texto);font:inherit}
+  #tele{position:fixed;right:18px;top:calc(env(safe-area-inset-top,0px) + 18px);
+    z-index:4;text-align:right;color:var(--fraco);font-size:10px;line-height:1.7;
+    font-variant-numeric:tabular-nums;pointer-events:none}
+  #tele b{color:var(--texto);font-weight:400}
+
+  #mira{position:fixed;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;
+    z-index:3;pointer-events:none;opacity:.55}
+  #mira::before,#mira::after{content:"";position:absolute;background:rgba(198,201,214,.75)}
+  #mira::before{left:6px;top:0;width:1px;height:14px}
+  #mira::after{left:0;top:6px;width:14px;height:1px}
+
+  #entrar{position:fixed;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 50% 40%, rgba(24,30,48,.55), rgba(5,6,11,.92));
+    backdrop-filter:blur(2px)}
+  #entrar[hidden]{display:none !important}
+  #entrar .caixa{max-width:36ch;padding:22px 24px;border:1px solid var(--linha);
+    background:rgba(9,11,19,.78);text-align:center}
+  #entrar h2{font:italic 200 26px/1.15 Spectral,Georgia,serif;margin:0 0 10px;font-weight:200}
+  #entrar p{margin:0 0 16px;color:var(--fraco);font-size:11.5px;line-height:1.6}
+  #entrar button{appearance:none;border:1px solid #39415c;background:transparent;
+    color:var(--texto);font:400 11px "IBM Plex Mono",monospace;letter-spacing:.14em;
+    text-transform:uppercase;padding:10px 16px;cursor:pointer}
+  #entrar button:hover{border-color:var(--texto)}
+
+  #relato{position:fixed;right:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
+    z-index:5;width:min(360px,calc(100vw - 36px));max-height:min(42vh,360px);
+    background:rgba(9,11,19,.88);border:1px solid var(--linha);border-radius:3px;
+    padding:12px 14px;backdrop-filter:blur(8px);display:none;flex-direction:column;gap:8px}
+  #relato.on{display:flex}
+  #relato .top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;
+    color:var(--fraco);font-size:10.5px}
+  #relato .top i{width:7px;height:7px;border-radius:50%;flex:none}
+  #relato p{margin:0;overflow:auto;max-height:28vh;color:var(--texto);
+    font:300 13px/1.55 Spectral,Georgia,serif;white-space:pre-wrap}
+  #relato button{align-self:flex-start;appearance:none;border:0;background:0;
+    color:var(--fraco);font:inherit;cursor:pointer;padding:0;letter-spacing:.12em;
+    text-transform:uppercase;font-size:9.5px}
+  #relato button:hover{color:var(--texto)}
+
+  #carregando{position:fixed;inset:0;z-index:7;display:grid;place-items:center;
+    background:var(--vazio);color:var(--fraco);font-size:12px}
+  #carregando[hidden]{display:none}
+</style>
+</head>
+<body>
+<div id="carregando">recolhendo a atmosfera…</div>
+<canvas id="cena"></canvas>
+<div id="mira" hidden></div>
+
+<header>
+  <h1>Atmosfera Onírica</h1>
+  <p>modo <b>nave</b> — voe pela bola de relatos como quem atravessa um campo de estrelas</p>
+</header>
+
+<div id="tele">
+  <div>vel <b id="vel">0.00</b></div>
+  <div>r <b id="rad">—</b></div>
+  <div>perto <b id="perto">—</b></div>
+</div>
+
+<div id="hud">
+  arraste para olhar ·
+  <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> mover ·
+  <kbd>R</kbd><kbd>F</kbd> subir/descer ·
+  <kbd>Shift</kbd> impulso ·
+  <kbd>E</kbd> ler o que está na mira ·
+  <kbd>Esc</kbd> soltar
+</div>
+
+<div id="entrar" hidden>
+  <div class="caixa">
+    <h2>entrar na atmosfera</h2>
+    <p>Arraste para olhar (ou clique para travar o mouse). WASD empurra a nave. Aproxime-se de um ponto e pressione E para ler o relato.</p>
+    <button type="button" id="btnEntrar">iniciar voo</button>
+  </div>
+</div>
+
+<aside id="relato" aria-live="polite">
+  <div class="top"></div>
+  <p></p>
+  <button type="button" id="fecharRelato">fechar</button>
+</aside>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.170.0/build/three.module.js"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const $ = s => document.querySelector(s);
+const QUAL_ROT = {
+  recorrente:'recorrente', lucido:'lúcido', premonitorio:'premonitório',
+  visita_de_morto:'visita de morto', paralisia:'paralisia do sono', erotico:'erótico'
+};
+
+const canvas = $('#cena');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false, powerPreference:'high-performance' });
+renderer.setClearColor(0x05060b, 1);
+renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x05060b, 0.28);
+
+const camera = new THREE.PerspectiveCamera(68, 1, 0.004, 40);
+// começa já na casca, olhando para o miolo — cores legíveis sem “lavar” no horizonte
+camera.position.set(0.15, 0.08, 1.05);
+camera.lookAt(0, 0, 0);
+
+const clock = new THREE.Clock();
+const keys = Object.create(null);
+let yaw = 0, pitch = -0.06;
+let vel = new THREE.Vector3();
+let locked = false;
+let META, N, POS, NAT, COM, ANO, MES, BITS;
+let points, positions, colors;
+let nearest = -1;
+const BLOCOS = {};
+
+const dado = p => fetch('../dados/' + p, { cache:'no-cache' });
+const proxyTexto = p => fetch('../dados/' + p, { cache:'force-cache' });
+
+async function bloco(i){
+  const b = Math.floor(i / META.por_arquivo);
+  if (!BLOCOS[b]) {
+    BLOCOS[b] = proxyTexto(`textos${b}.json`).then(r => {
+      if (!r.ok) throw new Error('texto ' + b);
+      return r.json();
+    });
+  }
+  return BLOCOS[b];
+}
+async function pegarTexto(i){
+  try {
+    const d = await bloco(i);
+    return d.textos[i - d.i0];
+  } catch {
+    return '(texto offline neste protótipo — metadados ok)';
+  }
+}
+async function pegarQuando(i){
+  try {
+    const d = await bloco(i);
+    return (d.quando || [])[i - d.i0];
+  } catch { return null; }
+}
+
+function corDe(i){
+  const b = BITS[i];
+  if (NAT[i] !== 0) return [91/255, 99/255, 118/255];
+  let r=0,g=0,bl=0,n=0;
+  if (b & 1){ r+=107; g+=168; bl+=255; n++; }
+  if (b & 2){ r+=255; g+=190; bl+=92;  n++; }
+  if (b & 4){ r+=255; g+=99;  bl+=118; n++; }
+  if (!n) return [91/255, 99/255, 118/255];
+  return [r/(n*255), g/(n*255), bl/(n*255)];
+}
+
+function visivelRelato(i){
+  // protótipo: só relatos (não meta/ruído), marcadores oníricos acesos
+  if (NAT[i] !== 0) return false;
+  const b = BITS[i];
+  return !!(b & 7);
+}
+
+async function carregar(){
+  META = await (await dado('meta.json')).json();
+  const buf = await (await dado('pontos.bin')).arrayBuffer();
+  const dv = new DataView(buf);
+  N = dv.getUint32(0, true);
+  POS = new Float32Array(N * 3);
+  NAT = new Uint8Array(N);
+  COM = new Uint8Array(N);
+  ANO = new Uint16Array(N);
+  MES = new Uint8Array(N);
+  BITS = new Uint16Array(N);
+
+  let o = 4;
+  for (let i = 0; i < N; i++){
+    POS[i*3]   = dv.getFloat32(o, true);
+    POS[i*3+1] = dv.getFloat32(o+4, true);
+    POS[i*3+2] = dv.getFloat32(o+8, true);
+    NAT[i] = dv.getUint8(o+12);
+    COM[i] = dv.getUint8(o+14);
+    ANO[i] = dv.getUint16(o+15, true);
+    MES[i] = dv.getUint8(o+17);
+    BITS[i] = dv.getUint16(o+18, true);
+    o += 20;
+  }
+  // pular índices de palavras do bin
+  for (let i = 0; i < N; i++){
+    const k = dv.getUint8(o); o += 1 + k * 4;
+  }
+
+  const keep = [];
+  for (let i = 0; i < N; i++) if (visivelRelato(i)) keep.push(i);
+  // densidade: manter ~80k no máximo para mobile; amostra se preciso
+  const MAX = 85000;
+  let idx = keep;
+  if (keep.length > MAX){
+    idx = [];
+    const step = keep.length / MAX;
+    for (let t = 0; t < MAX; t++) idx.push(keep[(t * step) | 0]);
+  }
+
+  positions = new Float32Array(idx.length * 3);
+  colors = new Float32Array(idx.length * 3);
+  const map = new Int32Array(idx.length);
+  for (let j = 0; j < idx.length; j++){
+    const i = idx[j];
+    map[j] = i;
+    positions[j*3] = POS[i*3];
+    positions[j*3+1] = POS[i*3+1];
+    positions[j*3+2] = POS[i*3+2];
+    const [r,g,b] = corDe(i);
+    colors[j*3] = r; colors[j*3+1] = g; colors[j*3+2] = b;
+  }
+  points = { map };
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const mat = new THREE.PointsMaterial({
+    size: 0.022,
+    sizeAttenuation: true,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.92,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const cloud = new THREE.Points(geo, mat);
+  cloud.name = 'nuvem';
+  scene.add(cloud);
+
+  // estrelas de fundo — muito longe, só atmosfera
+  const starN = 900;
+  const starPos = new Float32Array(starN * 3);
+  for (let i = 0; i < starN; i++){
+    const r = 8 + Math.random() * 18;
+    const th = Math.random() * Math.PI * 2;
+    const ph = Math.acos(2 * Math.random() - 1);
+    starPos[i*3]   = r * Math.sin(ph) * Math.cos(th);
+    starPos[i*3+1] = r * Math.cos(ph);
+    starPos[i*3+2] = r * Math.sin(ph) * Math.sin(th);
+  }
+  const starGeo = new THREE.BufferGeometry();
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+  scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({
+    color: 0xb8bed4, size: 0.03, sizeAttenuation: true, transparent: true, opacity: 0.35
+  })));
+
+  // casca sutil da bola — âncora do globo
+  const shell = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(1.02, 2),
+    new THREE.MeshBasicMaterial({
+      color: 0x1a2033, transparent: true, opacity: 0.07,
+      wireframe: true, depthWrite: false
+    })
+  );
+  scene.add(shell);
+
+  $('#carregando').hidden = true;
+  $('#entrar').hidden = false;
+  resize();
+  requestAnimationFrame(tick);
+}
+
+function resize(){
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / Math.max(1, h);
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+
+const forward = new THREE.Vector3();
+const right = new THREE.Vector3();
+const up = new THREE.Vector3(0, 1, 0);
+const tmp = new THREE.Vector3();
+
+function applyLook(){
+  const cy = Math.cos(yaw), sy = Math.sin(yaw);
+  const cp = Math.cos(pitch), sp = Math.sin(pitch);
+  forward.set(sy * cp, sp, -cy * cp).normalize();
+  right.crossVectors(forward, up).normalize();
+  tmp.copy(camera.position).add(forward);
+  camera.up.copy(up);
+  camera.lookAt(tmp);
+}
+
+function findNearestInSight(){
+  if (!points) return -1;
+  const origin = camera.position;
+  const dir = forward;
+  let best = -1, bestScore = 0.992; // cos ~7°
+  let bestDist = 1e9;
+  // amostrar a cada N para manter 60fps; refinar perto
+  const map = points.map;
+  const step = Math.max(1, (map.length / 12000) | 0);
+  for (let j = 0; j < map.length; j += step){
+    const i = map[j];
+    tmp.set(POS[i*3], POS[i*3+1], POS[i*3+2]).sub(origin);
+    const dist = tmp.length();
+    if (dist < 0.02 || dist > 1.8) continue;
+    tmp.multiplyScalar(1 / dist);
+    const align = tmp.dot(dir);
+    if (align < bestScore) continue;
+    // preferir alinhamento, depois proximidade
+    const score = align - dist * 0.002;
+    if (score > bestScore - dist * 0.002 || (align >= bestScore && dist < bestDist)){
+      bestScore = align;
+      bestDist = dist;
+      best = i;
+    }
+  }
+  return best;
+}
+
+function mostrar(i){
+  const rel = $('#relato');
+  if (i < 0){ rel.classList.remove('on'); return; }
+  const b = BITS[i], [r,g,bl] = corDe(i).map(v => (v * 255) | 0);
+  const marcs = [];
+  if (b & 1) marcs.push('sonho');
+  if (b & 2) marcs.push('desejo');
+  if (b & 4) marcs.push('sofrimento');
+  const qs = META.qualidades.filter((q, j) => b & (1 << (3 + j))).map(q => QUAL_ROT[q]);
+  const mes = String(MES[i]).padStart(2, '0');
+  rel.querySelector('.top').innerHTML =
+    `<i style="background:rgb(${r},${g},${bl})"></i>` +
+    `<span>${ANO[i]}/${mes}</span><span>${META.comunidades[COM[i]] || '?'}</span>` +
+    `<span>${marcs.join(' · ')}</span>` +
+    (qs.length ? `<span style="color:#9aa0b6">${qs.join(' · ')}</span>` : '');
+  const p = rel.querySelector('p');
+  p.textContent = '…';
+  rel.classList.add('on');
+  pegarQuando(i).then(q => {
+    if (!q) return;
+    const d = new Date(q);
+    if (isNaN(d)) return;
+    const el = rel.querySelector('.top span');
+    if (el) el.textContent = d.toLocaleString('pt-BR', {
+      timeZone:'America/Sao_Paulo', day:'2-digit', month:'2-digit', year:'numeric',
+      hour:'2-digit', minute:'2-digit'
+    });
+  });
+  pegarTexto(i).then(t => { p.textContent = t || '(relato indisponível)'; });
+}
+
+$('#fecharRelato').onclick = () => $('#relato').classList.remove('on');
+
+let dragging = false;
+let pilotando = false;
+
+function entrarVoo(){
+  pilotando = true;
+  const overlay = $('#entrar');
+  if (overlay) overlay.hidden = true;
+  const mira = $('#mira');
+  if (mira) mira.hidden = false;
+  // pointer lock é opcional — arrastar já vira o olhar
+}
+
+// exposto para QA / automação
+window.entrarVoo = entrarVoo;
+
+$('#btnEntrar').addEventListener('click', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  entrarVoo();
+});
+
+document.addEventListener('pointerlockchange', () => {
+  locked = document.pointerLockElement === canvas;
+  canvas.classList.toggle('lock', locked);
+});
+
+canvas.addEventListener('pointerdown', e => {
+  if (!pilotando){
+    entrarVoo();
+  }
+  if (!locked){
+    dragging = true;
+    try { canvas.setPointerCapture?.(e.pointerId); } catch (_) {}
+  }
+});
+canvas.addEventListener('pointerup', e => {
+  dragging = false;
+  try { canvas.releasePointerCapture?.(e.pointerId); } catch (_) {}
+});
+canvas.addEventListener('dblclick', () => {
+  if (!pilotando) entrarVoo();
+  if (document.pointerLockElement !== canvas){
+    const req = canvas.requestPointerLock?.();
+    if (req && typeof req.then === 'function') req.catch(() => {});
+  }
+});
+
+addEventListener('mousemove', e => {
+  if (!pilotando) return;
+  if (locked){
+    yaw -= e.movementX * 0.0022;
+    pitch -= e.movementY * 0.0022;
+  } else if (dragging){
+    yaw -= e.movementX * 0.0035;
+    pitch -= e.movementY * 0.0035;
+  } else return;
+  pitch = Math.max(-1.35, Math.min(1.35, pitch));
+});
+
+addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (!pilotando && (e.code === 'Enter' || e.code === 'Space')){
+    e.preventDefault();
+    entrarVoo();
+    return;
+  }
+  if (e.code === 'KeyE' && !e.repeat && pilotando){
+    const i = nearest >= 0 ? nearest : findNearestInSight();
+    if (i >= 0) mostrar(i);
+  }
+  if (e.code === 'Escape') $('#relato').classList.remove('on');
+});
+addEventListener('keyup', e => { keys[e.code] = false; });
+
+function tick(){
+  const dt = Math.min(0.05, clock.getDelta());
+  applyLook();
+
+  if (pilotando){
+    const boost = keys.ShiftLeft || keys.ShiftRight ? 2.6 : 1;
+    const accel = 0.55 * boost;
+    const wish = new THREE.Vector3();
+    if (keys.KeyW || keys.ArrowUp) wish.add(forward);
+    if (keys.KeyS || keys.ArrowDown) wish.sub(forward);
+    if (keys.KeyD || keys.ArrowRight) wish.add(right);
+    if (keys.KeyA || keys.ArrowLeft) wish.sub(right);
+    if (keys.KeyR || keys.Space) wish.y += 1;
+    if (keys.KeyF || keys.ControlLeft || keys.ControlRight) wish.y -= 1;
+    if (wish.lengthSq() > 0){
+      wish.normalize().multiplyScalar(accel * dt);
+      vel.add(wish);
+    }
+    vel.multiplyScalar(Math.pow(0.08, dt));
+    camera.position.addScaledVector(vel, dt * 60 * 0.016);
+
+    const rBound = camera.position.length();
+    if (rBound > 3.2){
+      camera.position.multiplyScalar(3.2 / rBound);
+      vel.multiplyScalar(0.4);
+    }
+  }
+
+  const r = camera.position.length();
+  nearest = pilotando ? findNearestInSight() : -1;
+  const speed = vel.length();
+  $('#vel').textContent = speed.toFixed(2);
+  $('#rad').textContent = r.toFixed(2);
+  $('#perto').textContent = nearest < 0 ? '—' : String(nearest);
+
+  const cloud = scene.getObjectByName('nuvem');
+  if (cloud){
+    cloud.material.size = THREE.MathUtils.clamp(0.014 + (1.4 - Math.min(1.4, r)) * 0.02, 0.012, 0.045);
+  }
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+
+carregar().catch(err => {
+  console.error(err);
+  $('#carregando').textContent = 'falha ao carregar a atmosfera';
+});
+</script>
+</body>
+</html>
