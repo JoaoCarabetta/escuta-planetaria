@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>laboratório · feed — Escuta Planetária</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;1,200;1,300&family=IBM+Plex+Mono:wght@300;400&display=swap">
+  <link rel="stylesheet" href="./feed.css">
+</head>
+<body>
+  <header class="topo">
+    <p class="marca">escuta planetária</p>
+    <p class="lab-label">laboratório · feed</p>
+    <p class="nota" id="meta-nota">carregando pool…</p>
+  </header>
+
+  <main class="feed" aria-label="feed de sonhos">
+    <article class="card" id="dream-card" data-visible="false">
+      <p class="tags" id="tags" hidden></p>
+      <div class="texto-wrap" id="texto-wrap">
+        <p class="texto" id="texto"></p>
+      </div>
+      <p class="vazio" id="vazio" hidden>pool esgotado · limpe o perfil ou recarregue</p>
+      <p class="err" id="err" hidden></p>
+    </article>
+
+    <div class="acoes" role="group" aria-label="ações do feed">
+      <button type="button" class="btn ghost" id="btn-menos" title="Menos assim (↓)">menos</button>
+      <button type="button" class="btn" id="btn-pular" title="Pular (→ / Espaço)">pular</button>
+      <button type="button" class="btn primary" id="btn-mais" title="Mais assim (↑)">mais</button>
+      <button type="button" class="btn" id="btn-proximo" title="Próximo (→ / Espaço)">próximo</button>
+    </div>
+
+    <p class="hint" id="hint">↑↓ mais/menos · → espaço próximo · scroll opcional</p>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </main>
+
+  <script type="module" src="./feed.js"></script>
+</body>
+</html>
