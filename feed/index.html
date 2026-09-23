@@ -15,23 +15,18 @@
   </header>
 
   <main class="feed" aria-label="feed de sonhos">
-    <article class="card" id="dream-card" data-visible="false">
-      <p class="tags" id="tags" hidden></p>
-      <div class="texto-wrap" id="texto-wrap">
-        <p class="texto" id="texto"></p>
-      </div>
-      <p class="vazio" id="vazio" hidden>pool esgotado · limpe o perfil ou recarregue</p>
-      <p class="err" id="err" hidden></p>
-    </article>
+    <p class="err" id="err" hidden></p>
+    <div class="stream" id="stream" role="feed" aria-busy="true"></div>
+    <div class="sentinel" id="sentinel" aria-hidden="true"></div>
+    <p class="vazio" id="vazio" hidden>pool esgotado · ? limpa o perfil</p>
+    <p class="loading" id="loading" hidden>carregando…</p>
 
-    <div class="acoes" role="group" aria-label="ações do feed">
-      <button type="button" class="btn ghost" id="btn-menos" title="Menos assim (↓)">menos</button>
-      <button type="button" class="btn" id="btn-pular" title="Pular (→ / Espaço)">pular</button>
-      <button type="button" class="btn primary" id="btn-mais" title="Mais assim (↑)">mais</button>
-      <button type="button" class="btn" id="btn-proximo" title="Próximo (→ / Espaço)">próximo</button>
+    <div class="dock" role="group" aria-label="navegação do feed">
+      <button type="button" class="btn ghost" id="btn-voltar" title="Voltar (←)">voltar</button>
+      <button type="button" class="btn primary" id="btn-ir" title="Ir (→ / Espaço / J)">ir</button>
     </div>
 
-    <p class="hint" id="hint">↑↓ mais/menos · → espaço próximo · scroll opcional</p>
+    <p class="hint" id="hint">scroll infinito · ♥ curtir · ir / voltar · ← → j k</p>
     <p class="status" id="status" role="status" aria-live="polite"></p>
   </main>
 

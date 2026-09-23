@@ -1,80 +1,91 @@
 /**
- * laboratório · feed — one-dream-at-a-time with reading-time recommender.
+ * laboratório · feed — infinite social scroll + like + dwell recommender.
  */
 import {
   loadProfile,
+  saveProfile,
   recordEngagement,
-  pickNext,
+  recordLike,
+  pickBatch,
   profileSummary,
   clearProfile,
+  loadLikes,
+  saveLikes,
 } from "./recommender.js";
 
 const $ = (sel) => document.querySelector(sel);
 
-const cardEl = $("#dream-card");
-const textoEl = $("#texto");
-const textoWrap = $("#texto-wrap");
-const tagsEl = $("#tags");
+const streamEl = $("#stream");
+const sentinelEl = $("#sentinel");
 const vazioEl = $("#vazio");
 const errEl = $("#err");
+const loadingEl = $("#loading");
 const statusEl = $("#status");
 const metaNota = $("#meta-nota");
-const btnMais = $("#btn-mais");
-const btnMenos = $("#btn-menos");
-const btnPular = $("#btn-pular");
-const btnProximo = $("#btn-proximo");
+const btnIr = $("#btn-ir");
+const btnVoltar = $("#btn-voltar");
+
+const BATCH = 6;
+const PREFETCH_PX = 900;
 
 /** @type {Array<object>} */
 let pool = [];
 let profile = loadProfile();
-/** @type {object | null} */
-let current = null;
+/** @type {Set<string>} */
+let likes = loadLikes();
 
-/** dwell tracking */
-let dwellAccumMs = 0;
-let dwellSegmentStart = 0;
-let isIntersecting = false;
+/** @type {Map<string, { el: HTMLElement, dream: object, dwellAccumMs: number, dwellSegmentStart: number, visible: boolean, flushed: boolean }>} */
+const cards = new Map();
+/** @type {string[]} ordered dream ids in the stream */
+const order = [];
+/** ids already in stream */
+const inStream = new Set();
+
 let pageVisible = document.visibilityState === "visible";
-let explicitPending = 0; // -1 | 0 | 1 applied on advance
-let scrollCooldown = false;
+let appending = false;
+let focusIndex = 0;
 
 function setStatus(msg) {
   statusEl.textContent = msg || "";
 }
 
-function flash(btn, cls) {
-  btn.classList.add(cls);
-  setTimeout(() => btn.classList.remove(cls), 280);
+function updateMeta() {
+  metaNota.textContent = `${order.length} no feed · ${likes.size} curtidos · ${pool.length} pool`;
 }
 
-function isDwellActive() {
-  return isIntersecting && pageVisible && !!current;
+function isDwellActive(state) {
+  return state.visible && pageVisible;
 }
 
-function pauseDwell() {
-  if (dwellSegmentStart) {
-    dwellAccumMs += performance.now() - dwellSegmentStart;
-    dwellSegmentStart = 0;
+function pauseDwell(state) {
+  if (state.dwellSegmentStart) {
+    state.dwellAccumMs += performance.now() - state.dwellSegmentStart;
+    state.dwellSegmentStart = 0;
   }
 }
 
-function resumeDwell() {
-  if (isDwellActive() && !dwellSegmentStart) {
-    dwellSegmentStart = performance.now();
+function resumeDwell(state) {
+  if (isDwellActive(state) && !state.dwellSegmentStart) {
+    state.dwellSegmentStart = performance.now();
   }
 }
 
-function resetDwell() {
-  pauseDwell();
-  dwellAccumMs = 0;
-  dwellSegmentStart = 0;
-  explicitPending = 0;
-}
-
-function currentDwellMs() {
-  let ms = dwellAccumMs;
-  if (dwellSegmentStart) ms += performance.now() - dwellSegmentStart;
+function currentDwellMs(state) {
+  let ms = state.dwellAccumMs;
+  if (state.dwellSegmentStart) ms += performance.now() - state.dwellSegmentStart;
   return ms;
+}
+
+function flushDwell(state) {
+  if (state.flushed) return;
+  pauseDwell(state);
+  const dwellMs = currentDwellMs(state);
+  const signal = recordEngagement(profile, state.dream, { dwellMs });
+  state.flushed = true;
+  state.dwellAccumMs = 0;
+  const sec = (dwellMs / 1000).toFixed(1);
+  setStatus(`dwell ${sec}s · ${signal >= 0 ? "+" : ""}${signal.toFixed(2)} · ${profileSummary(profile)}`);
+  updateMeta();
 }
 
 function renderTags(dream) {
@@ -88,157 +99,235 @@ function renderTags(dream) {
   if (dream.mood) add(dream.mood, `pill mood-${dream.mood}`);
   add(dream.place);
   for (const s of (dream.symbols || []).slice(0, 3)) add(s);
-  if (!bits.length) {
-    tagsEl.hidden = true;
-    tagsEl.innerHTML = "";
-    return;
-  }
-  tagsEl.hidden = false;
-  tagsEl.innerHTML = bits.join("");
+  return bits.length ? bits.join("") : "";
 }
 
-function showDream(dream) {
-  current = dream;
-  resetDwell();
-  vazioEl.hidden = true;
-  errEl.hidden = true;
-  textoWrap.hidden = false;
-  textoEl.textContent = dream.text;
-  renderTags(dream);
-  cardEl.classList.remove("entering");
-  // reflow for animation
-  void cardEl.offsetWidth;
-  cardEl.classList.add("entering");
-  textoWrap.scrollTop = 0;
-  metaNota.textContent = `${profile.seen.length} vistos · ${pool.length} no pool`;
-  setStatus(profileSummary(profile));
-  resumeDwell();
+function heartSvg() {
+  return `<svg class="heart-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 21s-6.7-4.35-9.33-8.1C.5 9.7 1.1 5.9 4.4 4.2c1.9-1 4.2-.55 5.6 1.05C11.4 3.65 13.7 3.2 15.6 4.2c3.3 1.7 3.9 5.5 1.73 8.7C18.7 16.65 12 21 12 21z"/></svg>`;
 }
 
-function finishCurrent() {
-  if (!current) return;
-  pauseDwell();
-  const dwellMs = currentDwellMs();
-  const signal = recordEngagement(profile, current, {
-    dwellMs,
-    explicit: explicitPending,
+function createCard(dream) {
+  const article = document.createElement("article");
+  article.className = "card entering";
+  article.dataset.id = dream.id;
+  article.dataset.visible = "false";
+  article.setAttribute("role", "article");
+
+  const liked = likes.has(dream.id);
+  const tags = renderTags(dream);
+
+  article.innerHTML = `
+    ${tags ? `<p class="tags">${tags}</p>` : ""}
+    <div class="texto-wrap">
+      <p class="texto"></p>
+    </div>
+    <div class="card-bar">
+      <button type="button" class="btn-like${liked ? " liked" : ""}" aria-pressed="${liked}" aria-label="${liked ? "Remover curtida" : "Curtir"}" title="Curtir">
+        ${heartSvg()}
+        <span class="like-label">${liked ? "curtido" : "curtir"}</span>
+      </button>
+    </div>
+  `;
+  article.querySelector(".texto").textContent = dream.text;
+
+  const likeBtn = article.querySelector(".btn-like");
+  likeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleLike(dream, likeBtn);
   });
-  const sec = (dwellMs / 1000).toFixed(1);
-  setStatus(`dwell ${sec}s · sinal ${signal >= 0 ? "+" : ""}${signal.toFixed(2)} · ${profileSummary(profile)}`);
+
+  const state = {
+    el: article,
+    dream,
+    dwellAccumMs: 0,
+    dwellSegmentStart: 0,
+    visible: false,
+    flushed: false,
+  };
+  cards.set(dream.id, state);
+  order.push(dream.id);
+  inStream.add(dream.id);
+
+  streamEl.appendChild(article);
+  requestAnimationFrame(() => article.classList.remove("entering"));
+  io.observe(article);
+  return state;
 }
 
-function advance({ skipBoost = false } = {}) {
-  if (current) {
-    if (skipBoost && !explicitPending && currentDwellMs() < 1200) {
-      // treat very fast skip as mild negative without overriding explicit
-      explicitPending = 0;
-    }
-    finishCurrent();
+function toggleLike(dream, btn) {
+  const wasLiked = likes.has(dream.id);
+  if (wasLiked) {
+    likes.delete(dream.id);
+    recordLike(profile, dream, false);
+  } else {
+    likes.add(dream.id);
+    recordLike(profile, dream, true);
   }
-  const next = pickNext(profile, pool);
-  if (!next) {
-    current = null;
-    textoWrap.hidden = true;
-    tagsEl.hidden = true;
+  saveLikes(likes);
+  const liked = likes.has(dream.id);
+  btn.classList.toggle("liked", liked);
+  btn.setAttribute("aria-pressed", String(liked));
+  btn.setAttribute("aria-label", liked ? "Remover curtida" : "Curtir");
+  const label = btn.querySelector(".like-label");
+  if (label) label.textContent = liked ? "curtido" : "curtir";
+  btn.classList.add("flash-like");
+  setTimeout(() => btn.classList.remove("flash-like"), 320);
+  setStatus(`${liked ? "♥ curtido" : "curtir removido"} · ${profileSummary(profile)}`);
+  updateMeta();
+}
+
+function appendBatch(n = BATCH) {
+  if (appending) return 0;
+  appending = true;
+  loadingEl.hidden = false;
+  streamEl.setAttribute("aria-busy", "true");
+
+  const batch = pickBatch(profile, pool, n, { exclude: inStream });
+  for (const dream of batch) {
+    if (!profile.seen.includes(dream.id)) {
+      profile.seen.push(dream.id);
+    }
+    createCard(dream);
+  }
+  saveProfile(profile);
+
+  appending = false;
+  loadingEl.hidden = true;
+  streamEl.setAttribute("aria-busy", "false");
+
+  if (!batch.length) {
     vazioEl.hidden = false;
-    metaNota.textContent = `${pool.length} vistos · pool esgotado`;
     setStatus("pool esgotado — ? limpa perfil");
-    return;
+  } else {
+    vazioEl.hidden = true;
   }
-  showDream(next);
+  updateMeta();
+  setStatus(profileSummary(profile));
+  return batch.length;
 }
-
-function onMais() {
-  explicitPending = 1;
-  flash(btnMais, "flash-mais");
-  advance();
-}
-
-function onMenos() {
-  explicitPending = -1;
-  flash(btnMenos, "flash-menos");
-  advance();
-}
-
-function onPular() {
-  advance({ skipBoost: true });
-}
-
-function onProximo() {
-  advance();
-}
-
-btnMais.addEventListener("click", onMais);
-btnMenos.addEventListener("click", onMenos);
-btnPular.addEventListener("click", onPular);
-btnProximo.addEventListener("click", onProximo);
-
-window.addEventListener("keydown", (e) => {
-  if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
-  if (e.key === "ArrowRight" || e.key === " " || e.key === "Enter") {
-    e.preventDefault();
-    onProximo();
-  } else if (e.key === "ArrowUp") {
-    e.preventDefault();
-    onMais();
-  } else if (e.key === "ArrowDown") {
-    e.preventDefault();
-    onMenos();
-  } else if (e.key === "?" || (e.shiftKey && e.key === "/")) {
-    e.preventDefault();
-    if (confirm("Limpar perfil do feed (preferências + vistos)?")) {
-      clearProfile();
-      profile = loadProfile();
-      advance();
-    }
-  }
-});
-
-/** Optional scroll-to-advance when at bottom of text */
-textoWrap.addEventListener(
-  "wheel",
-  (e) => {
-    if (!current || scrollCooldown) return;
-    const atBottom =
-      textoWrap.scrollHeight - textoWrap.scrollTop - textoWrap.clientHeight < 8;
-    const atTop = textoWrap.scrollTop < 4;
-    if (e.deltaY > 28 && atBottom) {
-      scrollCooldown = true;
-      onProximo();
-      setTimeout(() => { scrollCooldown = false; }, 650);
-    } else if (e.deltaY < -40 && atTop && e.shiftKey) {
-      // shift+scroll up = mais
-      scrollCooldown = true;
-      onMais();
-      setTimeout(() => { scrollCooldown = false; }, 650);
-    }
-  },
-  { passive: true },
-);
 
 const io = new IntersectionObserver(
   (entries) => {
     for (const entry of entries) {
-      isIntersecting = entry.isIntersecting && entry.intersectionRatio >= 0.45;
-      cardEl.dataset.visible = isIntersecting ? "true" : "false";
-      if (isIntersecting) resumeDwell();
-      else pauseDwell();
+      const id = entry.target.dataset.id;
+      const state = cards.get(id);
+      if (!state) continue;
+      const nowVisible = entry.isIntersecting && entry.intersectionRatio >= 0.45;
+      if (nowVisible === state.visible) continue;
+      if (state.visible && !nowVisible) {
+        flushDwell(state);
+      }
+      state.visible = nowVisible;
+      entry.target.dataset.visible = nowVisible ? "true" : "false";
+      if (nowVisible) {
+        if (state.flushed) {
+          state.flushed = false;
+          state.dwellAccumMs = 0;
+        }
+        resumeDwell(state);
+        const idx = order.indexOf(id);
+        if (idx >= 0) focusIndex = idx;
+      } else {
+        pauseDwell(state);
+      }
     }
   },
-  { threshold: [0, 0.45, 0.75, 1] },
+  { threshold: [0, 0.45, 0.75, 1], rootMargin: "0px" },
 );
-io.observe(cardEl);
+
+const infiniteIo = new IntersectionObserver(
+  (entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) appendBatch();
+    }
+  },
+  { rootMargin: `${PREFETCH_PX}px 0px` },
+);
+
+function scrollToIndex(idx, behavior = "smooth") {
+  if (idx < 0 || idx >= order.length) return;
+  focusIndex = idx;
+  const state = cards.get(order[idx]);
+  if (!state) return;
+  state.el.scrollIntoView({ behavior, block: "center" });
+}
+
+function onIr() {
+  if (focusIndex >= order.length - 2) appendBatch();
+  const next = Math.min(focusIndex + 1, order.length - 1);
+  if (next === focusIndex && focusIndex === order.length - 1) {
+    const added = appendBatch();
+    if (added) scrollToIndex(focusIndex + 1);
+    return;
+  }
+  scrollToIndex(next);
+}
+
+function onVoltar() {
+  scrollToIndex(Math.max(0, focusIndex - 1));
+}
+
+btnIr.addEventListener("click", onIr);
+btnVoltar.addEventListener("click", onVoltar);
+
+window.addEventListener("keydown", (e) => {
+  if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  if (e.key === "ArrowRight" || e.key === " " || e.key === "Enter" || e.key === "j" || e.key === "J") {
+    e.preventDefault();
+    onIr();
+  } else if (e.key === "ArrowLeft" || e.key === "k" || e.key === "K") {
+    e.preventDefault();
+    onVoltar();
+  } else if (e.key === "l" || e.key === "L") {
+    e.preventDefault();
+    const id = order[focusIndex];
+    const state = id && cards.get(id);
+    if (state) {
+      const btn = state.el.querySelector(".btn-like");
+      if (btn) toggleLike(state.dream, btn);
+    }
+  } else if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+    e.preventDefault();
+    if (confirm("Limpar perfil do feed (preferências + vistos + curtidas)?")) {
+      clearProfile();
+      profile = loadProfile();
+      likes = loadLikes();
+      for (const state of cards.values()) io.unobserve(state.el);
+      streamEl.innerHTML = "";
+      cards.clear();
+      order.length = 0;
+      inStream.clear();
+      focusIndex = 0;
+      vazioEl.hidden = true;
+      appendBatch(BATCH);
+      appendBatch(BATCH);
+    }
+  }
+});
 
 document.addEventListener("visibilitychange", () => {
   pageVisible = document.visibilityState === "visible";
-  if (pageVisible) resumeDwell();
-  else pauseDwell();
+  for (const state of cards.values()) {
+    if (pageVisible) resumeDwell(state);
+    else {
+      pauseDwell(state);
+      if (state.visible && !state.flushed) flushDwell(state);
+    }
+  }
 });
 
-window.addEventListener("blur", pauseDwell);
+window.addEventListener("blur", () => {
+  for (const state of cards.values()) pauseDwell(state);
+});
 window.addEventListener("focus", () => {
   pageVisible = document.visibilityState === "visible";
-  resumeDwell();
+  for (const state of cards.values()) resumeDwell(state);
+});
+
+window.addEventListener("beforeunload", () => {
+  for (const state of cards.values()) {
+    if (state.visible && !state.flushed) flushDwell(state);
+  }
 });
 
 async function boot() {
@@ -247,8 +336,9 @@ async function boot() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     pool = await res.json();
     if (!Array.isArray(pool) || !pool.length) throw new Error("pool vazio");
-    metaNota.textContent = `${profile.seen.length} vistos · ${pool.length} no pool`;
-    advance();
+    infiniteIo.observe(sentinelEl);
+    appendBatch(BATCH);
+    if (order.length < pool.length) appendBatch(BATCH);
   } catch (err) {
     errEl.hidden = false;
     errEl.textContent = `falha ao carregar sonhos.json — ${err.message || err}`;

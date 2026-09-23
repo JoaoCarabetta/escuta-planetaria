@@ -1,16 +1,17 @@
 /**
- * Client-side recommender v1 — preference from dwell/reading time + mais/menos.
- * Epsilon-greedy over cosine similarity to a localStorage profile.
+ * Client-side recommender v2 — preference from dwell + likes (localStorage).
+ * Epsilon-greedy over cosine similarity to a local profile.
  */
 
 const STORAGE_KEY = "escuta.feed.profile.v1";
+const LIKES_KEY = "escuta.feed.likes.v1";
 const EPSILON = 0.18;
 const DWELL_WEIGHT = 1.0;
-const EXPLICIT_WEIGHT = 2.4;
+const LIKE_WEIGHT = 3.6; // stronger than dwell; replaces old mais/menos
 const MIN_DWELL_MS = 800;
-const TARGET_READ_MS_PER_CHAR = 45; // ~ reading pace for scoring
+const TARGET_READ_MS_PER_CHAR = 45;
 
-/** @typedef {{ weights: Record<string, number>, seen: string[], history: Array<{id:string,dwellMs:number,signal:number,at:number}>, version: number }} Profile */
+/** @typedef {{ weights: Record<string, number>, seen: string[], history: Array<{id:string,dwellMs:number,signal:number,at:number,kind?:string}>, version: number }} Profile */
 
 /** @returns {Profile} */
 export function loadProfile() {
@@ -50,6 +51,28 @@ export function saveProfile(profile) {
 
 export function clearProfile() {
   try { localStorage.removeItem(STORAGE_KEY); } catch { /* */ }
+  try { localStorage.removeItem(LIKES_KEY); } catch { /* */ }
+}
+
+/** @returns {Set<string>} */
+export function loadLikes() {
+  try {
+    const raw = localStorage.getItem(LIKES_KEY);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    return new Set(Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
+/** @param {Set<string>} likes */
+export function saveLikes(likes) {
+  try {
+    localStorage.setItem(LIKES_KEY, JSON.stringify([...likes].slice(-2000)));
+  } catch {
+    /* */
+  }
 }
 
 /**
@@ -61,17 +84,17 @@ export function dwellSignal(dwellMs, charCount) {
   const expected = Math.max(2500, Math.min(45000, charCount * TARGET_READ_MS_PER_CHAR));
   const ratio = dwellMs / expected;
   if (dwellMs < MIN_DWELL_MS) return -0.15;
-  if (ratio < 0.15) return -0.35; // bounce
+  if (ratio < 0.15) return -0.35;
   if (ratio < 0.35) return 0.05;
   if (ratio < 0.7) return 0.45;
   if (ratio < 1.2) return 0.9;
-  return 1.25; // deep read
+  return 1.25;
 }
 
 /**
  * @param {Profile} profile
  * @param {Record<string, number>} features
- * @param {number} delta  signed update strength
+ * @param {number} delta
  */
 export function updateWeights(profile, features, delta) {
   if (!features || !delta) return;
@@ -85,13 +108,14 @@ export function updateWeights(profile, features, delta) {
 /**
  * @param {Profile} profile
  * @param {{ id: string, features: Record<string, number>, charCount: number }} dream
- * @param {{ dwellMs: number, explicit?: -1 | 0 | 1 }} engagement
+ * @param {{ dwellMs: number, explicit?: -1 | 0 | 1, like?: boolean }} engagement
  */
 export function recordEngagement(profile, dream, engagement) {
   const dwellMs = Math.max(0, engagement.dwellMs || 0);
   const explicit = engagement.explicit || 0;
   const fromDwell = dwellSignal(dwellMs, dream.charCount || 200) * DWELL_WEIGHT;
-  const fromExplicit = explicit * EXPLICIT_WEIGHT;
+  // explicit kept for back-compat; likes use recordLike
+  const fromExplicit = explicit * LIKE_WEIGHT * 0.66;
   const signal = fromDwell + fromExplicit;
 
   updateWeights(profile, dream.features || {}, signal * 0.35);
@@ -102,12 +126,35 @@ export function recordEngagement(profile, dream, engagement) {
     dwellMs: Math.round(dwellMs),
     signal: Number(signal.toFixed(3)),
     at: Date.now(),
+    kind: "dwell",
   });
   if (profile.history.length > 200) profile.history = profile.history.slice(-200);
   if (profile.seen.length > 800) profile.seen = profile.seen.slice(-800);
 
   saveProfile(profile);
   return signal;
+}
+
+/**
+ * Strong preference update from like / unlike.
+ * @param {Profile} profile
+ * @param {{ id: string, features: Record<string, number> }} dream
+ * @param {boolean} liked  true = like on, false = unlike (reverts)
+ */
+export function recordLike(profile, dream, liked) {
+  const delta = (liked ? 1 : -1) * LIKE_WEIGHT * 0.45;
+  updateWeights(profile, dream.features || {}, delta);
+  if (!profile.seen.includes(dream.id)) profile.seen.push(dream.id);
+  profile.history.push({
+    id: dream.id,
+    dwellMs: 0,
+    signal: Number((liked ? LIKE_WEIGHT : -LIKE_WEIGHT).toFixed(3)),
+    at: Date.now(),
+    kind: liked ? "like" : "unlike",
+  });
+  if (profile.history.length > 200) profile.history = profile.history.slice(-200);
+  saveProfile(profile);
+  return delta;
 }
 
 /** Cosine similarity between sparse maps */
@@ -132,12 +179,15 @@ export function cosine(a, b) {
  * Pick next unseen dream: epsilon-greedy over similarity to preference weights.
  * @param {Profile} profile
  * @param {Array<{id:string, features: Record<string, number>}>} pool
- * @param {{ epsilon?: number, rng?: () => number }} [opts]
+ * @param {{ epsilon?: number, rng?: () => number, exclude?: Set<string> }} [opts]
  */
 export function pickNext(profile, pool, opts = {}) {
   const epsilon = opts.epsilon ?? EPSILON;
   const rng = opts.rng || Math.random;
   const seen = new Set(profile.seen);
+  if (opts.exclude) {
+    for (const id of opts.exclude) seen.add(id);
+  }
   const unseen = pool.filter((d) => !seen.has(d.id));
   if (!unseen.length) return null;
 
@@ -148,7 +198,6 @@ export function pickNext(profile, pool, opts = {}) {
 
   let best = unseen[0];
   let bestScore = -Infinity;
-  // mild noise so ties break naturally
   for (const d of unseen) {
     const sim = cosine(profile.weights, d.features || {});
     const noise = (rng() - 0.5) * 0.04;
@@ -159,6 +208,25 @@ export function pickNext(profile, pool, opts = {}) {
     }
   }
   return best;
+}
+
+/**
+ * Append a batch of recommended dreams for infinite scroll.
+ * @param {Profile} profile
+ * @param {Array<{id:string, features: Record<string, number>}>} pool
+ * @param {number} n
+ * @param {{ exclude?: Set<string> }} [opts]
+ */
+export function pickBatch(profile, pool, n, opts = {}) {
+  const out = [];
+  const exclude = new Set(opts.exclude || []);
+  for (let i = 0; i < n; i++) {
+    const next = pickNext(profile, pool, { exclude });
+    if (!next) break;
+    out.push(next);
+    exclude.add(next.id);
+  }
+  return out;
 }
 
 export function profileSummary(profile) {
