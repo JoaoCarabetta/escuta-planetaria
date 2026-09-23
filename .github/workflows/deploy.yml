@@ -1,0 +1,87 @@
+# Push to prod / joao / filipe rsyncs that branch to the matching VPS path.
+# Secrets (same pattern as JoaoCarabetta/carabetta.xyz):
+#   VPS_HOST, VPS_USER, VPS_SSH_KEY
+name: Deploy
+
+on:
+  push:
+    branches:
+      - prod
+      - joao
+      - filipe
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Branch/env to deploy (prod, joao, or filipe)
+        required: true
+        default: prod
+        type: choice
+        options:
+          - prod
+          - joao
+          - filipe
+
+concurrency:
+  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy ${{ github.event_name == 'workflow_dispatch' && inputs.target || github.ref_name }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event_name == 'workflow_dispatch' && inputs.target || github.ref_name }}
+      url: ${{ (github.event_name == 'workflow_dispatch' && inputs.target || github.ref_name) == 'prod' && 'https://escutaplanetaria.carabetta.xyz/' || format('https://escutaplanetaria.carabetta.xyz/{0}/', github.event_name == 'workflow_dispatch' && inputs.target || github.ref_name) }}
+    steps:
+      - name: Resolve target
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.target }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.target.outputs.name }}
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Trust VPS host key
+        env:
+          SSH_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Rsync to VPS
+        env:
+          SSH_HOST: ${{ secrets.VPS_HOST }}
+          SSH_USER: ${{ secrets.VPS_USER }}
+          REMOTE_DIR: /var/www/escutaplanetaria/${{ steps.target.outputs.name }}
+        run: chmod +x deploy/rsync-static.sh && ./deploy/rsync-static.sh
+
+      - name: Smoke-check
+        env:
+          TARGET: ${{ steps.target.outputs.name }}
+        run: |
+          set -euo pipefail
+          if [ "$TARGET" = "prod" ]; then
+            PREFIX="https://escutaplanetaria.carabetta.xyz"
+          else
+            PREFIX="https://escutaplanetaria.carabetta.xyz/${TARGET}"
+          fi
+          for path in "/" "/planeta/" "/planeta/dados/meta.json"; do
+            url="${PREFIX}${path}"
+            code="$(curl -sI -o /tmp/ep.hdr -w '%{http_code}' "$url")"
+            echo "GET ${url} → ${code}"
+            test "$code" = "200"
+          done
+          marker="$(curl -fsS "${PREFIX}/.deploy-env" | tr -d '\r\n')"
+          echo "deploy-env=${marker}"
+          test "$marker" = "$TARGET"
