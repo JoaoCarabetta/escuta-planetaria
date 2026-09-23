@@ -1,0 +1,374 @@
+<title>Bater o martelo</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root{
+  --fundo:#EDEEF3; --carta:#FCFCFE; --tinta:#161923; --suave:#5C6377;
+  --linha:#D5D8E2; --linha-forte:#BCC1D0; --ouro:#7E6212; --ouro-fundo:#F2E9CE;
+  --marcado:#2A2E3C; --marcado-tinta:#F7F5EC; --erro:#8C2F2F;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --serifa:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  color-scheme:dark;
+  --fundo:#101219; --carta:#191C26; --tinta:#E7E9F1; --suave:#969CB1;
+  --linha:#2A2E3B; --linha-forte:#3C4254; --ouro:#D6B457; --ouro-fundo:#2D2713;
+  --marcado:#E7E9F1; --marcado-tinta:#14161E; --erro:#E38A8A;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --fundo:#101219; --carta:#191C26; --tinta:#E7E9F1; --suave:#969CB1;
+  --linha:#2A2E3B; --linha-forte:#3C4254; --ouro:#D6B457; --ouro-fundo:#2D2713;
+  --marcado:#E7E9F1; --marcado-tinta:#14161E; --erro:#E38A8A;
+}
+*{box-sizing:border-box}
+body{background:var(--fundo);color:var(--tinta);font-family:var(--sans);margin:0;
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.envoltorio{max-width:680px;margin:0 auto;padding-inline:16px;padding-block:0 96px}
+
+/* cabeçalho fixo */
+.topo{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
+  background:color-mix(in srgb,var(--fundo) 92%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--linha)}
+.topo-dentro{max-width:680px;margin:0 auto;padding:10px 16px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.marca{font-family:var(--serifa);font-size:17px;font-weight:600;letter-spacing:-.01em;margin-right:auto}
+.contador{font-family:var(--mono);font-size:13px;color:var(--suave);font-variant-numeric:tabular-nums}
+.contador b{color:var(--tinta);font-weight:500}
+.barra{height:2px;background:var(--linha);position:relative;overflow:hidden}
+.barra i{display:block;height:100%;width:0;background:var(--ouro);transition:width .3s ease}
+@media (prefers-reduced-motion:reduce){.barra i{transition:none}}
+
+button{font:inherit;color:inherit;cursor:pointer}
+.mini{background:none;border:1px solid var(--linha-forte);border-radius:999px;
+  padding:3px 11px;font-size:12.5px;color:var(--suave)}
+.mini[aria-pressed="true"]{background:var(--tinta);color:var(--carta);border-color:var(--tinta)}
+
+/* abertura */
+.abertura{padding-block:34px 8px}
+.abertura h1{font-family:var(--serifa);font-size:30px;line-height:1.15;margin:0 0 14px;
+  font-weight:600;letter-spacing:-.015em;text-wrap:balance}
+.abertura p{margin:0 0 12px;max-width:62ch;color:var(--suave)}
+.abertura p strong{color:var(--tinta);font-weight:500}
+details.legenda{margin:18px 0 0;border-top:1px solid var(--linha);padding-top:14px}
+details.legenda summary{font-size:13px;color:var(--ouro);cursor:pointer;
+  text-transform:uppercase;letter-spacing:.07em;font-weight:500;list-style:none}
+details.legenda summary::-webkit-details-marker{display:none}
+details.legenda summary::before{content:"+ ";font-family:var(--mono)}
+details.legenda[open] summary::before{content:"– "}
+.legenda dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0 4px;font-size:14px}
+.legenda dt{font-weight:600;white-space:nowrap}
+.legenda dd{margin:0;color:var(--suave)}
+@media (max-width:460px){.legenda dl{grid-template-columns:1fr;gap:2px 0}
+  .legenda dd{margin-bottom:10px}}
+
+/* aviso */
+.aviso{margin:16px 0 0;padding:10px 14px;border-left:3px solid var(--erro);
+  background:var(--carta);font-size:13.5px;color:var(--suave)}
+
+/* cartões */
+.lista{display:flex;flex-direction:column;gap:14px;margin-top:26px}
+.ficha{background:var(--carta);border:1px solid var(--linha);border-radius:3px;
+  padding:16px 18px 14px;scroll-margin-top:70px}
+.ficha[data-feito="1"]{border-left:3px solid var(--ouro);padding-left:16px}
+.ficha-topo{display:flex;align-items:baseline;gap:10px;font-family:var(--mono);
+  font-size:11.5px;color:var(--suave);letter-spacing:.02em;margin-bottom:11px}
+.ficha-topo .num{color:var(--ouro);font-weight:500}
+.ficha-topo .selo{margin-left:auto;font-size:11px;opacity:0;transition:opacity .25s}
+.ficha-topo .selo.ver{opacity:1}
+blockquote{margin:0 0 16px;font-family:var(--serifa);font-size:17.5px;line-height:1.5;
+  white-space:pre-wrap;overflow-wrap:anywhere}
+.rotulo{font-size:12px;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--suave);margin:0 0 7px;font-weight:500}
+.fichas-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:15px}
+.chip{background:none;border:1px solid var(--linha-forte);border-radius:2px;
+  padding:6px 12px;font-size:13.5px;line-height:1.3;transition:background .12s,border-color .12s}
+.chip:hover{border-color:var(--suave)}
+.chip[aria-pressed="true"]{background:var(--marcado);color:var(--marcado-tinta);
+  border-color:var(--marcado)}
+.chip:focus-visible,.mini:focus-visible,summary:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--ouro);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.chip{transition:none}}
+.dobra{border-top:1px dashed var(--linha);padding-top:13px;margin-top:2px}
+textarea{width:100%;background:transparent;border:1px solid var(--linha);border-radius:2px;
+  padding:8px 10px;font:inherit;font-size:14px;color:var(--tinta);resize:vertical;min-height:38px}
+textarea::placeholder{color:var(--suave);opacity:.7}
+
+.fim{margin-top:38px;padding-top:22px;border-top:1px solid var(--linha);
+  color:var(--suave);font-size:14px}
+.fim strong{color:var(--tinta);font-weight:500}
+.vazio{padding:40px 0;text-align:center;color:var(--suave);font-family:var(--serifa);font-size:17px}
+</style>
+
+<div class="topo">
+  <div class="topo-dentro">
+    <span class="marca">Bater o martelo</span>
+    <span class="contador"><b id="feitos">0</b> de <span id="total">0</span></span>
+    <button class="mini" id="filtro" aria-pressed="false">só pendentes</button>
+  </div>
+  <div class="barra"><i id="progresso"></i></div>
+</div>
+
+<div class="envoltorio">
+  <div class="abertura">
+    <h1>Setenta relatos para você decidir</h1>
+    <p>São textos públicos que eu já classifiquei. Aqui você classifica do zero, <strong>sem ver o que eu respondi</strong> — é a única forma de a comparação valer alguma coisa. Alguns me deram trabalho; outros eu achei óbvios. Você não vai saber quais são quais, e é de propósito.</p>
+    <p>Em qualquer das linhas você pode marcar <strong>mais de uma opção</strong> — inclusive combinações que parecem se contradizer. Se marcar “impossível decidir” junto com um palpite, eu leio isso como “acho que é isto, mas não dá pra cravar”. Comente quando o caso pedir, pule o que não quiser. Tudo grava sozinho e você pode fechar e voltar depois.</p>
+    <details class="legenda">
+      <summary>o que cada opção quer dizer</summary>
+      <dl>
+        <dt>dormiu e sonhou</dt><dd>a pessoa estava dormindo, mesmo que não diga isso em lugar nenhum</dd>
+        <dt>figura de linguagem</dt><dd>“meu sonho é…”, “que pesadelo”, nome de marca — a palavra aparece, o sono não</dd>
+        <dt>devaneio acordado</dt><dd>fantasiou, viajou, imaginou de olhos abertos</dd>
+        <dt>fala sobre sonhar</dt><dd>comenta o sonhar em geral, sem contar um sonho</dd>
+        <dt>propaganda</dt><dd>anúncio de produto, serviço, show. Marque junto com “figura de linguagem” se a palavra for usada assim, ou sozinho quando não der pra saber</dd>
+        <dt>não é sobre sonho</dt><dd>ruído: link solto, o assunto é outro</dd>
+        <dt>impossível decidir</dt><dd>o texto não dá elementos — e isso também é uma resposta</dd>
+        <dt>responde a algo</dt><dd>reage a uma pessoa <em>ou</em> a um assunto — um post, uma notícia, um acontecimento — e esse contexto ficou de fora do arquivo. Marque mesmo que não dê pra classificar o resto</dd>
+        <dt>pergunta ao público</dt><dd>escreve para ser respondido: pede interpretação, opinião, ajuda</dd>
+        <dt>irônico</dt><dd>diz o contrário do que quer dizer — com riso (deboche, piada sobre o próprio azar) ou sem ele (sarcasmo seco, amargura)</dd>
+        <dt>lamento</dt><dd>queixa, saudade, “de novo não” — a dor sai como reclamação</dd>
+        <dt>aflito</dt><dd>a aflição transborda no jeito de escrever, não só no que é contado</dd>
+        <dt>hesitante</dt><dd>quem escreve está em dúvida e escreve de dentro dela — pergunta, pondera, não fecha</dd>
+        <dt>grave</dt><dd>solene, sério, sem alívio — outra coisa que aflito</dd>
+      </dl>
+    </details>
+    <div class="aviso" id="aviso" hidden></div>
+  </div>
+
+  <div class="lista" id="lista"></div>
+  <div class="vazio" id="vazio" hidden>Nada pendente por aqui.</div>
+
+  <p class="fim">Quando terminar (ou parar no meio), é só me dizer — eu leio as respostas daqui e comparo com as minhas. <strong>Onde você discordar de mim é o que mais interessa.</strong></p>
+</div>
+
+<script>
+const ITENS = /*ITENS*/;
+const PORTAO = [
+  ["literal","dormiu e sonhou"],["figurado","figura de linguagem"],
+  ["devaneio","devaneio acordado"],["meta","fala sobre sonhar"],
+  ["propaganda","propaganda, anúncio"],
+  ["descartavel","não é sobre sonho"],["ambiguo","impossível decidir"]
+];
+const CARGA = [
+  ["aflitiva","aflitivo"],["neutra","nem bom nem ruim"],["prazerosa","bom"],
+  ["mista","misturado"],["nao_dito","o texto não diz"]
+];
+const ALVO = [
+  ["solto","posta pra ninguém"],["pergunta","pergunta ao público"],
+  ["resposta","responde a algo (falta o contexto)"],["dirigido","fala com uma pessoa"]
+];
+const TOM = [
+  ["leve","leve, brincalhão"],["ironico","irônico"],
+  ["lamento","lamento, queixa"],["aflito","aflito"],["hesitante","hesitante"],
+  ["grave","grave, solene"],["seco","seco, sem afeto"]
+];
+
+let db = null, local = false;
+const estado = new Map();       // id -> {portao:[], carga:'', comentario:''}
+const pendente = new Map();     // id -> timeout
+const fichas = new Map();
+
+const lista_de = v => Array.isArray(v) ? v.slice() : (v ? [v] : []);
+function normal(o){
+  o = o || {};
+  return {portao:lista_de(o.portao), carga:lista_de(o.carga), tom:lista_de(o.tom),
+          alvo:lista_de(o.alvo), comentario:o.comentario || ""};
+}
+const vazio = o => { const n = normal(o);
+  return !n.portao.length && !n.carga.length && !n.tom.length && !n.alvo.length
+         && !n.comentario.trim(); };
+
+function ler(id){ return normal(estado.get(id)); }
+
+function chip(texto, aperto, aoClicar){
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "chip"; b.textContent = texto;
+  b.setAttribute("aria-pressed", aperto ? "true" : "false");
+  b.addEventListener("click", aoClicar);
+  return b;
+}
+
+function montar(item){
+  const f = document.createElement("article");
+  f.className = "ficha"; f.id = "f" + item.n;
+
+  const topo = document.createElement("div");
+  topo.className = "ficha-topo";
+  const num = document.createElement("span");
+  num.className = "num"; num.textContent = String(item.n).padStart(2,"0");
+  const meta = document.createElement("span");
+  meta.textContent = [item.fonte, (item.data_relato||"").slice(0,10)].filter(Boolean).join(" · ");
+  const selo = document.createElement("span");
+  selo.className = "selo"; selo.textContent = "gravado";
+  topo.append(num, meta, selo);
+
+  const cit = document.createElement("blockquote");
+  cit.textContent = item.texto;
+
+  const r1 = document.createElement("p");
+  r1.className = "rotulo"; r1.textContent = "que tipo de sonho é este";
+  const g1 = document.createElement("div");
+  g1.className = "fichas-chips";
+
+  const r2 = document.createElement("p");
+  r2.className = "rotulo"; r2.textContent = "e como era, dentro do sonho";
+  const g2 = document.createElement("div");
+  g2.className = "fichas-chips";
+
+  const r3 = document.createElement("p");
+  r3.className = "rotulo"; r3.textContent = "e o jeito de contar";
+  const g3 = document.createElement("div");
+  g3.className = "fichas-chips";
+
+  const r4 = document.createElement("p");
+  r4.className = "rotulo"; r4.textContent = "a quem o texto fala";
+  const g4 = document.createElement("div");
+  g4.className = "fichas-chips";
+
+  const dobra = document.createElement("div");
+  dobra.className = "dobra";
+  const ta = document.createElement("textarea");
+  ta.id = "c" + item.n; ta.rows = 1;
+  ta.placeholder = "comentário (opcional) — o que te fez hesitar, o que falta na lista…";
+  dobra.append(ta);
+
+  f.append(topo, cit, r1, g1, r2, g2, r3, g3, r4, g4, dobra);
+
+  function pintar(){
+    const o = ler(item.relato_id);
+    g1.textContent = "";
+    const alterna = (campo, v) => {
+      const cur = ler(item.relato_id);
+      const atual = cur[campo];
+      const novo = atual.includes(v) ? atual.filter(x => x !== v) : atual.concat(v);
+      const obj = {...cur, [campo]: novo};
+      if (campo === "portao" && !novo.includes("literal")) obj.carga = [];
+      gravar(item.relato_id, obj);
+      pintar();
+    };
+    for (const [v, rot] of PORTAO)
+      g1.append(chip(rot, o.portao.includes(v), () => alterna("portao", v)));
+
+    const literal = o.portao.includes("literal");
+    r2.hidden = !literal; g2.hidden = !literal;
+    g2.textContent = "";
+    if (literal) for (const [v, rot] of CARGA)
+      g2.append(chip(rot, o.carga.includes(v), () => alterna("carga", v)));
+
+    const algo = o.portao.length > 0;
+    r3.hidden = !algo; g3.hidden = !algo;
+    g3.textContent = "";
+    if (algo) for (const [v, rot] of TOM)
+      g3.append(chip(rot, o.tom.includes(v), () => alterna("tom", v)));
+
+    g4.textContent = "";
+    for (const [v, rot] of ALVO)
+      g4.append(chip(rot, o.alvo.includes(v), () => alterna("alvo", v)));
+    if (ta.value !== o.comentario) ta.value = o.comentario || "";
+    f.dataset.feito = vazio(o) ? "0" : "1";
+  }
+
+  ta.addEventListener("input", () => {
+    ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 260) + "px";
+    gravar(item.relato_id, {...ler(item.relato_id), comentario: ta.value}, true);
+  });
+
+  fichas.set(item.relato_id, {f, pintar, selo});
+  pintar();
+  return f;
+}
+
+function gravar(id, obj, adiar){
+  estado.set(id, obj);
+  const alvo = fichas.get(id);
+  if (alvo){ alvo.f.dataset.feito = vazio(obj) ? "0" : "1"; if (!adiar) alvo.pintar(); }
+  contar();
+  clearTimeout(pendente.get(id));
+  pendente.set(id, setTimeout(() => persistir(id, obj), adiar ? 900 : 250));
+}
+
+async function persistir(id, obj){
+  const n = normal(obj);
+  const corpo = {portao:n.portao, carga:n.carga, tom:n.tom, alvo:n.alvo,
+                 comentario:n.comentario, quando:new Date().toISOString()};
+  if (db){
+    try { await db.doc("respostas/" + id).set(corpo); marcarSelo(id); return; }
+    catch(e){ avisar("Não consegui gravar no servidor (" + (e && e.code || "erro") +
+                     "). As respostas estão ficando só neste navegador."); }
+  }
+  try { localStorage.setItem("martelo:" + id, JSON.stringify(corpo)); marcarSelo(id); } catch(e){}
+}
+
+function marcarSelo(id){
+  const alvo = fichas.get(id); if (!alvo) return;
+  alvo.selo.classList.add("ver");
+  clearTimeout(alvo.t);
+  alvo.t = setTimeout(() => alvo.selo.classList.remove("ver"), 1400);
+}
+
+function contar(){
+  let n = 0;
+  for (const it of ITENS) if (!vazio(estado.get(it.relato_id))) n++;
+  document.getElementById("feitos").textContent = n;
+  document.getElementById("progresso").style.width = (100 * n / ITENS.length) + "%";
+  if (soPendentes) aplicarFiltro();
+}
+
+let soPendentes = false;
+function aplicarFiltro(){
+  let visiveis = 0;
+  for (const it of ITENS){
+    const alvo = fichas.get(it.relato_id); if (!alvo) continue;
+    const esconder = soPendentes && !vazio(estado.get(it.relato_id));
+    alvo.f.hidden = esconder;
+    if (!esconder) visiveis++;
+  }
+  document.getElementById("vazio").hidden = visiveis > 0;
+}
+
+function avisar(texto){
+  const a = document.getElementById("aviso");
+  a.textContent = texto; a.hidden = false;
+}
+
+const lista = document.getElementById("lista");
+document.getElementById("total").textContent = ITENS.length;
+for (const it of ITENS) lista.append(montar(it));
+
+document.getElementById("filtro").addEventListener("click", e => {
+  soPendentes = !soPendentes;
+  e.currentTarget.setAttribute("aria-pressed", String(soPendentes));
+  aplicarFiltro();
+});
+
+(async () => {
+  try { db = await claude.use("db"); } catch(e){ db = null; }
+  if (!db){
+    local = true;
+    avisar("Sem conexão com o armazenamento: as respostas ficam guardadas só neste navegador. Me avise se aparecer isso.");
+    for (const it of ITENS){
+      try {
+        const cru = localStorage.getItem("martelo:" + it.relato_id);
+        if (cru) estado.set(it.relato_id, normal(JSON.parse(cru)));
+      } catch(e){}
+    }
+    for (const it of ITENS) fichas.get(it.relato_id)?.pintar();
+    contar();
+    return;
+  }
+  db.collection("respostas").onSnapshot(snap => {
+    for (const d of snap.docs){
+      const o = d.data() || {};
+      const atual = estado.get(d.id);
+      const novo = normal(o);
+      if (atual && pendente.has(d.id)) continue;
+      if (JSON.stringify(atual) === JSON.stringify(novo)) continue;
+      estado.set(d.id, novo);
+      fichas.get(d.id)?.pintar();
+    }
+    contar();
+  }, e => avisar("A ligação com o armazenamento caiu (" + e.code + "). Recarregue a página."));
+})();
+</script>
