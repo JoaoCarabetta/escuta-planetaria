@@ -16,8 +16,10 @@ varrer as janelas vazias, e não tudo de novo.
 Pausar: touch coleta/PAUSAR_BSKY     Retomar: rodar de novo (é idempotente)
 Uso: python3 reparar_bluesky.py [--aplicar] [--folga=2]
 """
+import collections
 import datetime
 import json
+import statistics
 import sqlite3
 import sys
 import time
@@ -57,19 +59,39 @@ def buracos(con):
     Depois da migração do X um único dia vazio são milhares de relatos, e
     qualquer buraco vale a varredura.
     """
-    dias = set()
+    dias = collections.Counter()
     for (pl,) in con.execute("SELECT payload FROM fila_brutos WHERE fonte='bluesky'"):
         ts = json.loads(pl).get('created_utc') or 0
         if ts:
             d = datetime.datetime.utcfromtimestamp(ts).date()
             if 2023 <= d.year <= 2026:
-                dias.add(d)
+                dias[d] += 1
     if not dias:
         return []
+    # UM DIA COM 1 POST NÃO ESTÁ COBERTO. O cursor envenenado pulava 30 dias e
+    # deixava um sobrevivente na borda do salto; o detector antigo, que só
+    # procurava dias com ZERO, lia isso como cobertura e passava batido. Dos
+    # 232 mil recuperados na primeira passada, 71 mil vieram de dias assim —
+    # 2024-09-26 tinha 1 post e devolveu 7.612. Agora um dia conta como buraco
+    # quando tem menos de um quarto da mediana da vizinhança de duas semanas.
     ini, fim = min(dias), max(dias)
+    vizinhanca = {}
+    d = ini
+    while d <= fim:
+        viz = [dias.get(d + datetime.timedelta(days=k), 0) for k in range(-7, 8) if k]
+        vizinhanca[d] = statistics.median(viz)
+        d += datetime.timedelta(days=1)
+
+    def furado(dia):
+        n = dias.get(dia, 0)
+        if n == 0:
+            return True
+        med = vizinhanca.get(dia, 0)
+        return med >= 50 and n < med * 0.25
+
     saida, comeco, d = [], None, ini
     while d <= fim:
-        vazio = d not in dias
+        vazio = furado(d)
         if vazio and comeco is None:
             comeco = d
         elif not vazio and comeco is not None:
