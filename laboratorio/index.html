@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>laboratório · experimento — Escuta Planetária</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;1,200;1,300&family=IBM+Plex+Mono:wght@300;400&display=swap">
+  <link rel="stylesheet" href="./lab.css">
+</head>
+<body>
+  <header class="topo">
+    <p class="marca">escuta planetária</p>
+    <p class="lab-label">laboratório · experimento</p>
+    <p class="nota">não ligado ao planeta</p>
+  </header>
+
+  <main class="layout">
+    <section class="painel" aria-label="entrada do sonho">
+      <h1>colagem onírica</h1>
+      <p class="lede">Cole um relato de sonho. Heurísticas locais viram knobs; knobs viram camadas no escuro.</p>
+
+      <label class="sr-only" for="relato">relato</label>
+      <textarea id="relato" rows="8" placeholder="Eu sonhei que…" spellcheck="true"></textarea>
+
+      <div class="acoes">
+        <button type="button" id="sortear" class="btn ghost">sortear sonho</button>
+        <button type="button" id="gerar" class="btn primary">gerar colagem</button>
+      </div>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <details class="debug" open>
+        <summary>knobs (debug)</summary>
+        <pre id="knobs">{}</pre>
+      </details>
+    </section>
+
+    <section class="cena" aria-label="colagem">
+      <div class="canvas-wrap">
+        <canvas id="colagem" width="960" height="720" aria-label="colagem gerada"></canvas>
+        <div id="vazio-hint" class="vazio-hint">
+          <p>sem imagem ainda</p>
+          <p class="fraco">sorteie ou cole um sonho e gere</p>
+        </div>
+      </div>
+      <p id="titulo-linha" class="titulo-linha" hidden></p>
+    </section>
+  </main>
+
+  <script type="module" src="./lab.js"></script>
+</body>
+</html>
