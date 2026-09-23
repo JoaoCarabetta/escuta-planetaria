@@ -79,11 +79,15 @@ function currentDwellMs() {
 
 function renderTags(dream) {
   const bits = [];
-  if (dream.mood) bits.push(`<span class="pill mood-${dream.mood}">${dream.mood}</span>`);
-  if (dream.place) bits.push(`<span class="pill">${dream.place}</span>`);
-  for (const s of (dream.symbols || []).slice(0, 3)) {
-    bits.push(`<span class="pill">${s}</span>`);
-  }
+  const seen = new Set();
+  const add = (label, cls = "pill") => {
+    if (!label || seen.has(label)) return;
+    seen.add(label);
+    bits.push(`<span class="${cls}">${label}</span>`);
+  };
+  if (dream.mood) add(dream.mood, `pill mood-${dream.mood}`);
+  add(dream.place);
+  for (const s of (dream.symbols || []).slice(0, 3)) add(s);
   if (!bits.length) {
     tagsEl.hidden = true;
     tagsEl.innerHTML = "";
