@@ -100,7 +100,8 @@ def gravar(agente, fonte='reanotar'):
              figura, carga, tom, qualidades, descartavel, meta, confianca,
              nota, bolsa, extra)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'v3.2',?)""",
-            (d['id'], f'claude:v32:agente{agente}',
+            (d['id'], (f'claude:aud:agente{agente}' if fonte == 'auditoria'
+                       else f'claude:v32:agente{agente}'),
              p['literal'], p['figurado'], p['devaneio'],
              json.dumps(lista(d.get('figura')), ensure_ascii=False),
              json.dumps(lista(d.get('carga')), ensure_ascii=False),
