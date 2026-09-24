@@ -114,3 +114,60 @@ de barriga para cima) e `fonte: alheia` ("me disseram").
 plot antes e buguei?)"* é recorrência **cogitada**: ou se afirma o que o texto
 cogita, ou se perde o dado. A tripla `{especie, forca, fonte}` resolveu isso na
 atribuição e é o modelo a copiar.
+
+---
+
+## O achado mais consequente da noite: o anticlímax colide com o despertar
+
+Um anotador viu que o **critério 2 da ironia** (expectativa armada e esvaziada)
+tem exatamente a mesma forma que o par `carga: prazerosa` + `despertar:
+decepcao`. *"Sonhei q pai se importava cmg… acordei e vi q ele só se importava
+com ele mesmo KK"*.
+
+**Se o critério 2 bastar, todo sonho bom desmentido pelo acordar vira `ironico`**
+— e isso são milhares de relatos, no padrão mais comum do arquivo. A cabeça do
+tom aprenderia a marcar ironia em cima do eixo do despertar.
+
+O desempate que ele aplicou ao lote inteiro e que entra na v3.3:
+
+> **O anticlímax só é ironia quando o marcador incide sobre o esvaziamento como
+> graça.** Quando o esvaziamento é a dor relatada e o marcador só a amacia, é
+> `lamento`.
+
+Par de calibração que ele deixou, com a mesma estrutura e decisões opostas:
+`051b7e3f146022bf` (ironia) contra `034b77394460604f` (lamento).
+
+E um item a devolver: a **"ressalva que desmente"** perdeu autonomia ao ser
+absorvida no critério 1, e com ela se perdeu *"ngm precisa dele (eu queria
+ele😭)"* — distância pura entre o dito e o querido, sem conteúdo ruim, sem
+expectativa armada e sem marcador explícito. Volta como critério 4.
+
+## `suspeita_circulacao` está medindo duas coisas incompatíveis
+
+Dos 13 usos de um anotador, **8 são conta automatizada** (quatro do mesmo
+template de afiliado, mais bots de horóscopo e agregador) e só 3 são circulação
+humana — letra citada sem aspas, formato de meme.
+
+São fenômenos de natureza diferente: bot é propriedade do **emissor**, copypasta
+é propriedade do **texto**. E o detector por comprimento × tempo lê os dois como
+"longa, muita gente, janela de dias" — o corte de 45 dias não os separa. Pede
+marca própria: `conta_automatizada`.
+
+## Emoji não fixa tom, e isso precisa estar escrito como se escreveu do "kkk"
+
+O mesmo anotador mostrou 😭 marcando entusiasmo num texto e dor em dois outros,
+e 🥲 não decidindo nada. A v3.2 escreveu que "kkk sozinho não é sinal" e parou
+ali. **Listar explicitamente 😭 🥲 🫠 como insuficientes sozinhos.**
+
+## Duas exceções nomeadas que a rubrica deve trazer
+
+A regra "'meu sonho é X' é quase sempre figurado" tem contraexemplo direto:
+*"**meu sonho clássico** é voltar pro primeiro emprego. sempre sonho q voltei pra
+C&A"* — é literal. E a simétrica: há quem use "sonhei" para devaneio
+autodeclarado.
+
+## A definição de devaneio que a v3.3 deve usar, escrita por um sonhador
+
+Um relato do próprio arquivo faz a distinção melhor do que eu fiz em três
+versões: *"meus sonhos (**enquanto durmo, nao os devaneios**) estao mais
+imersivos"*. A fronteira é do falante, não nossa.
