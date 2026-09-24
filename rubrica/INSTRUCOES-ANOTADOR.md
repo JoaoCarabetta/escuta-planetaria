@@ -73,6 +73,14 @@ tanto quanto confiança inflada. Escreva em `nota` o que travou.
 
     python3 rubrica/lote_v32.py gravar --agente=N < /caminho/do/seu.json
 
+**Use nome de arquivo único, com o seu número de agente.** Vários anotadores
+trabalham no mesmo diretório de scratchpad ao mesmo tempo, e nome genérico
+(`p1.json`, `lote.json`) já causou colisão silenciosa: um agente teve os blocos
+sobrescritos no meio do trabalho e a fusão saiu com 193 objetos de dois lotes
+misturados. Ele detectou conferindo os ids contra o lote servido, e é a
+verificação que vale fazer sempre: **antes de gravar, confira que os ids do seu
+JSON são exatamente os que o `pegar` te serviu, nem um a mais.**
+
 Chaves por objeto — `id` e `confianca` obrigatórias;
 `literal, figurado, devaneio, fala_do_sonhar, obra, noticia, propaganda,
 descartavel, meta, suspeita_circulacao, falta_imagem, falta_fio,
