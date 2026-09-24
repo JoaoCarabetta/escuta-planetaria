@@ -28,7 +28,13 @@ não ruído. Só é duplicata quando há evidência de ser a MESMA pessoa repeti
                                           postaram "sonhei q o twitter voltava"
                                           com minutos de diferença na mesma
                                           noite, e isso é o ouro, não o lixo.)
-  ≥0,97 + autores diferentes            → eco_forte   (liga, não funde)
+  ≥0,995 + mesmo autor, sem janela      → duplicata   (verbatim da mesma conta é
+                                          repost, tenha passado quanto tempo for)
+  ≥0,97 + autores diferentes            → eco_forte   (liga, não funde. Se forem
+                                          três ou mais cópias, `copias.py` ainda
+                                          as agrupa como copy-paste ou obra —
+                                          e não esconde nenhuma, porque 24
+                                          pessoas repostando é dado.)
   0,90–0,97                             → sonho_gemeo (liga — o material precioso)
 
 Uso: python3 regua.py [--aplicar]   (sem --aplicar só relata)
@@ -45,6 +51,7 @@ from pathlib import Path
 DB = Path(__file__).parent / 'arquivo.db'
 APLICAR = '--aplicar' in sys.argv
 LIM_GEMEO, LIM_FORTE, DIAS_DUP = 0.90, 0.97, 90
+LIM_VERBATIM = 0.995   # praticamente letra por letra
 MIN_REPOST = 60          # minutos: janela do repost institucional
 DIAS_REPOST = 7          # dias: janela do repost da própria pessoa, com edição
 TAM_REPOST = 200         # caracteres: abaixo disso, texto igual é coincidência real
@@ -182,7 +189,14 @@ def main():
                 repost = (marcas[i] == marcas[int(j)] and not mesmo
                           and min(tams[i], tams[int(j)]) >= TAM_REPOST
                           and minutos is not None and minutos <= MIN_REPOST)
-                if sim >= LIM_FORTE and mesmo and dias is not None and dias <= DIAS_DUP:
+                # verbatim da MESMA conta é repost, tenha passado quanto tempo
+                # for: 15 pares escapavam só por estarem a mais de 90 dias de
+                # distância. O que NÃO entra aqui é o verbatim entre contas
+                # diferentes — isso é copy-paste, e some para `grupos_copia`,
+                # onde nenhuma cópia é escondida (ver arquivo/copias.py).
+                if sim >= LIM_VERBATIM and mesmo:
+                    tipo = 'duplicata'
+                elif sim >= LIM_FORTE and mesmo and dias is not None and dias <= DIAS_DUP:
                     tipo = 'duplicata'
                 elif mesmo and dias is not None and dias <= DIAS_REPOST:
                     tipo = 'duplicata'
