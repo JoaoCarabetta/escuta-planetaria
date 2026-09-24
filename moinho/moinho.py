@@ -29,6 +29,18 @@ MODELO = 'qwen3.5:9b'   # gemma4:e4b tem erros benignos e é mais rápido isolad
 # mas ocupa 9.5GB vs 5.4GB: em 24GB apertado fica MAIS lento (0.36 vs 0.48/s)
 VERSAO = 'v2.1'
 ANOTADOR = 'ollama:' + MODELO.replace(':', '-')
+# --bert troca o juiz: o classificador faz o mesmo julgamento em 12 ms contra
+# 1,1 s do generativo, com 91% de acerto num teto humano de 93%. Os 335 mil
+# pendentes deixam de ser quatro dias.
+USA_BERT = '--bert' in sys.argv
+# --sem-embed desacopla: a classificação lê o texto cru e não precisa do
+# embedding. Quem precisa dele é o planeta, a régua e a busca — e como pode ser
+# que a gente troque de embedder depois de comparar, embeddar agora seria
+# trabalho a refazer. O campo fica nulo e um backfill preenche depois.
+SEM_EMBED = '--sem-embed' in sys.argv
+if USA_BERT:
+    from anotar_bert import anotar as anotar_bert
+    ANOTADOR = 'bert:v32'
 PARALELO = 4
 
 import anotar_v2  # noqa: E402
@@ -136,7 +148,12 @@ def preparar(linha, com_ocr=True):
                 midia = 2      # tinha mídia e a extração NÃO deu certo
 
     idioma, _ = detectar_idioma(texto)
-    nat, sonho, desejo, sofr, quals = anotar_llm(texto)
+    if USA_BERT:
+        nat, sonho, extra_bert = anotar_bert(texto)
+        desejo, sofr, quals = None, None, None
+    else:
+        nat, sonho, desejo, sofr, quals = anotar_llm(texto)
+        extra_bert = None
     idade, genero = extrair_demo(texto, idioma or 'pt')
 
     fonte = p.get('fonte', 'reddit')
@@ -157,11 +174,24 @@ def preparar(linha, com_ocr=True):
                 texto=texto, midia=midia, sonho=sonho, desejo=desejo, sofr=sofr,
                 quals=quals, idade=idade, genero=genero, eh_en=eh_en, nat=nat,
                 autor_hash=autor_hash,
-                emb=embed(texto), permalink=p.get('permalink'), oid=p.get('id'))
+                extra_bert=extra_bert,
+                emb=None if SEM_EMBED else embed(texto),
+                permalink=p.get('permalink'), oid=p.get('id'))
+
+
+def _gravar_predicao(con, rid, e):
+    if not e:
+        return
+    con.execute("""INSERT OR REPLACE INTO predicoes_v32
+        (relato_id, portao, tem_conteudo, carga, tom, margem, p_literal, p_figurado)
+        VALUES (?,?,?,?,?,?,?,?)""",
+        (rid, json.dumps(e['portao']), e['tem_conteudo'], e['carga'],
+         '[]', e['margem'], e['p_literal'], e['p_figurado']))
 
 
 def gravar(con, r):
     fid, rid, fonte, sub = r['fid'], r['rid'], r['fonte'], r['sub']
+    _gravar_predicao(con, rid, r.get('extra_bert'))
     data, idioma, texto = r['data'], r['idioma'], r['texto']
     # tem_midia e midia_extraida são coisas DIFERENTES: a segunda dizia 'tentei',
     # não 'consegui', e um OCR falho ficava registrado como extração bem-sucedida
