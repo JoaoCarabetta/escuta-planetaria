@@ -171,3 +171,60 @@ autodeclarado.
 Um relato do próprio arquivo faz a distinção melhor do que eu fiz em três
 versões: *"meus sonhos (**enquanto durmo, nao os devaneios**) estao mais
 imersivos"*. A fronteira é do falante, não nossa.
+
+---
+
+## PARA O FITIPE DECIDIR: o critério da bandeira se contradiz num ponto
+
+Um anotador achou o texto que quebra a regra: *"sonhei que tava tentando me matar
+de diversas maneiras e não conseguindo"*, aberto com *"É muito pesado dizer
+que…?"*.
+
+A exceção escrita diz **não levantar** quando alguém morre dentro do sonho — ela
+existe para impedir que conteúdo onírico narrado seja lido como violência. A
+cláusula de risco diz **levantar** quando há sinal de risco a quem escreve. As
+duas se aplicam ao mesmo texto. Ele levantou com `duvida`, que é o que a rubrica
+manda na dúvida, e avisou: **é o único ponto do critério que precisa de uma frase
+antes de rodar nos 174 mil.**
+
+**O que eu proponho, e é você que decide:** a exceção cobre **outras pessoas**
+morrendo no sonho. Quando o sonhador sonha a própria morte ou a própria
+automutilação **e a moldura fora do sonho mostra sofrimento** — a pergunta
+hesitante, o pedido de ajuda, o "não aguento mais" —, levanta.
+
+O que me faz propor assim é que a moldura está fora do sonho: *"é muito pesado
+dizer que"* não é conteúdo onírico, é alguém se perguntando se pode falar. Mas
+isto decide o que o arquivo faz com relato de sofrimento real, e essa não é
+decisão técnica.
+
+## A `carga` deve virar dois campos, e agora são três anotadores dizendo
+
+A formulação mais limpa veio assim: **um campo para o conteúdo** (dito / não
+dito) e **um para o afeto** (prazeroso · aflitivo · misto · estranho · nulo /
+não dito).
+
+O eixo único obriga a escolher entre duas verdades — *"acordei no meio da noite,
+de um sonho ruim"* é `aflitiva` **e** `sem_conteudo` ao mesmo tempo. E resolve de
+uma vez o quadrante que falta, o `estranha` que falta, e o `neutra` que quase não
+aparece mas tem uso legítimo: um anotador achou o caso exato, conteúdo
+violentíssimo com afeto explicitamente nulo (*"isso nunca me incomodou muito"*)
+— afeto **dito** e nulo, que é diferente de não dito.
+
+## Uma frase que precisa entrar, ou metade dos desejos vira "perdido"
+
+**O imperfeito "meu sonho ERA" não significa desejo perdido** no português
+falado. É tempo de narrativa, não de luto. Sem essa frase escrita, um anotador
+prevê que metade dos `pendente` viraria `perdido` — e o classificador aprenderia
+o tempo verbal em vez do estado.
+
+## Armadilha lexical nova, e das boas
+
+*"Sonhei horrores de novo"* — **"horrores" é "muito", não "horrores"**. O texto
+segue com *"Um lugar lindo"* e a carga é prazerosa. Um classificador de
+superfície lê aflitiva com confiança.
+
+## E um pedido de aperto que eu aceito
+
+**`tom` deveria ser dispensado em `propaganda`, `obra` e `noticia`**, pelo mesmo
+argumento que dispensou `carga` fora do literal: num anúncio o tom mede registro
+de marketing, não maneira de alguém contar. Numa letra, mede o eu-lírico.

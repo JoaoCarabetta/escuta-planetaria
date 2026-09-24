@@ -61,6 +61,24 @@ def conectar():
 
 def pegar(agente, n, fonte):
     c = conectar()
+    if fonte == 'auditoria_treino':
+        # Os mesmos 60 textos DE TREINO para todos os auditores, sem fatia.
+        # É o teste do `rubrica/medidas/critério-da-auditoria.md`: 88% de
+        # concordância no portão, ou não se treina.
+        linhas = c.execute(
+            """SELECT a.relato_id, r.texto FROM anotacoes_v3 a
+               JOIN relatos r ON r.id = a.relato_id
+               WHERE a.bolsa='v3.2' AND a.anotador LIKE 'claude:v32:%'
+                 AND a.relato_id NOT IN (SELECT relato_id FROM amostra_prova)
+                 AND NOT EXISTS (SELECT 1 FROM anotacoes_v3 v
+                                 WHERE v.relato_id = a.relato_id AND v.anotador = ?)
+               ORDER BY a.relato_id LIMIT ?""",
+            (f'claude:audtr:agente{agente}', int(n))).fetchall()
+        print(f'### {len(linhas)} textos (auditoria do treino) para o agente {agente}\n')
+        for i, (rid, txt) in enumerate(linhas, 1):
+            print(f'--- {i} | {rid}')
+            print(txt.replace('\n', ' ') + '\n')
+        return
     if fonte == 'auditoria':
         # OS MESMOS textos para todos os auditores, sem fatia. É o único jeito de
         # medir concordância entre anotadores — e sem esse número não se sabe se
