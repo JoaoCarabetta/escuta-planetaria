@@ -12,9 +12,12 @@ A separação é a do `rubrica/desenho-do-treino.md` e não pode ser afrouxada a
 O `sonhador`, a `carga` e o `despertar` só existem sob `literal`; onde o portão
 não tem literal, o rótulo é -100, que é como o PyTorch marca "não cobre este".
 """
+import hashlib
 import json
 import random
+import re
 import sqlite3
+import unicodedata
 from pathlib import Path
 
 DB = Path(__file__).parent.parent / 'arquivo' / 'arquivo.db'
@@ -76,17 +79,43 @@ def linhas(con, onde):
     return saida
 
 
+def impressao(texto):
+    """Assinatura do texto, insensível a acento, caixa e pontuação.
+
+    A régua de duplicatas só compara o que o qwen chamou de `relato` — 22.641
+    relatos com embedding ficam fora do alcance dela, e é justamente onde mora
+    o anúncio. Três textos de marketing da MESMA fôrma ("a cobertura dos sonhos
+    em Ipanema, desenhada pela arquiteta Maria Eduarda") entraram no treino sem
+    nenhuma entrada na tabela de ecos. Com `propaganda` sendo classe rara, três
+    cópias de uma fôrma podem ser um quarto dos exemplos dela — e aí o modelo
+    aprende aquela frase, não a classe.
+
+    Aqui a defesa é exata e barata: assinatura do texto normalizado. Não
+    substitui consertar a régua; impede o dano no treino de hoje.
+    """
+    s = unicodedata.normalize('NFD', (texto or '').lower())
+    s = ''.join(c for c in s if unicodedata.category(c) != 'Mn')
+    return hashlib.blake2b(re.sub(r'\W+', ' ', s).strip().encode(), digest_size=8).hexdigest()
+
+
 def conjuntos():
     con = sqlite3.connect(DB, timeout=300)
     treino = linhas(con, """a.anotador LIKE 'claude:v3%'
         AND a.relato_id NOT IN (SELECT relato_id FROM amostra_prova)
         AND a.relato_id NOT IN (SELECT relato_id FROM anotacoes_v3 WHERE anotador='fitipe')""")
     # um relato pode ter sido anotado na v3.1 e na v3.2: fica a mais recente
-    vistos, limpo = set(), []
+    vistos, marcas, limpo, repetidos = set(), set(), [], 0
     for r in reversed(treino):
-        if r['id'] not in vistos:
-            vistos.add(r['id']); limpo.append(r)
+        if r['id'] in vistos:
+            continue
+        m = impressao(r['texto'])
+        if m in marcas:                      # mesma fôrma, texto diferente de id
+            repetidos += 1
+            continue
+        vistos.add(r['id']); marcas.add(m); limpo.append(r)
     treino = limpo
+    if repetidos:
+        print(f'  {repetidos} textos idênticos removidos do treino')
     prova = linhas(con, "a.anotador LIKE 'claude:v32:%' AND a.relato_id IN (SELECT relato_id FROM amostra_prova)")
     humano = linhas(con, "a.anotador = 'fitipe'")
 
