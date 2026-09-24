@@ -22,7 +22,8 @@ continua possível depois.
 JSON de gravação: lista de objetos com `id` e `confianca` obrigatórios, mais
   literal, figurado, devaneio, obra, noticia, propaganda, descartavel,
   meta, copy_paste, falta_contexto, bandeira,
-  figura, carga, tom, despertar, memoria, modo, presencas, atribuicao, nota
+  figura, carga, tom, despertar, memoria, repeticao, modo, presencas,
+  atribuicao, desejo_estado, sonhador, nota
 Listas podem vir como lista ou string.
 """
 import json
@@ -36,7 +37,7 @@ PORTAO = ['literal', 'figurado', 'devaneio', 'fala_do_sonhar',
 MARCAS = ['meta', 'suspeita_circulacao', 'falta_imagem', 'falta_fio',
           'texto_truncado', 'bandeira']
 LISTAS = ['figura', 'carga', 'tom', 'despertar', 'memoria', 'repeticao',
-          'presencas', 'atribuicao', 'desejo_estado', 'sonhador']
+          'modo', 'presencas', 'atribuicao', 'desejo_estado', 'sonhador']
 
 
 def conectar():
@@ -75,7 +76,7 @@ def gravar(agente):
         extra = {k: p[k] for k in PORTAO[3:] + MARCAS if k != 'descartavel'}
         extra.update({k: lista(d.get(k)) for k in
                       ('despertar', 'memoria', 'presencas', 'atribuicao',
-                       'repeticao', 'desejo_estado', 'sonhador')})
+                       'repeticao', 'modo', 'desejo_estado', 'sonhador')})
         c.execute("""INSERT OR REPLACE INTO anotacoes_v3
             (relato_id, anotador, tem_literal, tem_figurado, tem_devaneio,
              figura, carga, tom, qualidades, descartavel, meta, confianca,

@@ -152,6 +152,20 @@ outra coisa.
 é repetição. Colado à cena — *"sonhei que tava trabalhando de novo"* — não é.
 É exatamente onde cinco anotadores erraram na primeira rodada.
 
+### Modo — `modo` (só literal)
+
+`lucido` · `paralisia_do_sono` · `falso_despertar` · `hipnagogico` ·
+`memoria_revivida`
+
+**Eixo separado de `repeticao`**, e a distinção não é cosmética: `repeticao` diz
+o que se repete, `modo` diz o fenômeno do sonhar. Um sonho pode ter os dois.
+*(Ao criar `repeticao`, a primeira escrita desta versão dissolveu o `modo` e
+deixou estes quatro valores sem casa — um anotador achou o buraco no primeiro
+falso despertar que encontrou.)*
+
+`lucido` é lucidez, não vivacidade: "sonho muito lúcido" quase sempre quer dizer
+vívido.
+
 ### Memória — `memoria` (só literal)
 
 `esqueceu_um_pedaco` (a esmagadora maioria) · `nao_lembra_nada` ·

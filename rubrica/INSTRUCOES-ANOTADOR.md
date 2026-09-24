@@ -54,6 +54,10 @@ Regras que custaram caro e precisam ser respeitadas à risca:
 - **`repeticao`**: o desempate está na posição do "de novo". Colado ao ato de
   sonhar ("sonhei com ele de novo") é repetição; colado à cena ("sonhei que tava
   trabalhando de novo") não é.
+- **`modo` continua existindo, separado de `repeticao`**: `lucido` ·
+  `paralisia_do_sono` · `falso_despertar` · `hipnagogico` · `memoria_revivida`.
+  `repeticao` é o que se repete; `modo` é o fenômeno do sonhar. Um sonho pode
+  ter os dois.
 - **`sonhador`**: `proprio` · `terceiro` · `citado`. Quando o sonhador é outro, a
   carga é de quem sonhou e o tom é de quem conta.
 - **`suspeita_circulacao`**: você reconhece letra, meme ou copypasta — levante a
@@ -70,8 +74,8 @@ tanto quanto confiança inflada. Escreva em `nota` o que travou.
 Chaves por objeto — `id` e `confianca` obrigatórias;
 `literal, figurado, devaneio, obra, noticia, propaganda, descartavel, meta,
 copy_paste, falta_contexto, bandeira` como 0 ou 1;
-`figura, carga, tom, despertar, memoria, modo, presencas, atribuicao` como
-listas; `nota` como texto.
+`figura, carga, tom, despertar, memoria, repeticao, modo, presencas,
+atribuicao, desejo_estado, sonhador` como listas; `nota` como texto.
 
 ## 5. Relatório final
 
