@@ -84,3 +84,36 @@ O treino não cobre igualmente as classes raras. `hipnagogico`,
 aparecem uma ou duas vezes em quinhentos. **Isso não se resolve com volume**,
 porque elas são raras no arquivo também. Elas vivem na camada aberta: ficam
 buscáveis, contáveis e citáveis, e o classificador não finge que as aprendeu.
+
+## Confundidores conhecidos, medidos antes do treino
+
+Escritos aqui porque um confundidor que se descobre depois vira desculpa.
+
+**`propaganda` está colada a "link".** 86% dos 29 exemplos de propaganda no
+treino contêm um link ou um preço, contra 3% do resto do material. O modelo vai
+aprender "tem link, então é anúncio" — e isso é *parcialmente verdadeiro no
+mundo*, o que torna o confundidor pior, não melhor: ele acerta o suficiente para
+não chamar atenção.
+
+Um anotador levantou a suspeita sobre `noticia`, mas a medição mostrou que ali
+são 25% de 8 exemplos. O confundidor real é o outro.
+
+**Não vou consertar isto reanotando.** `propaganda` é 1% do arquivo na amostra-
+prova; com 29 exemplos, a cabeça vai ser fraca de qualquer forma. O que vou
+fazer é **medir a falha em vez de esconder**: no teste, passar pela cabeça de
+propaganda os textos da amostra-prova que **contêm link e não são anúncio**, e
+relatar quantos ela marca errado. Se ela disparar neles, o número vai no
+relatório, não numa nota de pé de página.
+
+**Ruído de rótulo na `carga`, admitido.** Quatro anotadores relataram o mesmo
+buraco: falta o espelho de `sem_afeto_dito` — o texto que diz **como foi** e não
+**o que foi** ("tive um pesadelo horrível hj"). Sem esse valor, cada anotador
+resolveu de um jeito: uns marcaram `aflitiva`, outros `sem_conteudo`. É
+construção frequente, e portanto **a cabeça da carga tem ruído de rótulo na
+fronteira mais movimentada dela**. Isso limita o teto dela por baixo dos 92% que
+a auditoria mediu, e o conserto é a v3.3, não mais dados.
+
+**`modo` não vira cabeça.** Zero ou dois usos forçados por lote, em todos os
+lotes, em todos os anotadores. Fica na camada aberta, buscável. Treinar uma
+cabeça com dois exemplos produz uma cabeça que responde sempre "não" e exibe
+99% de acerto.
