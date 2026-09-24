@@ -147,6 +147,22 @@ outra coisa.
 | `retomado` | continua de onde parou, depois de acordar |
 | `fragmentado` | sonhos diferentes numa noite entrecortada |
 
+**A REGRA GERAL DA COLAGEM** — vale para todas as bolsas, não só para a
+recorrência. Um anotador a formulou depois de ver quatro famílias de falso
+positivo com o mesmo mecanismo: **o que decide é a que a palavra está colada.**
+
+| a palavra | colada ao ato de sonhar | colada à cena | colada a outra coisa |
+|---|---|---|---|
+| "de novo" | repetição do sonho | "trabalhando de novo" — não é | colada ao *dormir* ("dormi de novo e sonhei") = `fragmentado`; colada à insônia = nada |
+| "esqueci" | falha de memória | — | colada ao *contar* ("esqueci de contar") = nada |
+| "não lembro" | amnésia | detalhe da cena | **dentro da fala do sonho** = nada |
+| "significa" | atribuição | — | linguístico ("あ significa uva verde") = nada |
+| "premonição" | atribuição | **dentro** do sonho = nada | — |
+
+E o limite da regra, também dele: *"de novo"* pode estar na cena e o texto
+afirmar a recorrência por outra via — *"eu só sonho com isso agora"*. **A
+posição resolve a palavra; não dispensa ler o resto.**
+
 **A regra prática, que nenhuma versão anterior escrevia:** o desempate está na
 **posição do "de novo"**. Colado ao ato de sonhar — *"sonhei com ele de novo"* —
 é repetição. Colado à cena — *"sonhei que tava trabalhando de novo"* — não é.
