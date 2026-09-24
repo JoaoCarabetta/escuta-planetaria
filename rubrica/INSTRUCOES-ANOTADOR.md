@@ -58,6 +58,8 @@ Regras que custaram caro e precisam ser respeitadas à risca:
   `paralisia_do_sono` · `falso_despertar` · `hipnagogico` · `memoria_revivida`.
   `repeticao` é o que se repete; `modo` é o fenômeno do sonhar. Um sonho pode
   ter os dois.
+- **`figura`** (só sob `figurado`): `desejo` · `intensificador` ·
+  `nome_expressao` · `comercial`.
 - **`sonhador`**: `proprio` · `terceiro` · `citado`. Quando o sonhador é outro, a
   carga é de quem sonhou e o tom é de quem conta.
 - **`suspeita_circulacao`**: você reconhece letra, meme ou copypasta — levante a
@@ -72,8 +74,9 @@ tanto quanto confiança inflada. Escreva em `nota` o que travou.
     python3 rubrica/lote_v32.py gravar --agente=N < /caminho/do/seu.json
 
 Chaves por objeto — `id` e `confianca` obrigatórias;
-`literal, figurado, devaneio, obra, noticia, propaganda, descartavel, meta,
-copy_paste, falta_contexto, bandeira` como 0 ou 1;
+`literal, figurado, devaneio, fala_do_sonhar, obra, noticia, propaganda,
+descartavel, meta, suspeita_circulacao, falta_imagem, falta_fio,
+texto_truncado, bandeira` como 0 ou 1;
 `figura, carga, tom, despertar, memoria, repeticao, modo, presencas,
 atribuicao, desejo_estado, sonhador` como listas; `nota` como texto.
 

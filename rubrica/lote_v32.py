@@ -53,12 +53,12 @@ def pegar(agente, n, fonte):
                 "WHERE (p.ordem % 8) = ? ")
     else:
         base = ("FROM relatos r WHERE r.id IN (SELECT relato_id FROM anotacoes_v3 "
-                "WHERE anotador LIKE 'claude:%' AND anotador NOT LIKE '%v31%') "
+                "WHERE anotador LIKE 'claude:%' AND anotador NOT LIKE '%v3_:%') "
                 "AND (instr('0123456789abcdef', substr(r.id,-1)) % 8) = ? ")
     linhas = c.execute(
         f"SELECT r.id, r.texto {base} "
         "AND NOT EXISTS (SELECT 1 FROM anotacoes_v3 v WHERE v.relato_id=r.id "
-        "                AND v.anotador LIKE 'claude:v31:%') "
+        "                AND v.anotador LIKE 'claude:v32:%') "
         f"ORDER BY r.id LIMIT {int(n)}", (agente % 8,)).fetchall()
     print(f'### {len(linhas)} textos ({fonte}) para o agente {agente}\n')
     for i, (rid, txt) in enumerate(linhas, 1):
@@ -92,7 +92,7 @@ def gravar(agente):
              json.dumps(extra, ensure_ascii=False)))
         n += 1
     c.commit()
-    print(f'{n} anotações gravadas pelo agente {agente} (v3.1)')
+    print(f'{n} anotações gravadas pelo agente {agente} (v3.2)')
 
 
 def main():
