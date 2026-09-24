@@ -54,6 +54,29 @@ Só então ele roda no arquivo inteiro, e os relatos em que ficar menos confiant
 voltam para anotação cara. É aí que cada ficha gasta vai para onde o modelo
 erra, em vez de para onde ele já acerta.
 
+## Nenhuma acurácia se lê sem a linha de base
+
+Aviso que veio de um anotador da amostra-prova, e que muda como os números vão
+ser lidos: na fatia dele, `sem_afeto_dito` foi 18 de 28 literais. **Um
+classificador que responda `sem_afeto_dito` a tudo acerta 64% do eixo `carga`**
+sem ter aprendido nada.
+
+Então, para cada campo, o relatório tem de trazer três números lado a lado:
+
+1. o acerto do modelo;
+2. o acerto da **classe majoritária** naquele campo, na amostra-prova;
+3. a concordância entre os anotadores Claude no mesmo campo.
+
+O primeiro número só quer dizer algo entre o segundo e o terceiro. Abaixo do
+segundo, o modelo é pior que um chute constante. Acima do terceiro, ele não está
+acertando: está reproduzindo o ruído de quem o treinou.
+
+E há um efeito parente na direção oposta: **classe rara não se mede por
+acurácia.** Numa fatia sorteada de 38, `ironico` apareceu zero vezes. Se ele for
+raro assim no arquivo, o modelo pode nunca marcar `ironico` e ainda assim exibir
+99% de acerto no campo. Para esses casos o que vale é a revocação por classe,
+contada em cima das bolsas — não a acurácia na amostra-prova.
+
 ## O que fica registrado como limitação, desde já
 
 O treino não cobre igualmente as classes raras. `hipnagogico`,
