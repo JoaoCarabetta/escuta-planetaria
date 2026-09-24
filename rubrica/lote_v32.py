@@ -48,6 +48,24 @@ def conectar():
 
 def pegar(agente, n, fonte):
     c = conectar()
+    if fonte == 'auditoria':
+        # OS MESMOS textos para todos os auditores, sem fatia. É o único jeito de
+        # medir concordância entre anotadores — e sem esse número não se sabe se
+        # um erro do classificador é erro dele ou ruído nosso. As oito fatias da
+        # amostra-prova foram disjuntas, então ninguém viu o texto de ninguém:
+        # o desenho media o modelo e esquecia de medir os professores.
+        linhas = c.execute(
+            """SELECT p.relato_id, r.texto FROM amostra_prova p
+               JOIN relatos r ON r.id = p.relato_id
+               WHERE NOT EXISTS (SELECT 1 FROM anotacoes_v3 v
+                                 WHERE v.relato_id = p.relato_id AND v.anotador = ?)
+               ORDER BY p.ordem LIMIT ?""",
+            (f'claude:aud:agente{agente}', int(n))).fetchall()
+        print(f'### {len(linhas)} textos (auditoria) para o agente {agente}\n')
+        for i, (rid, txt) in enumerate(linhas, 1):
+            print(f'--- {i} | {rid}')
+            print(txt.replace('\n', ' ') + '\n')
+        return
     if fonte == 'prova':
         base = ("FROM relatos r JOIN amostra_prova p ON p.relato_id = r.id "
                 "WHERE (p.ordem % 8) = ? ")
@@ -66,7 +84,7 @@ def pegar(agente, n, fonte):
         print(txt.replace('\n', ' ') + '\n')
 
 
-def gravar(agente):
+def gravar(agente, fonte='reanotar'):
     dados = json.load(sys.stdin)
     c = conectar()
     lista = lambda v: v if isinstance(v, list) else ([v] if v else [])
@@ -103,7 +121,7 @@ def main():
         pegar(int(arg.get('--agente', 1)), int(arg.get('--n', 90)),
               arg.get('--fonte', 'reanotar'))
     elif sys.argv[1] == 'gravar':
-        gravar(int(arg.get('--agente', 1)))
+        gravar(int(arg.get('--agente', 1)), arg.get('--fonte', 'reanotar'))
     else:
         print(__doc__)
 
