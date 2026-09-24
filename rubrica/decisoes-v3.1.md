@@ -21,9 +21,10 @@ nasceram de cartões que ele deixou em branco por falta de opção, não por
 hesitação. A distinção importa: texto difícil é dado sobre o arquivo,
 instrumento curto não é.
 
-**4. `copy-paste` é categoria própria.** Texto longo que reaparece quase igual
-em contas diferentes. É o que ele leu primeiro como ironia — e não era ironia
-nenhuma, era texto que passou de mão em mão, sem dono.
+**4. `copy-paste` é MARCA, não categoria do portão** *(correção do Fitipe)*.
+Texto longo que reaparece quase igual em contas diferentes — e que vale junto
+com poema, notícia, propaganda, o que for. É o que ele leu primeiro como ironia
+e não era ironia nenhuma: era texto que passou de mão em mão, sem dono.
 
 ## Dos eixos
 
@@ -37,11 +38,26 @@ Ele e o agente 4 travaram no mesmo relato pela mesma razão, sem se ver — o so
 é ótimo, o despertador toca, "quero chorar": a carga é prazerosa e só o acordar
 dói.
 
-**7. Eixo `a quem o texto fala`**: solto · pergunta ao público · responde a algo
-· dirigido. Nasceu de um cartão que ele não conseguiu classificar porque o texto
-respondia a um fio que a coleta não guardou. Usado em 51 dos 70 — mais que
-carga, memória e despertar somados. `responde a algo` apareceu em 32: quase
-metade do que temos é peça de conversa truncada.
+**7. O eixo `a quem o texto fala` é CORTADO, e sobra a marca `falta contexto`**
+*(decisão do Fitipe)*. Eu havia lido o número errado: reportei "51 de 70, o mais
+usado depois do portão" como prova de que se pagava — mas era o único campo
+sempre visível. Memória e despertar só aparecem em cartão literal, então o 4 e o
+5 deles querem dizer "o caso não apareceu"; o 51 do alvo quer dizer "estava lá".
+Ele confirmou: foi marcando sem achar importante, e só deixou em branco quando
+não soube. **Frequência de uso não mede importância quando o campo está sempre
+na tela.**
+
+O que sobrevive é o motivo pelo qual o eixo nasceu: um cartão que ele não
+conseguiu classificar porque o texto respondia a um fio que a coleta não
+guardou. Isso não é traço do texto, é defeito do arquivo — mesma família do
+Bluesky sem nenhuma imagem — e vira uma marca só, `falta contexto`, que a tese
+precisa poder contar. Some `solto`, `dirigido` e `pergunta ao público`.
+
+*Nota de custo, para não prometer o que não entrega: cortar isto **não acelera o
+classificador**. O BERTimbau faz uma passagem pelo texto e pendura várias
+cabeças nela; uma cabeça a mais é quase de graça na inferência. O que o corte
+economiza é trabalho de anotação e dados de treino, porque cada classe precisa
+dos seus próprios exemplos.*
 
 **8. Correções de vocabulário, todas dele.** `irônico` não exige riso (eu tinha
 escrito "riso irônico", pondo o exemplo no lugar da definição). `aflito` cobre o
