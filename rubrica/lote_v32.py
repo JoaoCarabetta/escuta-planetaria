@@ -36,6 +36,19 @@ PORTAO = ['literal', 'figurado', 'devaneio', 'fala_do_sonhar',
           'obra', 'noticia', 'propaganda', 'descartavel']
 MARCAS = ['meta', 'suspeita_circulacao', 'falta_imagem', 'falta_fio',
           'texto_truncado', 'bandeira']
+BOLSAS = {
+ 'nucleo_literal': "r.texto LIKE '%onhei que%'",
+ 'desejo':         "(r.texto LIKE '%meu sonho é%' OR r.texto LIKE '%meu sonho era%' OR r.texto LIKE '%sempre sonhei%')",
+ 'intensificador': "(r.texto LIKE '%é um pesadelo%' OR r.texto LIKE '%que pesadelo%' OR r.texto LIKE '%um pesadelo%')",
+ 'devaneio':       "(r.texto LIKE '%sonho acordad%' OR r.texto LIKE '%sonhando acordad%' OR r.texto LIKE '%devanei%' OR r.texto LIKE '%fico imaginando%')",
+ 'recorrencia':    "(r.texto LIKE '%de novo%' OR r.texto LIKE '%toda noite%' OR r.texto LIKE '%sempre sonho%')",
+ 'morto':          "(r.texto LIKE '%morreu%' OR r.texto LIKE '%falecid%')",
+ 'ausencia':       "(r.texto LIKE '%não sonhei%' OR r.texto LIKE '%nao sonhei%' OR r.texto LIKE '%não lembro%' OR r.texto LIKE '%nem sonhei%')",
+ 'atribuicao':     "(r.texto LIKE '%significa%' OR r.texto LIKE '%premoni%' OR r.texto LIKE '%aviso%' OR r.texto LIKE '%presságio%')",
+ 'obra_noticia':   "(r.texto LIKE '%sonho%' AND (r.texto LIKE '%http%' OR r.texto LIKE '%R$%'))",
+ 'despertar':      "(r.texto LIKE '%acordei%' OR r.texto LIKE '%quando acordei%')",
+ 'uniforme':       "r.texto LIKE '%sonh%'",
+}
 LISTAS = ['figura', 'carga', 'tom', 'despertar', 'memoria', 'repeticao',
           'modo', 'presencas', 'atribuicao', 'desejo_estado', 'sonhador']
 
@@ -64,6 +77,38 @@ def pegar(agente, n, fonte):
         print(f'### {len(linhas)} textos (auditoria) para o agente {agente}\n')
         for i, (rid, txt) in enumerate(linhas, 1):
             print(f'--- {i} | {rid}')
+            print(txt.replace('\n', ' ') + '\n')
+        return
+    if fonte == 'treino':
+        # O MATERIAL DE TREINO vem das bolsas por pista de superfície, e tem de
+        # vir: num sorteio uniforme, `devaneio` deu ZERO em 300 e o modelo nunca
+        # aprenderia a classe. Treina-se no estratificado e mede-se no sorteado.
+        #
+        # Três exclusões, e nenhuma é detalhe:
+        #  · a amostra-prova e os 70 do Fitipe são a prova — se entrarem no
+        #    treino, o modelo decora a resposta e a nota deixa de significar algo;
+        #  · os grupos copy_paste e obra têm o mesmo texto repetido em dezenas de
+        #    contas: ensinam o modelo a decorar aquele texto, não a ler.
+        fora = ("""
+            AND r.id NOT IN (SELECT relato_id FROM amostra_prova)
+            AND r.id NOT IN (SELECT relato_id FROM anotacoes_v3 WHERE anotador='fitipe')
+            AND r.id NOT IN (SELECT relato_id FROM grupos_copia
+                             WHERE tipo IN ('copy_paste','obra'))
+            AND NOT EXISTS (SELECT 1 FROM anotacoes_v3 v WHERE v.relato_id=r.id
+                            AND v.anotador LIKE 'claude:v32:%')
+            AND (instr('0123456789abcdef', substr(r.id,-1)) % 8) = ?
+            AND r.canonico_de IS NULL AND length(r.texto) BETWEEN 25 AND 700 """)
+        por = max(1, int(n) // len(BOLSAS))
+        saida, vistos = [], set()
+        for bolsa, cond in BOLSAS.items():
+            for rid, txt in c.execute(
+                    f"SELECT r.id, r.texto FROM relatos r WHERE {cond} {fora} "
+                    f"ORDER BY r.id LIMIT {por}", (agente % 8,)):
+                if rid not in vistos:
+                    vistos.add(rid); saida.append((rid, bolsa, txt))
+        print(f'### {len(saida)} textos (treino) para o agente {agente}\n')
+        for i, (rid, bolsa, txt) in enumerate(saida, 1):
+            print(f'--- {i} | {rid} | {bolsa}')
             print(txt.replace('\n', ' ') + '\n')
         return
     if fonte == 'prova':
