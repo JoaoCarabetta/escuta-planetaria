@@ -1,17 +1,17 @@
-# Instruções para quem anota (v3.1)
+# Instruções para quem anota (v3.2)
 
 Trabalhe no seu nível máximo de cuidado. Português brasileiro.
 Diretório: `/Users/fitipe/Desktop/arte_c_joao_tta/escuta_planetaria`
 
 ## 1. Leia antes de julgar qualquer coisa
-- `rubrica/rubrica-v3.1.md` — a rubrica inteira.
-- `rubrica/decisoes-v3.1.md` — por que cada campo existe e de quem veio a
+- `rubrica/rubrica-v3.2.md` — a rubrica inteira.
+- `rubrica/decisoes-v3.1.md (histórico das decisões)` — por que cada campo existe e de quem veio a
   decisão. Vários campos existem porque anotadores anteriores travaram sem eles.
 
 ## 2. Pegue a sua leva
 Fatia disjunta: ninguém pega o mesmo texto que você.
 
-    python3 rubrica/lote_v31.py pegar --agente=N --n=90 --fonte=FONTE
+    python3 rubrica/lote_v32.py pegar --agente=N --n=90 --fonte=FONTE
 
 `--fonte=reanotar` são textos já julgados na rubrica v3 antiga, que você relê com
 a v3.1. **Não consulte o julgamento antigo**: o objetivo é medir o que a rubrica
@@ -44,10 +44,20 @@ Regras que custaram caro e precisam ser respeitadas à risca:
   sonho, use `nao_dito`. Carga obrigatória fabrica dado.
 - **`descartavel` exige justificativa escrita** na nota. Na dúvida, não descarte:
   o arquivo perde as bordas, que são o material.
-- **`meta`, `copy_paste`, `falta_contexto` e `bandeira` são marcas**, não destinos
-  — combinam com qualquer coisa do portão.
-- **`falta_contexto`**: o texto responde a um fio, ou depende de uma imagem, que
-  a coleta não guardou.
+- **As marcas combinam com qualquer coisa do portão**: `meta`,
+  `suspeita_circulacao`, `falta_imagem`, `falta_fio`, `texto_truncado`,
+  `bandeira`.
+- **A falta de contexto virou três marcas.** Use só quando o texto **não puder
+  ser julgado** sem o que falta — não por qualquer "isso daí" solto. E
+  `texto_truncado` é defeito da coleta, não do arquivo.
+- **`carga` só existe sob `literal`.** No figurado não há "dentro do sonho".
+- **`repeticao`**: o desempate está na posição do "de novo". Colado ao ato de
+  sonhar ("sonhei com ele de novo") é repetição; colado à cena ("sonhei que tava
+  trabalhando de novo") não é.
+- **`sonhador`**: `proprio` · `terceiro` · `citado`. Quando o sonhador é outro, a
+  carga é de quem sonhou e o tom é de quem conta.
+- **`suspeita_circulacao`**: você reconhece letra, meme ou copypasta — levante a
+  suspeita; a máquina confirma. Não precisa ter certeza.
 
 `confianca` é obrigatória: `alta` · `media` · `duvida`. Use `duvida` de verdade
 quando for dúvida — a calibração dela é medida depois, e dúvida inflada estraga
@@ -55,7 +65,7 @@ tanto quanto confiança inflada. Escreva em `nota` o que travou.
 
 ## 4. Grave
 
-    python3 rubrica/lote_v31.py gravar --agente=N < /caminho/do/seu.json
+    python3 rubrica/lote_v32.py gravar --agente=N < /caminho/do/seu.json
 
 Chaves por objeto — `id` e `confianca` obrigatórias;
 `literal, figurado, devaneio, obra, noticia, propaganda, descartavel, meta,
