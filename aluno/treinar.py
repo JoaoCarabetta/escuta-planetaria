@@ -122,7 +122,7 @@ def main():
     total = epocas * (len(dtr))
     agenda = torch.optim.lr_scheduler.OneCycleLR(otim, max_lr=3e-5, total_steps=total,
                                                  pct_start=0.1)
-    melhor, historico = 9e9, []
+    melhor, historico = -1.0, []
     for ep in range(1, epocas + 1):
         t0, soma, n = time.time(), 0.0, 0
         for b in dtr:
@@ -143,12 +143,15 @@ def main():
         print(f"época {ep}: treino {linha['treino']:.4f} · validação {pv_:.4f} · "
               f"portão exato {ac['portao']:.3f} · {linha['minutos']:.1f} min · "
               f"livre {linha['livre']}%", flush=True)
-        if pv_ < melhor:
-            melhor = pv_
+        # seleção pelo ACERTO DO PORTÃO, não pela perda total: a perda total é
+        # dominada pelas cabeças com muitas classes e poucos exemplos, e o
+        # portão pesa pouco nela. Ver `rubrica/desenho-do-treino.md`.
+        if ac['portao'] > melhor:
+            melhor = ac['portao']
             torch.save(modelo.state_dict(), AQUI / 'aluno.pt')
             print('  ↳ melhor até agora, guardado', flush=True)
         (AQUI / 'historico.json').write_text(json.dumps(historico, indent=1))
-    print(f'fim · melhor validação {melhor:.4f} · pesos em aluno.pt', flush=True)
+    print(f'fim · melhor portão na validação {melhor:.3f} · pesos em aluno.pt', flush=True)
 
 
 if __name__ == '__main__':

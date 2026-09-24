@@ -117,3 +117,28 @@ a auditoria mediu, e o conserto é a v3.3, não mais dados.
 lotes, em todos os anotadores. Fica na camada aberta, buscável. Treinar uma
 cabeça com dois exemplos produz uma cabeça que responde sempre "não" e exibe
 99% de acerto.
+
+## Mudança de critério de seleção, declarada — 24/09, durante o primeiro treino
+
+A primeira corrida guardava o melhor modelo pela **perda total de validação**, que
+é a soma de todas as cabeças. Nas épocas 3 e 4 a perda total subiu e ficou plana
+enquanto **o acerto do portão subiu de 0,799 para 0,882**. A causa é aritmética:
+a perda total é dominada pelas cabeças com muitas classes e poucos exemplos, e o
+portão — o campo de que o projeto inteiro depende — pesa pouco nela. Do jeito
+que estava, eu terminaria guardando um modelo pior justamente no que importa.
+
+**O critério passa a ser o acerto exato do portão na validação**, com a perda
+total registrada ao lado para não esconder o que ela mostra.
+
+Duas coisas que parecem a mesma e não são, e é por isso que esta nota existe:
+
+Escolher a época pela **validação** é legítimo. É para isso que ela serve, e ela
+sai do próprio material de treino. Os conjuntos de prova — os 300 sorteados e os
+70 do Fitipe — continuam sem participar de decisão nenhuma, nem de treino, nem
+de seleção.
+
+O que **não** seria legítimo é olhar o resultado na amostra-prova e então
+escolher o critério. Isso é decidir a prova depois de ver a nota, e é
+exatamente o que o critério escrito antes existe para impedir. Esta mudança foi
+feita olhando só a validação, com o modelo ainda sem ter visto a prova uma única
+vez.

@@ -16,3 +16,7 @@ PAUSAR*
 # intermediários da projeção: grandes e reconstruíveis com projetar.py.
 planeta/dados/projecao.npy
 planeta/dados/projecao_ids.txt
+
+# pesos do modelo: 415 MB cada, e reproduzíveis a partir do banco e da semente
+aluno/*.pt
+aluno/*.log
