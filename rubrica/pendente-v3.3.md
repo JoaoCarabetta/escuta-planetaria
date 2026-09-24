@@ -174,6 +174,35 @@ imersivos"*. A fronteira é do falante, não nossa.
 
 ---
 
+## DECIDIDO (Fitipe, 24/09): a bandeira é só discurso de ódio, e só na voz desperta
+
+Resolve as duas colisões abaixo e substitui o critério da v3.2.
+
+**Levanta:** discurso de ódio dito pela **mente desperta e intencional** — no uso
+figurado de sonho/pesadelo ("meu sonho é ver esses [grupo] sumirem") ou no
+comentário de vigília sobre um sonho ("sonhei que bati em uma mulher, acordei
+até mais leve": o endosso é de quem acordou).
+
+**Não levanta:** nada que esteja **dentro do sonho literal** — nem ódio, nem
+violência, nem a própria morte. Sonhar a própria morte não levanta.
+
+**Ódio dirigido a si mesmo também levanta (Fitipe, 24/09, mesma conversa)** —
+sem marca separada. Suicídio e auto-ódio ditos pela voz desperta, com intenção,
+entram na mesma bandeira. **Desabafo não é ódio:** "não aguento mais, quero
+sumir" é desabafo, e "quero sumir" é quase sempre figurado em PT-BR. A
+fronteira é sutil e não vai ser pega sempre — por isso:
+
+**A bandeira carrega uma probabilidade** ("x% de ser discurso de ódio"), não só
+0/1. Cuidado já medido: confiança AUTO-DECLARADA por LLM é inútil (490/491 do
+llama ≥0,7). A porcentagem tem que vir de onde é calibrada — a saída de uma
+cabeça do BERTimbau treinada nisso, ou a confiança alta/média/dúvida dos
+anotadores Claude, que o julgamento cego mostrou calibrada (94/100/52%).
+Problema prático: a bandeira é rara (0/70 no Fitipe, quase zero na prova) —
+uma cabeça precisa de exemplos positivos, que teriam de ser buscados de
+propósito (anotação dirigida, não amostra uniforme).
+
+As seções abaixo ficam como histórico da pergunta.
+
 ## PARA O FITIPE DECIDIR: o critério da bandeira se contradiz num ponto
 
 Um anotador achou o texto que quebra a regra: *"sonhei que tava tentando me matar

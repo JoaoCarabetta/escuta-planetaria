@@ -1,6 +1,9 @@
 # a oficina não sobe: banco de 850MB, embeddings, modelos, brutos
 arquivo/arquivo.db
 arquivo/arquivo.db-*
+# QUALQUER banco (backups inclusive): têm autor, URL e texto bruto
+arquivo/*.db
+*.db
 modelos/
 treino/dados/
 treino/laya-sonhario/

@@ -55,14 +55,11 @@ UF_POR_SUB = {'saopaulo': 'SP', 'riodejaneiro': 'RJ', 'brasilia': 'DF',
 SUBS_EN = {'Dreams', 'LucidDreaming', 'DreamInterpretation'}
 
 
-def embed(texto):
-    req = urllib.request.Request(
-        'http://localhost:11434/api/embed',
-        data=json.dumps({'model': 'bge-m3', 'input': texto[:2000]}).encode(),
-        headers={'Content-Type': 'application/json'})
-    with urllib.request.urlopen(req, timeout=120) as r:
-        import numpy as np
-        return np.array(json.load(r)['embeddings'][0], dtype='float32').tobytes()
+# O embedding mora em arquivo/embedder.py, o mesmo que o backfill usa: texto
+# INTEIRO até o teto de 8.192 tokens (a versão antiga daqui cortava em 2.000
+# caracteres, e o Ollama cortava de novo em 2.048 tokens sem avisar).
+import embedder  # noqa: E402
+import revisao  # noqa: E402
 
 
 def baixar_e_ocr(url):
@@ -175,8 +172,15 @@ def preparar(linha, com_ocr=True):
                 quals=quals, idade=idade, genero=genero, eh_en=eh_en, nat=nat,
                 autor_hash=autor_hash,
                 extra_bert=extra_bert,
-                emb=None if SEM_EMBED else embed(texto),
+                **_embeddar(texto),
                 permalink=p.get('permalink'), oid=p.get('id'))
+
+
+def _embeddar(texto):
+    if SEM_EMBED:
+        return dict(emb=None, emb_versao=None, cortado=False)
+    v, cortado = embedder.embeddar(texto)
+    return dict(emb=v, emb_versao=embedder.VERSAO, cortado=cortado)
 
 
 def _gravar_predicao(con, rid, e):
@@ -205,8 +209,8 @@ def gravar(con, r):
          tem_midia,midia_extraida,tem_relato_onirico,julgador,embedding,
          geo_pais,geo_regiao,geo_metodo,geo_confianca,
          sonhador_idade,sonhador_genero,demo_metodo,demo_confianca,
-         interno_url,interno_id_original,interno_autor_hash)
-        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+         interno_url,interno_id_original,interno_autor_hash,embed_versao)
+        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (rid, fonte, sub, data, idioma, texto, tem_midia, extraida, sonho, ANOTADOR, r['emb'],
          None if eh_en else 'BR', UF_POR_SUB.get(sub),
          # o MÉTODO tem de dizer a verdade. No Bluesky não há comunidade nenhuma
@@ -220,7 +224,12 @@ def gravar(con, r):
          0.85 if (idade or genero) else None,
          ((('https://bsky.app' if fonte == 'bluesky' else 'https://www.reddit.com')
            + p['permalink']) if p.get('permalink') else None),
-         p.get('id'), r['autor_hash']))
+         p.get('id'), r['autor_hash'], r['emb_versao']))
+    # a lista de revisão se alimenta sozinha: portão indeciso ou vazio (pelo
+    # BERT) e texto enorme (cortado no teto do embedder)
+    revisao.abrir_pela_predicao(con, rid, r.get('extra_bert'))
+    if r['cortado']:
+        revisao.abrir(con, rid, 'enorme', {'chars': len(texto)})
     con.execute("""INSERT OR REPLACE INTO anotacoes (relato_id,anotador,versao,natureza_texto,
         tem_sonho_dormido,tem_desejo,tem_sofrimento,qualidades)
         VALUES (?,?,?,?,?,?,?,?)""", (rid, ANOTADOR, VERSAO, r['nat'], sonho,

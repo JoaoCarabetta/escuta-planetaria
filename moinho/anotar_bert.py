@@ -12,6 +12,7 @@ sair vazios, e é ganho: eram justamente os que a retro-avaliação mostrou
 errados em 1 de cada 5 casos.
 """
 import json
+import threading
 from pathlib import Path
 
 import torch
@@ -23,19 +24,29 @@ from dados import CARGA, PORTAO          # noqa: E402
 from modelo import BASE, Aluno           # noqa: E402
 
 _estado = {}
+_trava = threading.Lock()
 
 
 def _carregar():
-    if _estado:
+    # O moinho chama isto de 4 threads na largada. Sem a trava, as 4 montavam o
+    # modelo juntas; a montagem do transformers usa estado global (pesos em
+    # 'meta' até carregar), e numa delas o modelo ficava SEM PESOS e o forward
+    # travava em 100% de CPU para sempre (achado 24/09 num teste com 5 itens:
+    # 2 passaram, 3 travaram). E o `if _estado` antigo via o dicionário meio
+    # preenchido ('modelo' sem 'tk'). Agora: carrega uma vez, inteiro, e só
+    # então publica.
+    with _trava:
+        if 'tk' in _estado:
+            return _estado
+        torch.set_num_threads(4)
+        m = Aluno()
+        m.load_state_dict(torch.load(Path(__file__).parent.parent / 'aluno' / 'aluno.pt',
+                                     map_location='cpu'))
+        m.eval()
+        tk = AutoTokenizer.from_pretrained(BASE)
+        _estado['modelo'] = m
+        _estado['tk'] = tk
         return _estado
-    torch.set_num_threads(4)
-    m = Aluno()
-    m.load_state_dict(torch.load(Path(__file__).parent.parent / 'aluno' / 'aluno.pt',
-                                 map_location='cpu'))
-    m.eval()
-    _estado['modelo'] = m
-    _estado['tk'] = AutoTokenizer.from_pretrained(BASE)
-    return _estado
 
 
 def anotar(texto):
