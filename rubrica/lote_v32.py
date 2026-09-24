@@ -61,6 +61,32 @@ def conectar():
 
 def pegar(agente, n, fonte):
     c = conectar()
+    if fonte == 'auditoria_modelo':
+        # AUDITORIA DAS PREDIÇÕES: o anotador julga textos que o classificador
+        # já rotulou, SEM ver o rótulo dele. Medir contra rótulos antigos mostra
+        # onde o modelo discorda dos anotadores; auditar a saída dele mostra
+        # onde o modelo e os anotadores erram JUNTOS — e é o único jeito de
+        # pegar confundidor herdado, do tipo "aprendeu que link é anúncio".
+        #
+        # Serve só os que o modelo classificou com confiança (margem alta), de
+        # propósito: os inseguros a gente já sabe que são inseguros, e eles vão
+        # para anotação cara de qualquer forma. O que precisa de prova é a
+        # confiança dele.
+        linhas = c.execute(
+            """SELECT p.relato_id, r.texto FROM predicoes_v32 p
+               JOIN relatos r ON r.id = p.relato_id
+               WHERE p.margem > 0.35 AND p.portao <> '[]'
+                 AND p.relato_id NOT IN (SELECT relato_id FROM amostra_prova)
+                 AND p.relato_id NOT IN (SELECT relato_id FROM anotacoes_v3)
+                 AND NOT EXISTS (SELECT 1 FROM anotacoes_v3 v
+                                 WHERE v.relato_id = p.relato_id AND v.anotador = ?)
+               ORDER BY substr(p.relato_id, -3), p.relato_id LIMIT ?""",
+            (f'claude:audmod:agente{agente}', int(n))).fetchall()
+        print(f'### {len(linhas)} textos (auditoria do modelo) para o agente {agente}\n')
+        for i, (rid, txt) in enumerate(linhas, 1):
+            print(f'--- {i} | {rid}')
+            print(txt.replace('\n', ' ') + '\n')
+        return
     if fonte == 'auditoria_treino':
         # Os mesmos 60 textos DE TREINO para todos os auditores, sem fatia.
         # É o teste do `rubrica/medidas/critério-da-auditoria.md`: 88% de
@@ -163,7 +189,8 @@ def gravar(agente, fonte='reanotar'):
              figura, carga, tom, qualidades, descartavel, meta, confianca,
              nota, bolsa, extra)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'v3.2',?)""",
-            (d['id'], (f'claude:audtr:agente{agente}' if fonte == 'auditoria_treino'
+            (d['id'], (f'claude:audmod:agente{agente}' if fonte == 'auditoria_modelo'
+                       else f'claude:audtr:agente{agente}' if fonte == 'auditoria_treino'
                        else f'claude:aud:agente{agente}' if fonte == 'auditoria'
                        else f'claude:v32:agente{agente}'),
              p['literal'], p['figurado'], p['devaneio'],

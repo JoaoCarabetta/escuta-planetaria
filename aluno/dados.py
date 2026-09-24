@@ -25,7 +25,15 @@ SEMENTE = 2015
 
 PORTAO = ['literal', 'figurado', 'devaneio', 'fala_do_sonhar',
           'obra', 'noticia', 'propaganda', 'descartavel']
-CARGA = ['prazerosa', 'neutra', 'aflitiva', 'mista', 'sem_afeto_dito', 'sem_conteudo']
+# DECISÃO DO FITIPE, 24/09: a carga é do CONTEÚDO DO SONHO, não do texto.
+# Se não há conteúdo de sonho, não há carga — e pronto. Isso desfaz o nó que
+# seis anotadores relataram: eles não discordavam sobre o afeto, discordavam
+# sobre o que fazer quando o afeto era dito e o conteúdo não. Com a pergunta
+# partida em duas, a briga sai de dentro da classificação do afeto.
+#
+#   tem_conteudo  o texto narra o que aconteceu no sonho?   (sim/não)
+#   carga         só quando tem_conteudo=1                  (o afeto lá dentro)
+CARGA = ['prazerosa', 'neutra', 'aflitiva', 'mista', 'nao_dito']
 TOM = ['leve', 'ironico', 'lamento', 'aflito', 'confidencia', 'indignado',
        'hesitante', 'grave', 'seco']
 SONHADOR = ['proprio', 'terceiro', 'citado']
@@ -72,7 +80,10 @@ def linhas(con, onde):
         snv = uma(json.dumps(e.get('sonhador') or []))
         saida.append(dict(
             id=rid, texto=txt, portao=p, tom=tom,
-            carga=CARGA.index(cgv) if (p[0] and cgv in CARGA) else -100,
+            tem_conteudo=(0 if cgv == 'sem_conteudo' else 1) if (p[0] and cgv) else -100,
+            carga=(CARGA.index('nao_dito') if cgv == 'sem_afeto_dito'
+                   else CARGA.index(cgv) if cgv in CARGA else -100)
+                  if (p[0] and cgv and cgv != 'sem_conteudo') else -100,
             sonhador=SONHADOR.index(snv) if (p[0] and snv in SONHADOR) else -100,
             meta=int(bool(m)), bandeira=int(bool(e.get('bandeira'))),
             confianca=conf))

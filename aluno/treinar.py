@@ -56,7 +56,8 @@ class Levas(Dataset):
         return dict(
             ids=e['input_ids'][0], mascara=e['attention_mask'][0],
             portao=torch.tensor(r['portao']), tom=torch.tensor(r['tom']),
-            carga=torch.tensor(r['carga']), sonhador=torch.tensor(r['sonhador']),
+            carga=torch.tensor(r['carga']), conteudo=torch.tensor(r['tem_conteudo']),
+            sonhador=torch.tensor(r['sonhador']),
             bin=torch.tensor([r[k] for k in BINARIOS]))
 
 
@@ -67,7 +68,7 @@ def mover(b, ap):
 def avaliar(modelo, carregador, ap):
     modelo.eval()
     soma, n = 0.0, 0
-    acertos = {k: [0, 0] for k in ('portao', 'carga', 'sonhador')}
+    acertos = {k: [0, 0] for k in ('portao', 'carga', 'conteudo', 'sonhador')}
     with torch.no_grad():
         for b in carregador:
             b = mover(b, ap)
@@ -77,7 +78,7 @@ def avaliar(modelo, carregador, ap):
             pred = (torch.sigmoid(s['portao']) > 0.5).int()
             acertos['portao'][0] += int((pred == b['portao']).all(1).sum())
             acertos['portao'][1] += len(pred)
-            for campo in ('carga', 'sonhador'):
+            for campo in ('carga', 'conteudo', 'sonhador'):
                 m = b[campo] >= 0
                 if m.any():
                     acertos[campo][0] += int((s[campo][m].argmax(1) == b[campo][m]).sum())

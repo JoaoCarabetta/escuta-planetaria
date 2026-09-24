@@ -48,8 +48,8 @@ def por_classe(verdade, predito, nomes):
 
 def rodar(modelo, linhas, tk, ap, lote=16):
     carr = DataLoader(Levas(linhas, tk), batch_size=lote)
-    saidas = {k: [] for k in ('portao', 'carga', 'tom')}
-    alvos = {k: [] for k in ('portao', 'carga', 'tom')}
+    saidas = {k: [] for k in ('portao', 'carga', 'tom', 'conteudo')}
+    alvos = {k: [] for k in ('portao', 'carga', 'tom', 'conteudo')}
     modelo.eval()
     with torch.no_grad():
         for b in carr:
@@ -58,9 +58,11 @@ def rodar(modelo, linhas, tk, ap, lote=16):
             saidas['portao'] += (torch.sigmoid(s['portao']) > 0.5).int().tolist()
             saidas['tom'] += (torch.sigmoid(s['tom']) > 0.5).int().tolist()
             saidas['carga'] += s['carga'].argmax(1).tolist()
+            saidas['conteudo'] += s['conteudo'].argmax(1).tolist()
             alvos['portao'] += b['portao'].tolist()
             alvos['tom'] += b['tom'].tolist()
             alvos['carga'] += b['carga'].tolist()
+            alvos['conteudo'] += b['conteudo'].tolist()
     return saidas, alvos
 
 
@@ -78,6 +80,13 @@ def relatar(nome, saidas, alvos, tetos):
         r = f'{100*rev:.0f}%' if rev is not None else '—'
         p = f'{100*pre:.0f}%' if pre is not None else '—'
         print(f'  {cl:16s} {k:4d} {r:>8s} {p:>8s}')
+
+    mc = [i for i, a in enumerate(alvos['conteudo']) if a >= 0]
+    if mc:
+        acc = sum(1 for i in mc if alvos['conteudo'][i] == saidas['conteudo'][i])
+        b1 = max(sum(1 for i in mc if alvos['conteudo'][i] == v) for v in (0, 1))
+        print(f'\nCONTEÚDO  o texto narra o sonho?  acerto {100*acc/len(mc):.1f}%  ·  '
+              f'base {100*b1/len(mc):.1f}%  ·  n={len(mc)}')
 
     m = [i for i, a in enumerate(alvos['carga']) if a >= 0]
     if m:

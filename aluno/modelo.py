@@ -30,6 +30,7 @@ class Aluno(nn.Module):
         self.portao = nn.Linear(h, len(PORTAO))
         self.tom = nn.Linear(h, len(TOM))
         self.carga = nn.Linear(h, len(CARGA))
+        self.conteudo = nn.Linear(h, 2)
         self.sonhador = nn.Linear(h, len(SONHADOR))
         self.bin = nn.Linear(h, len(BINARIOS))
 
@@ -40,7 +41,8 @@ class Aluno(nn.Module):
         m = mascara.unsqueeze(-1).float()
         pool = self.solta((saida * m).sum(1) / m.sum(1).clamp(min=1e-9))
         return dict(portao=self.portao(pool), tom=self.tom(pool),
-                    carga=self.carga(pool), sonhador=self.sonhador(pool),
+                    carga=self.carga(pool), conteudo=self.conteudo(pool),
+                    sonhador=self.sonhador(pool),
                     bin=self.bin(pool))
 
 
@@ -56,7 +58,7 @@ def perda(saidas, alvos, pesos=None):
                             ('bin', bce, 'bin')):
         l = fn(saidas[chave], alvos[chave].float())
         partes[nome] = l.detach().item(); total = total + p.get(nome, 1.0) * l
-    for nome in ('carga', 'sonhador'):
+    for nome in ('carga', 'conteudo', 'sonhador'):
         a = alvos[nome]
         if (a >= 0).any():
             l = ce(saidas[nome], a)
