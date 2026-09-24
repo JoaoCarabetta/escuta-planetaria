@@ -51,7 +51,7 @@ def pegar(agente, n, fonte):
     else:
         base = ("FROM relatos r WHERE r.id IN (SELECT relato_id FROM anotacoes_v3 "
                 "WHERE anotador LIKE 'claude:%' AND anotador NOT LIKE '%v31%') "
-                "AND (CAST(substr(r.id,1,6) AS INTEGER) % 8) = ? ")
+                "AND (instr('0123456789abcdef', substr(r.id,-1)) % 8) = ? ")
     linhas = c.execute(
         f"SELECT r.id, r.texto {base} "
         "AND NOT EXISTS (SELECT 1 FROM anotacoes_v3 v WHERE v.relato_id=r.id "

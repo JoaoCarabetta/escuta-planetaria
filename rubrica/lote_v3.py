@@ -5,8 +5,9 @@
   gravar:  python3 lote_v3.py gravar --agente=1 < julgamentos.json
 
 O `pegar` distribui por PISTA DE SUPERFÍCIE, nunca pelo rótulo do qwen — senão o
-anotador herda a cegueira dele. Cada agente recebe uma fatia disjunta (pelo resto
-da divisão do id), então dois agentes nunca pegam o mesmo texto.
+anotador herda a cegueira dele. Cada agente recebe uma fatia disjunta (pelo último
+dígito hexadecimal do id — o CAST do prefixo NÃO servia: o SQLite para na
+primeira letra, e 65 mil relatos cujo id começa com letra ficavam inalcançáveis), então dois agentes nunca pegam o mesmo texto.
 
 O json de gravação é uma lista de objetos com as chaves:
   id, literal, figurado, devaneio, figura, carga, tom, modo, presencas,
@@ -45,7 +46,7 @@ def pegar(agente, n):
     base = ("FROM relatos r JOIN anotacoes a ON a.relato_id=r.id "
             "WHERE a.versao='v2.1' AND a.anotador='ollama:qwen3.5-9b' "
             "AND r.canonico_de IS NULL AND length(r.texto) BETWEEN 25 AND 700 "
-            "AND (CAST(substr(r.id,1,6) AS INTEGER) % 8) = ? "
+            "AND (instr('0123456789abcdef', substr(r.id,-1)) % 8) = ? "
             "AND NOT EXISTS (SELECT 1 FROM anotacoes_v3 v WHERE v.relato_id=r.id)")
     saida, vistos = [], set()
     for bolsa, cond in BOLSAS.items():
