@@ -39,13 +39,20 @@ def main():
     con = sqlite3.connect(DB, timeout=900)
     con.execute('PRAGMA busy_timeout=900000')
     con.execute("""CREATE TABLE IF NOT EXISTS predicoes_v32 (
-        relato_id TEXT PRIMARY KEY, portao TEXT, carga TEXT, tom TEXT,
-        margem REAL, feito_em TEXT DEFAULT (datetime('now')))""")
+        relato_id TEXT PRIMARY KEY, portao TEXT, tem_conteudo INTEGER,
+        carga TEXT, tom TEXT, margem REAL, p_literal REAL, p_figurado REAL,
+        feito_em TEXT DEFAULT (datetime('now')))""")
 
     # ordem por id para ser reproduzível; exclui o que já foi predito
     lim = f'LIMIT {n}' if n else ''
+    # --fora roda justamente o que a faixa de treino excluía: os muito curtos
+    # (onde mora 'pesadelo' escrito por 138 pessoas na mesma semana) e os muito
+    # longos. O modelo não viu textos assim treinando, então o resultado precisa
+    # ser olhado, não assumido.
+    faixa = ('length(r.texto) NOT BETWEEN 25 AND 700' if '--fora' in sys.argv
+             else 'length(r.texto) BETWEEN 25 AND 700')
     linhas = con.execute(f"""SELECT r.id, r.texto FROM relatos r
-        WHERE r.canonico_de IS NULL AND length(r.texto) BETWEEN 25 AND 700
+        WHERE r.canonico_de IS NULL AND {faixa}
           AND NOT EXISTS (SELECT 1 FROM predicoes_v32 p WHERE p.relato_id = r.id)
         ORDER BY r.id {lim}""").fetchall()
     print(f'{len(linhas)} relatos a classificar', flush=True)
@@ -69,6 +76,7 @@ def main():
             s = modelo(e['input_ids'].to(ap), e['attention_mask'].to(ap))
             pp = torch.sigmoid(s['portao'])
             cc = torch.softmax(s['carga'], 1)
+            kk = torch.softmax(s['conteudo'], 1)
             tt = torch.sigmoid(s['tom'])
             for j, (rid, _) in enumerate(bloco):
                 portao = [PORTAO[k] for k in range(len(PORTAO)) if pp[j, k] > 0.5]
@@ -77,12 +85,18 @@ def main():
                 # do portão. Perto de zero = o modelo não sabe, e é o que volta
                 # para anotação cara.
                 margem = float((pp[j] - 0.5).abs().min())
-                buffer.append((rid, json.dumps(portao), CARGA[int(cc[j].argmax())],
-                               json.dumps(tom, ensure_ascii=False), margem))
+                # o conteúdo é do sonho: sem sonho literal, a pergunta não existe
+                tem_c = int(kk[j].argmax()) if 'literal' in portao else None
+                carga = (CARGA[int(cc[j].argmax())]
+                         if ('literal' in portao and tem_c == 1) else None)
+                buffer.append((rid, json.dumps(portao), tem_c, carga,
+                               json.dumps(tom, ensure_ascii=False), margem,
+                               float(pp[j, 0]), float(pp[j, 1])))
             feitos += len(bloco)
             if len(buffer) >= 2000:
                 con.executemany("""INSERT OR REPLACE INTO predicoes_v32
-                    (relato_id,portao,carga,tom,margem) VALUES (?,?,?,?,?)""", buffer)
+                    (relato_id,portao,tem_conteudo,carga,tom,margem,p_literal,p_figurado)
+                    VALUES (?,?,?,?,?,?,?,?)""", buffer)
                 con.commit(); buffer = []
                 dt = time.time() - t0
                 print(f'  {feitos}/{len(linhas)} · {feitos/dt:.0f} textos/s · '
@@ -90,7 +104,8 @@ def main():
                       f'livre {memoria_livre()}%', flush=True)
     if buffer:
         con.executemany("""INSERT OR REPLACE INTO predicoes_v32
-            (relato_id,portao,carga,tom,margem) VALUES (?,?,?,?,?)""", buffer)
+            (relato_id,portao,tem_conteudo,carga,tom,margem,p_literal,p_figurado)
+                    VALUES (?,?,?,?,?,?,?,?)""", buffer)
         con.commit()
     dt = time.time() - t0
     print(f'fim · {feitos} relatos em {dt/60:.1f} min · {feitos/dt:.0f} por segundo',
