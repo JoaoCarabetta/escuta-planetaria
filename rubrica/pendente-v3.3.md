@@ -228,3 +228,58 @@ superfície lê aflitiva com confiança.
 **`tom` deveria ser dispensado em `propaganda`, `obra` e `noticia`**, pelo mesmo
 argumento que dispensou `carga` fora do literal: num anúncio o tom mede registro
 de marketing, não maneira de alguém contar. Numa letra, mede o eu-lírico.
+
+---
+
+## Achado sobre a integridade do arquivo, e é o mais consequente da noite
+
+Um anotador encontrou um **script de sedução** que ensina a mandar um relato de
+sonho fabricado: *"Sonhei com você, mas ainda tô tentando entender se foi um
+sonho ou um aviso"*. E encontrou, no mesmo lote, o texto que é indistinguível
+dele pela leitura pura — *"catarina essa tarde sonhei com você"* — e um terceiro
+que é a mesma jogada feita com hesitação sincera.
+
+**Existem no arquivo relatos literais que ninguém sonhou**: curtos, repetidos
+entre contas, e trazendo `atribuicao: aviso` de brinde, porque o script manda
+dizer isso. Não é ruído de coleta — é gênero de fala. E o pior é que o script
+*ensina* a marca que a rubrica usa para reconhecer sinceridade.
+
+Isto não se resolve com campo novo. Resolve-se sabendo que existe, contando
+quantos são (o detector de fôrmas ajuda) e dizendo na tese que uma parte do
+corpus é performance de intimidade, não relato.
+
+## Duas observações de desenho que não são valores faltando
+
+**Nada marca onde o sonho acaba.** Em vários relatos não há como saber se a
+última frase é conteúdo do sonho ou reação da vigília — e isso **muda a carga**,
+que é o eixo mais importante. A rubrica pressupõe uma fronteira que o texto não
+dá.
+
+**`sem_afeto_dito` mede o dito, não a ausência de afeto**, e isso precisa estar
+escrito onde o número aparece. O caso que o anotador deu: aranhas, o cachorro
+tentando salvá-la e sendo picado, *"acordei chorando a morte dele"* — recebeu
+`sem_afeto_dito` porque nenhuma palavra diz como ela se sentiu **dentro** do
+sonho. A regra é certa e o rótulo engana: **os 60,4% não dizem que o arquivo é
+afetivamente mudo, dizem que ele não nomeia o afeto.** Quem usar o dado depois
+vai confundir as duas coisas se ninguém escrever isso.
+
+## Segunda colisão na bandeira, também para o Fitipe
+
+*"meu deus leva o bolsonaro"* é praga jocosa **com alvo real e nomeado**. O
+gatilho manda levantar; a exclusão isenta praga jocosa "sem alvo nomeado". O
+anotador levantou com dúvida e avisou da consequência: **isso levanta bandeira em
+massa no gênero mais comum do Twitter brasileiro.**
+
+E um vizinho que expõe um buraco de verdade: *"sonhei que bati em uma mulher,
+acordei até mais leve"* — a exclusão cobre o **conteúdo do sonho** e não previu o
+**endosso feito na vigília**. Esse é diferente dos outros e provavelmente é o
+único dos três que a regra deveria pegar.
+
+## O pedido que eu levaria mais a sério, se fosse escolher um
+
+> *"Meia página mapeando os vinte emojis mais frequentes a tons renderia mais
+> que qualquer dado novo."*
+
+Cinco textos de um lote de 175 tiveram o tom decidido **inteiramente por um
+emoji ambivalente** — 😫 😪 🥹 🤓 😍 — e a rubrica não diz uma palavra sobre
+emojis. O tom concordou em 75%, e esta é provavelmente a maior fatia desses 25%.
