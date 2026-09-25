@@ -1,0 +1,1099 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atmosfera Onírica V2</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;1,200&family=IBM+Plex+Mono:wght@300;400&display=swap">
+<style>
+  :root{
+    --vazio:#05060b; --linha:#1a1e2c; --texto:#c6c9d6; --fraco:#6f7488;
+    --sonho:#6ba8ff; --desejo:#ffbe5c; --sofrer:#c39bff; --outro:#5b6376;
+    /* V2: --sonho = literal · --desejo = figurado · --sofrer = incerto */
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--vazio);color:var(--texto);overflow:hidden;
+    font:400 13px/1.5 "IBM Plex Mono",ui-monospace,monospace;-webkit-font-smoothing:antialiased}
+  canvas{position:fixed;inset:0;display:block;cursor:grab;touch-action:none}
+  canvas.arrastando{cursor:grabbing}
+
+  header{position:fixed;top:calc(env(safe-area-inset-top,0px) + 20px);left:22px;z-index:4;
+    pointer-events:none;max-width:30ch}
+  h1{font:italic 200 clamp(24px,4.2vw,34px)/1 Spectral,Georgia,serif;margin:0;letter-spacing:.01em}
+  header p{margin:7px 0 0;color:var(--fraco);font-size:11px;line-height:1.55}
+  header b{color:var(--texto);font-weight:400}
+
+  /* Duas colunas: busca à esquerda sob o título, filtros à direita (fixos,
+     nunca se mexem). Cada uma tem teto e rola por dentro — com 22 fontes na
+     lista, antes elas eram empurradas para fora da tela sem aviso. */
+  #esquerda,#direita{position:fixed;z-index:4;display:flex;flex-direction:column;gap:9px;
+    width:min(232px,calc(100vw - 36px));overscroll-behavior:contain}
+  #direita{right:18px;top:calc(env(safe-area-inset-top,0px) + 20px);
+    max-height:calc(100vh - env(safe-area-inset-top,0px) - 40px);
+    overflow-y:auto;scrollbar-width:none}
+  #direita::-webkit-scrollbar{width:0}
+  /* começa abaixo do título e pára antes da linha do tempo: o topo e a altura
+     vêm do medir(), porque o título quebra em uma ou duas linhas conforme a
+     largura e número fixo aqui erra sempre */
+  #esquerda{left:22px;top:calc(env(safe-area-inset-top,0px) + 104px);
+    max-height:calc(100vh - env(safe-area-inset-top,0px) - 216px)}
+  .caixa{background:rgba(9,11,19,.82);border:1px solid var(--linha);border-radius:3px;
+    padding:9px 11px;backdrop-filter:blur(7px);box-sizing:border-box;flex:none;min-height:0}
+  .caixa h2{margin:0 0 7px;font:400 9.5px/1 "IBM Plex Mono",monospace;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--fraco);flex:none;display:flex;align-items:baseline}
+  .caixa h2 a{margin-left:auto;color:var(--fraco);text-decoration:none;
+    border-bottom:1px solid var(--linha);letter-spacing:.1em}
+  .caixa h2 a:hover{color:var(--texto)}
+  .ch{display:flex;align-items:center;gap:7px;padding:2.5px 0;cursor:pointer;
+    font-size:11.5px;color:var(--fraco);user-select:none}
+  .ch:hover{color:var(--texto)}
+  .ch.on{color:var(--texto)}
+  .ch i{width:7px;height:7px;border-radius:50%;flex:none;background:var(--cor,var(--outro));
+    opacity:.28;transition:opacity .15s}
+  .ch.on i{opacity:1}
+  .ch em{margin-left:auto;font-style:normal;font-size:9.5px;color:var(--fraco);
+    font-variant-numeric:tabular-nums}
+
+  #busca input{width:100%;box-sizing:border-box;background:transparent;border:0;
+    border-bottom:1px solid var(--linha);padding:3px 0 6px;color:var(--texto);
+    font:400 12px "IBM Plex Mono",monospace;outline:none}
+  #busca input:focus{border-color:#39415c}
+  #busca input::placeholder{color:var(--fraco)}
+  #conta{font-size:10px;color:var(--fraco);margin-top:6px;min-height:12px}
+  /* a busca ocupa toda a coluna da esquerda; quem rola é a lista de achados,
+     por dentro, para que se possa percorrer todos sem a caixa crescer */
+  #busca{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+  #achados{flex:1 1 auto;min-height:0;overflow-y:auto;margin-top:5px}
+  /* na coluna da direita, a lista de fontes é a única que cresce sozinha
+     conforme o arquivo ganha comunidades: é ela que absorve a sobra e rola */
+  #fontes{flex:1 1 auto;display:flex;flex-direction:column;min-height:104px}
+  #fontesLista{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px}
+  #achados::-webkit-scrollbar,#fontesLista::-webkit-scrollbar{width:4px}
+  #achados::-webkit-scrollbar-thumb,#fontesLista::-webkit-scrollbar-thumb{
+    background:rgba(160,168,196,.3);border-radius:2px}
+  #fontesLista .grupo{margin-top:7px;padding-top:6px;border-top:1px solid rgba(26,30,44,.9)}
+  #fontesLista .grupo:first-of-type{margin-top:0;padding-top:0;border-top:0}
+  #achados div{padding:4px 0;border-top:1px solid rgba(26,30,44,.7);cursor:pointer;
+    font-size:11px;line-height:1.4;color:var(--fraco);display:flex;gap:6px}
+  #achados div:hover{color:var(--texto)}
+  #achados i{width:5px;height:5px;border-radius:50%;flex:none;margin-top:5px}
+  #achados span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;
+    -webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+  #tempo{position:fixed;left:22px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
+    z-index:4;width:min(330px,calc(100vw - 44px))}
+  #tempo .faixa{position:relative;height:26px;margin-top:5px}
+  #tempo .regua{position:relative;height:16px;margin-top:2px}
+  #tempo .regua canvas{cursor:default}
+  #tempo canvas{position:absolute;inset:0;width:100%;height:100%}
+  #tempo .rot{display:flex;justify-content:space-between;font-size:9.5px;color:var(--fraco);
+    font-variant-numeric:tabular-nums}
+
+  #nome{position:fixed;z-index:5;pointer-events:none;font:200 italic 15px Spectral,serif;
+    color:#e6e8f0;text-shadow:0 0 14px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,1);letter-spacing:.02em}
+  #relato{position:fixed;z-index:6;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);
+    transform:translateX(-50%);width:min(560px,calc(100vw - 44px));
+    background:rgba(9,11,19,.95);border:1px solid var(--linha);border-radius:3px;padding:15px 17px;
+    /* teto: relatos longos rolam dentro da ficha em vez de crescer para fora da tela.
+       border-box porque sem ele o padding e a borda ficam FORA do max-height e a
+       caixa estoura 32px por cima — que era o corte que sobrava. */
+    box-sizing:border-box;max-height:calc(100vh - 150px);display:flex;flex-direction:column}
+  #relato .top{display:flex;gap:9px;align-items:center;font-size:9.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--fraco);margin-bottom:9px;flex-wrap:wrap;flex:none;
+    padding-right:22px}
+  #relato .top i{width:7px;height:7px;border-radius:50%;flex:none}
+  #relato p{margin:0;font:300 15.5px/1.6 Spectral,Georgia,serif;color:#dfe2ec;
+    overflow-y:auto;overscroll-behavior:contain;padding-right:6px;flex:1 1 auto;min-height:0}
+  #relato p::-webkit-scrollbar{width:4px}
+  #relato p::-webkit-scrollbar-thumb{background:rgba(160,168,196,.3);border-radius:2px}
+  #relato button{position:absolute;top:7px;right:10px;background:none;border:0;
+    color:var(--fraco);cursor:pointer;font-size:15px;padding:3px}
+  /* só aparece quando se está atravessando o miolo — lá dentro não há borda
+     nenhuma para dizer onde se está */
+  #dentro{position:fixed;z-index:5;top:calc(env(safe-area-inset-top,0px) + 22px);
+    left:50%;transform:translateX(-50%);pointer-events:none;
+    font:400 9.5px "IBM Plex Mono",monospace;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--fraco);white-space:nowrap}
+  #carregando[hidden],#relato[hidden],#nome[hidden],#dentro[hidden]{display:none}
+  #carregando{position:fixed;inset:0;display:grid;place-items:center;z-index:9;
+    background:var(--vazio);color:var(--fraco);font-size:11.5px;letter-spacing:.1em}
+  /* o sanduíche não existe no computador, onde há margem para as duas colunas */
+  #sanduiche{display:none}
+
+  @media (max-width:760px){
+    /* No celular a tela é a obra: os índices ficam recolhidos atrás do
+       sanduíche e só a busca fica à mão, embaixo. */
+    #sanduiche{display:flex;position:fixed;z-index:7;
+      top:calc(env(safe-area-inset-top,0px) + 16px);right:12px;
+      width:38px;height:38px;flex-direction:column;justify-content:center;gap:4px;
+      align-items:center;padding:0;cursor:pointer;
+      background:rgba(9,11,19,.82);border:1px solid var(--linha);border-radius:3px;
+      backdrop-filter:blur(7px);-webkit-tap-highlight-color:transparent}
+    #sanduiche i{width:17px;height:1px;background:var(--texto);display:block;
+      transition:transform .18s, opacity .18s}
+    body.menu #sanduiche i:nth-child(1){transform:translateY(5px) rotate(45deg)}
+    body.menu #sanduiche i:nth-child(2){opacity:0}
+    body.menu #sanduiche i:nth-child(3){transform:translateY(-5px) rotate(-45deg)}
+
+    #esquerda{right:12px;left:12px;width:auto;top:auto;
+      flex-direction:row;flex-wrap:wrap;gap:7px;overflow-y:auto;
+      bottom:calc(env(safe-area-inset-bottom,0px) + 12px);max-height:34vh}
+    /* recolhido: a folha de índices desce para fora da tela em vez de sumir,
+       para que abrir e fechar tenha movimento e não pisque */
+    #direita{left:auto;right:12px;top:calc(env(safe-area-inset-top,0px) + 62px);
+      bottom:auto;width:min(268px,calc(100vw - 24px));
+      max-height:calc(100vh - env(safe-area-inset-top,0px) - 78px);
+      overflow-y:auto;z-index:6;
+      transform:translateX(calc(100% + 16px));opacity:0;pointer-events:none;
+      transition:transform .22s ease, opacity .18s ease}
+    body.menu #direita{transform:none;opacity:1;pointer-events:auto}
+    .caixa{padding:7px 9px}
+    #busca{flex:1 1 100%}
+    #fontesLista{max-height:30vh}
+    #achados{max-height:26vh}
+    #tempo{display:none}
+    header{max-width:60vw}
+    #relato{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 96px);
+      max-height:calc(100vh - env(safe-area-inset-top,0px) - 240px)}
+  }
+</style>
+
+<canvas id="ceu"></canvas>
+<header>
+  <h1>Atmosfera Onírica <small style="font-size:.5em;opacity:.6">v2 · <a href="../planeta/" style="color:inherit">ver v1</a></small></h1>
+  <p><b id="total">—</b> relatos públicos de sonho e desejo, 2015–2026.</p>
+</header>
+
+<div id="dentro" hidden></div>
+
+<!-- só aparece no celular, onde os índices cobririam a atmosfera -->
+<button id="sanduiche" aria-label="índices" aria-expanded="false"><i></i><i></i><i></i></button>
+
+<!-- Busca à esquerda, sob o título; filtros à direita. Em colunas separadas a
+     lista de achados cresce sem empurrar os filtros para fora da tela. -->
+<div id="esquerda">
+  <div class="caixa" id="busca">
+    <h2>buscar</h2>
+    <input type="search" id="q" placeholder="uma palavra…" autocomplete="off">
+    <div id="conta"></div>
+    <div id="achados"></div>
+  </div>
+</div>
+
+<div id="direita">
+  <div class="caixa" id="marcadores"><h2>o sonho é…</h2></div>
+  <div class="caixa" id="qualidades"><h2>tamanho do relato</h2></div>
+  <div class="caixa" id="camadas"><h2>camadas</h2></div>
+  <div class="caixa" id="fontes">
+    <h2>de onde vem <a id="todasFontes" href="#">nenhuma</a></h2>
+    <div id="fontesLista"></div>
+  </div>
+</div>
+
+<div id="tempo">
+  <div class="rot"><span id="t0">2015</span><span id="tsel"></span><span id="t1">2026</span></div>
+  <div class="faixa"><canvas id="linha"></canvas></div>
+  <div class="regua"><canvas id="sel"></canvas></div>
+</div>
+
+<div id="nome" hidden></div>
+<div id="relato" hidden>
+  <button aria-label="fechar">×</button>
+  <div class="top"></div>
+  <p></p>
+</div>
+<div id="carregando">recolhendo a atmosfera…</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+// V2: os bits 3-6 são o tamanho do relato (mesmo mecanismo dos filtros de
+// qualidade da V1). 'enorme' = passou do teto do embedder e foi cortado nele.
+const QUAL_ROT = {curto:'curto (<100)', medio:'médio', longo:'longo (>1.500)', enorme:'enorme (cortado)'};
+
+const BLOCOS = {};   // texto carregado sob demanda, um bloco por vez
+async function bloco(i){
+  const b = Math.floor(i / META.por_arquivo);
+  if (!BLOCOS[b]) BLOCOS[b] = dado(`textos${b}.json`).then(r=>r.json());
+  return await BLOCOS[b];
+}
+async function pegarTexto(i){ const d = await bloco(i); return d.textos[i - d.i0]; }
+async function pegarQuando(i){ const d = await bloco(i); return (d.quando || [])[i - d.i0]; }
+
+// O carimbo vem em UTC e é mostrado no horário de BRASÍLIA — não no fuso de
+// quem olha. A hora aqui é a de quem sonhou, e 99,7% do arquivo é do Brasil;
+// usar o fuso do visitante faria o mesmo relato mostrar horas diferentes para
+// cada pessoa. E a hora importa: um sonho contado às 4 da manhã não é a mesma
+// coisa que um contado às 4 da tarde.
+function formatarQuando(iso){
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  return d.toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo',
+                                    day:'2-digit', month:'2-digit', year:'numeric',
+                                    hour:'2-digit', minute:'2-digit', second:'2-digit'});
+}
+let META, N, POS, NAT, FONTE, COM, ANO, MES, BITS, P_LIT, P_FIG, PAL_OFF, PAL, TEXTOS = [];
+let MAT = null, zoom = 1, girando = true, sel = -1, buscaSet = null, pausa = false;
+// Onde estou olhando DENTRO da bola: +1 é a superfície de cá, 0 o centro,
+// −1 a superfície do lado oposto, vista por dentro. Sem isso, o clique pegava
+// um ponto de outro aglomerado lá atrás e a aproximação parava na casca.
+let foco = 1;
+// Espessura da fatia em foco. Quanto mais perto, mais fina: de longe a bola
+// inteira conta, de perto só o punhado de relatos à volta do que se olha.
+const fatia = () => Math.min(1.7, Math.max(0.08, 1.7 / Math.pow(zoom, 0.7)));
+
+// A profundidade não se lê só no brilho: o que está longe do plano em foco vai
+// PERDENDO A COR aos poucos, até o cinza do fundo. Assim dá para distinguir o
+// que está um pouco atrás do que está muito atrás, em vez de só aceso/apagado.
+const CINZA = [122, 128, 150];
+const CINZA_MAX = 0.80;          // nem o mais distante perde a cor por inteiro
+const CLIQUE_CINZA = 0.10;       // até aqui o ponto ainda é seu: o olho vê, o dedo pega
+const alcance = () => Math.min(2.4, Math.max(0.30, 2.4 / Math.pow(zoom, 0.45)));
+// cúbico: perto do plano a cor quase não cede e só desbota quando a distância
+// já é grande. É o que produz a graduação — e o que faz 10% de cinza alcançar
+// 46% do alcance em profundidade, mais longe do que a fatia em foco.
+const cinzento = (dz, alc) => Math.min(CINZA_MAX, (dz / alc) ** 3);
+const ativos = {sonho:true, desejo:true, sofrer:true};
+const quais = {};
+const camadas = {meta:false, idiomatico:false, ruido:false};
+const comOn = {};                 // índice da comunidade → visível
+let kIni = 0, kFim = 0;                 // meses absolutos desde ano_min
+const kDe = i => (ANO[i]-META.ano_min)*12 + (MES[i]-1);
+let nVisiveis = 0, escalaPonto = 1;
+// V2: a visibilidade vira uma máscara, recalculada só quando um filtro muda
+// (todo filtro passa por aqui via atualizarContas). O desenho lê a máscara em
+// vez de reavaliar os filtros 450 mil vezes por quadro.
+let VIS = null;
+function recalcularEscala(){
+  nVisiveis = 0;
+  if (!VIS || VIS.length !== N) VIS = new Uint8Array(N);
+  for (let i=0;i<N;i++){ const v = visivel(i) ? 1 : 0; VIS[i] = v; nVisiveis += v; }
+  // poucos pontos → grandes e nítidos; muitos → finos, para a densidade aparecer
+  escalaPonto = Math.max(1, Math.min(7, Math.sqrt(60000 / Math.max(nVisiveis, 40))));
+}
+
+// ——— matriz de rotação livre ———
+const mul = (A,B) => A.map((_,i)=>[0,1,2].map(j=>A[i][0]*B[0][j]+A[i][1]*B[1][j]+A[i][2]*B[2][j]));
+const rotX = a => {const c=Math.cos(a),s=Math.sin(a);return [[1,0,0],[0,c,-s],[0,s,c]]};
+const rotY = a => {const c=Math.cos(a),s=Math.sin(a);return [[c,0,s],[0,1,0],[-s,0,c]]};
+MAT = mul(rotX(-0.22), rotY(0.5));
+
+// Lê direto de dados/, que é o que o gerar.py escreve. Antes havia uma cópia
+// em base64 ao lado do index (os Artifacts não servem .bin) e era ela que a
+// página lia — quando o arquivo era regerado, a página continuava mostrando o
+// mundo anterior sem avisar. 'no-cache' revalida: 304 quando nada mudou.
+const dado = p => fetch('dados/' + p, {cache: 'no-cache'});
+async function carregar(){
+  META = await (await dado('meta.json')).json();
+  const buf = await (await dado('pontos.bin')).arrayBuffer();
+  const dv = new DataView(buf);
+  N = dv.getUint32(0, true);
+  POS = new Float32Array(N*3); NAT = new Uint8Array(N); FONTE = new Uint8Array(N);
+  COM = new Uint8Array(N); ANO = new Uint16Array(N); MES = new Uint8Array(N);
+  BITS = new Uint16Array(N); P_LIT = new Uint8Array(N); P_FIG = new Uint8Array(N);
+  let o = 4;
+  for (let i=0;i<N;i++){
+    POS[i*3]=dv.getFloat32(o,true); POS[i*3+1]=dv.getFloat32(o+4,true); POS[i*3+2]=dv.getFloat32(o+8,true);
+    NAT[i]=dv.getUint8(o+12); FONTE[i]=dv.getUint8(o+13); COM[i]=dv.getUint8(o+14);
+    ANO[i]=dv.getUint16(o+15,true); MES[i]=dv.getUint8(o+17); BITS[i]=dv.getUint16(o+18,true);
+    P_LIT[i]=dv.getUint8(o+20); P_FIG[i]=dv.getUint8(o+21);
+    o += 22;
+  }
+  PAL_OFF = new Uint32Array(N+1); const tmp = [];
+  for (let i=0;i<N;i++){
+    const k = dv.getUint8(o); o++;
+    PAL_OFF[i] = tmp.length;
+    for (let j=0;j<k;j++){ tmp.push(dv.getUint32(o,true)); o += 4; }
+  }
+  PAL_OFF[N] = tmp.length; PAL = Uint32Array.from(tmp);
+
+  $('#total').textContent = N.toLocaleString('pt-BR');
+  $('#t0').textContent = META.ano_min; $('#t1').textContent = META.ano_max;
+  kIni = 0; kFim = (META.ano_max - META.ano_min + 1)*12 - 1;
+  montarHUD();
+  recalcularEscala();
+  $('#carregando').hidden = true;
+  requestAnimationFrame(desenhar);
+  nMeses = (META.ano_max - META.ano_min + 1)*12;
+  kFim = nMeses - 1;
+  desenharLinha(); desenharSel();
+
+}
+
+// ——— visibilidade de um ponto ———
+// O critério em pedaços, para que contagem, desenho, clique e histograma NUNCA
+// discordem. Antes, os chips somavam o corpus inteiro enquanto o planeta
+// mostrava um recorte: o número dizia uma coisa e a tela mostrava outra.
+const okCom   = i => comOn[COM[i]] !== false;
+const okTempo = i => { const k = kDe(i); return k >= kIni && k <= kFim; };
+// V2: o incerto responde SÓ ao botão dele, mesmo que o BERT tenha arriscado
+// literal ou figurado — senão apagar "incerto" não o esconderia
+const okMarc  = i => { const b = BITS[i];
+  if (b&4) return ativos.sofrer;
+  return !!(((b&1)&&ativos.sonho) || ((b&2)&&ativos.desejo)); };
+// V2: tamanho é um-de-quatro, então o filtro é OU — nenhum marcado = todos;
+// marcados = o relato tem de ter um deles. (Na V1, qualidades eram E.)
+const okQuais = (i, menos) => { const b = BITS[i];
+  let algum = false;
+  for (const q in quais){
+    if (!quais[q] || q === menos) continue;
+    algum = true;
+    if (b & (1 << (3 + META.qualidades.indexOf(q)))) return true;
+  }
+  return !algum; };
+
+function visivel(i){
+  const nat = NAT[i];
+  if (nat !== 0){
+    const nome = ['relato','meta','idiomatico','ruido'][nat];
+    // a linha do tempo também vale para as camadas: acender "ruído comercial"
+    // trazia de volta pontos de fora do período escolhido
+    return camadas[nome] === true && okCom(i) && okTempo(i);
+  }
+  return okCom(i) && okMarc(i) && okTempo(i) && okQuais(i);
+}
+
+function corDe(i){
+  const b = BITS[i];
+  if (NAT[i] !== 0) return [91,99,118];
+  if (b&4) return [195,155,255];          // incerto: cor própria, sempre
+  let r=0,g=0,bl=0,n=0;
+  if (b&1){ r+=107; g+=168; bl+=255; n++; }
+  if (b&2){ r+=255; g+=190; bl+=92;  n++; }
+  if (b&4){ r+=255; g+=99;  bl+=118; n++; }
+  if (!n) return [91,99,118];
+  return [r/n|0, g/n|0, bl/n|0];
+}
+
+// ——— desenho ———
+const cv = $('#ceu'), cx = cv.getContext('2d', {alpha:false});
+let W,H,DPR;
+function medir(){
+  DPR = Math.min(2, devicePixelRatio||1); W = innerWidth; H = innerHeight;
+  cv.width = W*DPR; cv.height = H*DPR; cv.style.width = W+'px'; cv.style.height = H+'px';
+  cx.setTransform(DPR,0,0,DPR,0,0);
+  // os filtros começam logo abaixo do cabeçalho de verdade: o título quebra em
+  // uma ou duas linhas conforme a largura, então número fixo aqui sempre erra
+  const esq = $('#esquerda');
+  if (W > 760){
+    // encosta no rodapé do cabeçalho e pára acima da linha do tempo
+    const topo = Math.round(document.querySelector('header').getBoundingClientRect().bottom + 16);
+    const fundo = $('#tempo').getBoundingClientRect().top;
+    esq.style.top = topo + 'px';
+    esq.style.maxHeight = Math.max(120, Math.round(fundo - topo - 16)) + 'px';
+  } else {
+    esq.style.top = esq.style.maxHeight = '';
+  }
+}
+addEventListener('resize', ()=>{medir(); desenharLinha(); desenharSel();}); medir();
+
+const estrelas = Array.from({length:180},()=>[Math.random(),Math.random(),.05+Math.random()*.16]);
+
+// V2: cor-base de cada ponto calculada uma vez (só depende da camada e dos bits)
+let CR = null, CG, CB;
+function prepararCores(){
+  CR = new Uint8Array(N); CG = new Uint8Array(N); CB = new Uint8Array(N);
+  for (let i=0;i<N;i++){ const c = corDe(i); CR[i]=c[0]; CG[i]=c[1]; CB[i]=c[2]; }
+}
+// V2: pontos pequenos se somam numa imagem na memória (luz aditiva, como o
+// 'lighter') e vão à tela de uma vez. Com 370 mil pontos, um fillRect com
+// fillStyle em texto por ponto levava ~325 ms por quadro.
+const camadaPts = document.createElement('canvas'), cxPts = camadaPts.getContext('2d');
+let ACC = null, IMG = null;
+
+function desenhar(t){
+  cx.fillStyle = css('--vazio'); cx.fillRect(0,0,W,H);
+  for (const [x,y,a] of estrelas){ cx.fillStyle = `rgba(190,196,220,${a})`; cx.fillRect(x*W,y*H,1,1); }
+  if (girando && sel<0 && !pausa && !giroAlvo) MAT = mul(rotY(0.0009 / Math.max(1, Math.sqrt(zoom))), MAT);
+  if (giroAlvo){
+    const passo = Math.max(0.035, giroAlvo.resta*0.14);
+    MAT = mul(rotEixo(giroAlvo.eixo, Math.min(passo, giroAlvo.resta)), MAT);
+    giroAlvo.resta -= passo;
+    if (giroAlvo.resta <= 0.01) giroAlvo = null;
+  }
+
+  const R = Math.min(W,H)*0.36*zoom;
+  const m = MAT, cxx = W/2, cyy = H/2;
+  const halo = cx.createRadialGradient(cxx,cyy,R*0.55,cxx,cyy,R*1.3);
+  halo.addColorStop(0,'rgba(24,30,48,.30)'); halo.addColorStop(1,'rgba(24,30,48,0)');
+  cx.fillStyle = halo; cx.beginPath(); cx.arc(cxx,cyy,R*1.3,0,7); cx.fill();
+  // densidade: soma luminosa. Raio cresce com o zoom (três resoluções).
+  const zr = zoom < 1.5 ? 1.1 : (zoom < 3 ? 1.7 : Math.min(9, 2.8 * Math.pow(zoom/3, 0.42)));
+  const raio = zr * escalaPonto;
+  const alfaBase = Math.min(0.95, (zoom < 1.5 ? 0.16 : (zoom < 3 ? 0.34 : Math.min(0.95, 0.8 + zoom*0.01)))
+                                  * Math.pow(escalaPonto, 0.9));
+  const redondo = raio >= 1.9;
+  const larg = fatia(), alc = alcance();
+  mostrarProfundidade();
+  cx.globalCompositeOperation = 'lighter';
+  if (!CR) prepararCores();
+  if (!VIS) recalcularEscala();
+  const DW = cv.width, DH = cv.height;
+  if (!ACC || IMG.width !== DW || IMG.height !== DH){
+    ACC = new Float32Array(DW*DH*3); IMG = new ImageData(DW, DH);
+    camadaPts.width = DW; camadaPts.height = DH;
+  } else ACC.fill(0);
+  let somou = false;
+  let vis = 0;
+  for (let i=0;i<N;i++){
+    if (!VIS[i]) continue;
+    const x=POS[i*3], y=POS[i*3+1], z=POS[i*3+2];
+    const rz = m[2][0]*x + m[2][1]*y + m[2][2]*z;
+    const rx = m[0][0]*x + m[0][1]*y + m[0][2]*z;
+    const ry = m[1][0]*x + m[1][1]*y + m[1][2]*z;
+    const sx = cxx + rx*R, sy = cyy - ry*R;
+    if (sx < -8 || sx > W+8 || sy < -8 || sy > H+8) continue;
+    // a bola não é oca: o que está fora da fatia em foco recua mas não some.
+    // Duas pistas somadas — o brilho diz o que está em foco, o quanto de cor
+    // resta diz o quão longe está. Sem a segunda, tudo que sai do plano fica
+    // igualmente apagado e o miolo vira uma parede só.
+    const t = (rz - foco) / larg;
+    const prof = 0.07 + 0.93*Math.exp(-t*t);
+    const g = cinzento(Math.abs(rz - foco), alc);
+    let cr = CR[i], cg = CG[i], cb = CB[i];
+    if (g > 0.005){
+      cr += (CINZA[0]-cr)*g; cg += (CINZA[1]-cg)*g; cb += (CINZA[2]-cb)*g;
+    }
+    let a = alfaBase*prof, r2 = raio;
+    if (buscaSet){                       // véu: o achado acende, o resto recua
+      if (buscaSet.has(i)){ a = Math.min(1, a*7); r2 = raio*1.9; }
+      else { a *= 0.16; cr=(cr+120)>>1; cg=(cg+126)>>1; cb=(cb+146)>>1; }
+    }
+    if (redondo){                       // círculo só quando o ponto é grande o bastante
+      cx.fillStyle = `rgba(${cr|0},${cg|0},${cb|0},${a})`;
+      cx.beginPath(); cx.arc(sx, sy, r2/2, 0, 6.2832); cx.fill();
+    } else {                            // abaixo de ~2px a forma não se distingue
+      const lado = Math.max(1, Math.round(r2*DPR));
+      const px0 = Math.round((sx - r2/2)*DPR), py0 = Math.round((sy - r2/2)*DPR);
+      // mesma luz total do fillRect antigo: a área real (r2·DPR)² espalhada
+      // no quadrado inteiro de pixels que a representa
+      const k = (r2*DPR)*(r2*DPR) / (lado*lado);
+      const ar = cr*a*k, ag = cg*a*k, ab = cb*a*k;
+      for (let yy = py0; yy < py0 + lado; yy++){
+        if (yy < 0 || yy >= DH) continue;
+        let o = (yy*DW + px0)*3;
+        for (let xx = px0; xx < px0 + lado; xx++, o += 3){
+          if (xx < 0 || xx >= DW) continue;
+          ACC[o] += ar; ACC[o+1] += ag; ACC[o+2] += ab;
+        }
+      }
+      somou = true;
+    }
+    vis++;
+  }
+  if (somou){
+    const d = IMG.data;
+    for (let k=0, o=0, q=0; k < DW*DH; k++, o += 3, q += 4){
+      const r = ACC[o], g2 = ACC[o+1], b2 = ACC[o+2];
+      if (r + g2 + b2 > 0){
+        d[q] = r > 255 ? 255 : r; d[q+1] = g2 > 255 ? 255 : g2; d[q+2] = b2 > 255 ? 255 : b2;
+        d[q+3] = 255;
+      } else d[q+3] = 0;
+    }
+    cxPts.putImageData(IMG, 0, 0);
+    cx.save(); cx.setTransform(1,0,0,1,0,0);
+    cx.drawImage(camadaPts, 0, 0);      // ainda em 'lighter': soma à cena
+    cx.restore();
+  }
+  cx.globalCompositeOperation = 'source-over';
+
+  if (sel >= 0) marcarSel(R);
+  requestAnimationFrame(desenhar);
+}
+
+function proj(i){
+  const m=MAT, R=Math.min(W,H)*0.36*zoom;
+  const x=POS[i*3], y=POS[i*3+1], z=POS[i*3+2];
+  return {sx: W/2 + (m[0][0]*x+m[0][1]*y+m[0][2]*z)*R,
+          sy: H/2 - (m[1][0]*x+m[1][1]*y+m[1][2]*z)*R,
+          z: m[2][0]*x+m[2][1]*y+m[2][2]*z};
+}
+function marcarSel(R){
+  if (!visivel(sel)) return;          // não marca o que não está desenhado
+  const p = proj(sel);
+  cx.strokeStyle = 'rgba(230,234,244,.9)'; cx.lineWidth = 1;
+  cx.beginPath(); cx.arc(p.sx, p.sy, 7, 0, 7); cx.stroke();
+}
+
+// ——— nome emergente: a palavra que esta vizinhança tem e o resto não ———
+const nomeEl = $('#nome');
+let ultimoNome = 0;
+function nomear(mx, my){
+  if (performance.now() - ultimoNome < 90) return;
+  ultimoNome = performance.now();
+  const raio2 = (Math.min(W,H)*0.09)**2;
+  // Na tela, o fundo da bola cai na mesma mancha que a frente, e os dois não
+  // têm nada a ver um com o outro. O nome só vale se a vizinhança for de
+  // verdade: conta apenas quem está na mesma fatia de profundidade em foco.
+  const alc = alcance();
+  const conta = new Map(); let n = 0;
+  for (let i=0;i<N;i++){
+    if (!visivel(i)) continue;
+    const p = proj(i);
+    if ((p.sx-mx)**2 + (p.sy-my)**2 > raio2) continue;
+    if (cinzento(Math.abs(p.z - foco), alc) > CLIQUE_CINZA) continue;
+    n++;
+    for (let k=PAL_OFF[i]; k<PAL_OFF[i+1]; k++)
+      conta.set(PAL[k], (conta.get(PAL[k])||0) + 1);
+  }
+  if (n < 12){ nomeEl.hidden = true; return; }
+  let melhor = -1, melhorN = 2;
+  for (const [w,c] of conta) if (c > melhorN){ melhorN = c; melhor = w; }
+  if (melhor < 0){ nomeEl.hidden = true; return; }
+  nomeEl.textContent = META.vocab[melhor];
+  nomeEl.hidden = false;
+  nomeEl.style.left = (mx + 16) + 'px';
+  nomeEl.style.top = (my - 8) + 'px';
+}
+
+// ——— giro até um ponto (Rodrigues) ———
+let giroAlvo = null;
+function rotEixo(u, a){
+  const [x,y,z]=u, c=Math.cos(a), s=Math.sin(a), C=1-c;
+  return [[c+x*x*C, x*y*C-z*s, x*z*C+y*s],
+          [y*x*C+z*s, c+y*y*C, y*z*C-x*s],
+          [z*x*C-y*s, z*y*C+x*s, c+z*z*C]];
+}
+function girarPara(i){
+  const m=MAT, x=POS[i*3], y=POS[i*3+1], z=POS[i*3+2];
+  let v=[m[0][0]*x+m[0][1]*y+m[0][2]*z, m[1][0]*x+m[1][1]*y+m[1][2]*z,
+         m[2][0]*x+m[2][1]*y+m[2][2]*z];
+  // pontos do miolo têm raio < 1: normaliza antes do ângulo, senão o acos mente
+  const rr = Math.hypot(v[0], v[1], v[2]) || 1;
+  v = [v[0]/rr, v[1]/rr, v[2]/rr];
+  // o giro traz o ponto para o eixo, à distância do próprio raio: o foco vai
+  // junto, senão o relato escolhido cai fora da fatia e o clique não o alcança
+  foco = rr;
+  const ang = Math.acos(Math.max(-1, Math.min(1, v[2])));
+  if (ang < 0.02){ giroAlvo = null; return; }
+  let eixo = [v[1], -v[0], 0];                 // v × (0,0,1)
+  const n = Math.hypot(eixo[0], eixo[1]);
+  eixo = n < 1e-6 ? [0,1,0] : [eixo[0]/n, eixo[1]/n, 0];
+  giroAlvo = {eixo, resta: ang};
+}
+
+// ——— sanduíche (só no celular) ———
+const sand = $('#sanduiche');
+function menu(abrir){
+  const a = abrir === undefined ? !document.body.classList.contains('menu') : abrir;
+  document.body.classList.toggle('menu', a);
+  sand.setAttribute('aria-expanded', a ? 'true' : 'false');
+}
+sand.addEventListener('click', e => { e.preventDefault(); menu(); });
+
+// ——— interação ———
+let arr = null, moveu = false;
+let dispensouMenu = false;
+cv.addEventListener('pointerdown', e=>{arr={x:e.clientX,y:e.clientY}; moveu=false;
+  // tocar na atmosfera recolhe os índices — e esse toque só recolhe, não abre
+  // um relato junto: quem está fechando um menu não está escolhendo um sonho
+  dispensouMenu = document.body.classList.contains('menu');
+  menu(false);
+  cv.classList.add('arrastando');
+  try { cv.setPointerCapture(e.pointerId); } catch(_){}   // ponteiro já solto: segue sem capturar
+});
+cv.addEventListener('pointermove', e=>{
+  if (arr){
+    const dx=e.clientX-arr.x, dy=e.clientY-arr.y;
+    if (Math.abs(dx)+Math.abs(dy) > 4) moveu = true;
+    // 1:1 com os pixels — mas 1:1 com o QUE SE OLHA, não com a superfície. O
+    // giro tem o centro por pivô, então quanto mais fundo o foco, menos o
+    // material em foco anda para o mesmo gesto: no centro, 80px de arrasto o
+    // moviam 5px. Dividir pelo foco devolve o passo; o que fica fora de foco
+    // passa mais rápido, e essa paralaxe é mais uma pista de profundidade.
+    // O sinal vem junto: passado o centro, o verso gira ao contrário, e a
+    // divisão por um foco negativo inverte o gesto na mesma medida — de modo
+    // que o que se está olhando continua andando para o lado do dedo.
+    const alavanca = (foco < 0 ? -1 : 1) * Math.max(0.3, Math.abs(foco));
+    const s = 1 / (Math.min(W,H) * 0.36 * zoom * alavanca);
+    MAT = mul(mul(rotX(dy*s), rotY(dx*s)), MAT);
+    arr = {x:e.clientX, y:e.clientY};
+    return;
+  }
+  if (e.pointerType === 'mouse'){ pausa = true; nomear(e.clientX, e.clientY); }
+});
+cv.addEventListener('pointerup', e=>{
+  cv.classList.remove('arrastando');
+  if (!moveu && !dispensouMenu) tocar(e.clientX, e.clientY);
+  dispensouMenu = false;
+  arr = null;
+});
+cv.addEventListener('pointerleave', ()=>{pausa=false; nomeEl.hidden=true;});
+// Zoom na direção do mouse, à maneira do Google Earth: num globo isso não é
+// deslocar o centro (o que descentralizaria o giro) — é GIRAR, trazendo o que
+// está sob o cursor até o meio. Cada passo anda uma fração do caminho, então a
+// aproximação é suave e o eixo nunca sai do lugar.
+function girarParaTela(mx, my, fracao){
+  const R = Math.min(W,H)*0.36*zoom;
+  let nx = (mx - W/2)/R, ny = -(my - H/2)/R;
+  const d = Math.hypot(nx, ny);
+  if (d < 0.02) return;                       // já está no meio
+  if (d > 1){ nx /= d; ny /= d; }             // fora da borda: mira no limbo
+  const nz = foco;                            // o plano onde se está olhando
+  const ang = Math.atan2(d, nz) * fracao;
+  let eixo = [ny, -nx, 0];                    // v × (0,0,1)
+  const n = Math.hypot(eixo[0], eixo[1]);
+  if (n < 1e-6) return;
+  MAT = mul(rotEixo([eixo[0]/n, eixo[1]/n, 0], ang), MAT);
+}
+const ZOOM_MAX = 60;
+// O passo do mergulho é uma fração do que se enxerga em profundidade, não um
+// valor fixo. Com passo fixo, cada volta da roda pulava metade da faixa visível
+// quando já se estava bem perto — atravessava-se um aglomerado inteiro sem ver.
+// Assim, quanto mais fundo (mais zoom, faixa mais estreita), mais fino o passo.
+const passoMergulho = () => alcance() * 0.075;
+// O mergulho atravessa a bola inteira. Já parou no centro uma vez, para curar a
+// inversão do arrasto no hemisfério de trás — mas isso deixava mais da metade
+// do que aparece na tela fora de alcance: no zoom máximo, 113 dos 142 pontos
+// visíveis ficavam inclicáveis, todos atrás do centro. A inversão se cura sozinha
+// pelo ganho do arrasto, que é dividido pelo foco COM SINAL: do outro lado o
+// gesto se inverte junto com a geometria e continua seguindo o que se olha.
+const FOCO_MIN = -1;
+function mergulhar(fracao){
+  foco = Math.max(FOCO_MIN, Math.min(1, foco + fracao * passoMergulho()));
+}
+
+// Ampliar recorta uma coluna fina que atravessa a bola de lado a lado. Se o
+// foco ficasse preso na superfície, essa coluna quase não teria material lá
+// (o polo é rarefeito) e se veria um monte de ponto impossível de clicar.
+// Então aproximar também é focar: o olhar pousa no que estiver sob o cursor.
+function focarSobCursor(mx, my, fracao){
+  const tol2 = Math.pow(Math.max(34, Math.min(W,H)*0.11), 2);
+  let melhor = -1, melhorNota = 1e18;
+  for (let i=0;i<N;i++){
+    if (!visivel(i)) continue;
+    const p = proj(i);
+    const d = (p.sx-mx)**2 + (p.sy-my)**2;
+    if (d > tol2) continue;
+    const nota = d/tol2 - 0.55*p.z;          // perto da mira, e de preferência à frente
+    if (nota < melhorNota){ melhorNota = nota; melhor = i; }
+  }
+  if (melhor < 0) return;
+  foco += (proj(melhor).z - foco) * fracao;
+}
+
+const dentroEl = $('#dentro');
+let ultimaProf = 9;
+function mostrarProfundidade(){
+  if (Math.abs(foco - ultimaProf) < 0.01) return;
+  ultimaProf = foco;
+  // só avisa quando se está mesmo atravessando: o foco automático pousa logo
+  // abaixo da superfície o tempo todo, e avisar disso seria ruído
+  if (foco > 0.55){ dentroEl.hidden = true; return; }
+  const onde = foco > 0.18 ? 'entrando'
+             : (foco > -0.18 ? 'no centro' : 'do outro lado');
+  dentroEl.textContent = `dentro · ${onde}`;
+  dentroEl.hidden = false;
+}
+
+// A roda continua sendo aproximação, só que agora ela não pára na casca: ao
+// bater no zoom máximo, seguir rolando faz o olhar atravessar o miolo até a
+// superfície do lado oposto, vista por dentro. Rolar para trás desfaz na mesma
+// ordem. Shift+roda entra e sai direto, em qualquer zoom.
+cv.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const paraDentro = e.deltaY < 0;
+  if (e.shiftKey){ mergulhar(paraDentro ? -1.3 : 1.3); return; }
+  if (paraDentro){
+    if (zoom < ZOOM_MAX){
+      zoom = Math.min(ZOOM_MAX, zoom * 1.13);
+      giroAlvo = null;
+      girarParaTela(e.clientX, e.clientY, 0.30);
+      focarSobCursor(e.clientX, e.clientY, 0.45);
+    } else mergulhar(-1);                // no teto, seguir rolando atravessa
+  } else {
+    if (foco < 1 && zoom >= ZOOM_MAX) mergulhar(1);
+    else zoom = Math.max(.6, zoom * .885);
+  }
+  // de longe não se está dentro de nada: o olhar volta sozinho para a superfície
+  if (zoom < 3) foco += (1 - foco) * 0.3;
+}, {passive:false});
+let pin = null;
+cv.addEventListener('touchmove', e=>{
+  if (e.touches.length===2){ e.preventDefault();
+    const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
+                         e.touches[0].clientY-e.touches[1].clientY);
+    if (pin){
+      const antes = zoom;
+      zoom = Math.max(.6, Math.min(ZOOM_MAX, zoom * d/pin));
+      // No toque a pinça amplia pelo CENTRO, sem puxar o giro atrás dos dedos:
+      // o dedo já move o planeta arrastando, e as duas coisas juntas faziam a
+      // imagem fugir da mão. Só o foco em profundidade continua automático, e
+      // pelo meio da tela, senão a ampliação cairia no vazio do polo.
+      if (zoom === ZOOM_MAX && d > pin) mergulhar(-0.7);
+      else if (zoom > antes) focarSobCursor(W/2, H/2, 0.4);
+      if (zoom < 3) foco += (1 - foco) * 0.3;
+    }
+    pin = d; }
+}, {passive:false});
+cv.addEventListener('touchend', ()=> pin=null);
+
+function tocar(mx,my){
+  const tol = Math.max(14, Math.min(34, 14 * Math.sqrt(Math.max(1, zoom/3))));
+  const tol2 = tol*tol, alc = alcance();
+  let melhor=-1, melhorNota=-9;
+  for (let i=0;i<N;i++){
+    if (!visivel(i)) continue;
+    const p = proj(i);
+    const d = (p.sx-mx)**2 + (p.sy-my)**2;
+    if (d > tol2) continue;
+    // O alcance do clique é o mesmo que o do olho: vale quem ainda guarda cor.
+    // Sem isso, um ponto de outro aglomerado lá atrás cai na mesma coluna da
+    // tela e rouba o clique de quem está na frente.
+    const g = cinzento(Math.abs(p.z - foco), alc);
+    if (g > CLIQUE_CINZA) continue;
+    const nota = -(d/tol2) - g/CLIQUE_CINZA;
+    if (nota > melhorNota){ melhorNota=nota; melhor=i; }
+  }
+  sel = melhor;
+  mostrar(melhor);
+}
+
+const rel = $('#relato');
+function mostrar(i){
+  if (i < 0){ rel.hidden = true; return; }
+  const b = BITS[i], [r,g,bl] = corDe(i);
+  const marcs = [];
+  if (NAT[i] === 3) marcs.push('propaganda');
+  else if (b&4) marcs.push('incerto: literal ou figurado?');
+  else { if (b&1) marcs.push('literal'); if (b&2) marcs.push('figurado'); }
+  // estimativa do modelo, não certeza: na amostra-prova ela erra para o lado
+  // da cautela (diz 70-90% literal e acerta ~100%)
+  marcs.push(`<span title="estimativa do classificador">literal ${P_LIT[i]}% · figurado ${P_FIG[i]}%</span>`);
+  const qs = META.qualidades.filter((q,j)=> b & (1<<(3+j))).map(q=>QUAL_ROT[q]);
+  const mes = String(MES[i]).padStart(2,'0');
+  rel.querySelector('.top').innerHTML =
+    `<i style="background:rgb(${r},${g},${bl})"></i>` +
+    `<span class="quando">${ANO[i]}/${mes}</span><span>${META.comunidades[COM[i]]}</span>` +
+    `<span>${marcs.join(' · ')}</span>` +
+    (qs.length ? `<span style="color:#9aa0b6">${qs.join(' · ')}</span>` : '');
+  const alvo = rel.querySelector('p');
+  alvo.textContent = '…';
+  alvo.scrollTop = 0;                  // todo relato abre pelo começo
+  rel.hidden = false;
+  pegarQuando(i).then(q => {
+    const el = rel.querySelector('.quando');
+    const bonito = q && formatarQuando(q);
+    if (sel === i && bonito && el) el.textContent = bonito;
+  });
+  pegarTexto(i).then(t=>{
+    if (sel !== i) return;
+    alvo.textContent = t || '(relato indisponível)';
+    alvo.scrollTop = 0;
+  });
+}
+rel.querySelector('button').onclick = ()=>{ sel=-1; rel.hidden=true; };
+
+// ——— HUD ———
+function chip(pai, rot, cor, ligado, onda, contaFn){
+  const d = document.createElement('div');
+  d.className = 'ch' + (ligado ? ' on' : '');
+  d.innerHTML = `<i style="--cor:${cor}"></i>${rot}<em></em>`;
+  d.onclick = ()=>{ d.classList.toggle('on'); onda(d.classList.contains('on')); atualizarContas(); };
+  pai.appendChild(d);
+  d._conta = contaFn; d._em = d.querySelector('em');
+  return d;
+}
+const chips = [], chipsFonte = [];
+function montarHUD(){
+  const m = $('#marcadores');
+  chips.push(chip(m,'literal',css('--sonho'),true,v=>ativos.sonho=v,
+    ()=>cont(i=>NAT[i]===0 && (BITS[i]&1) && !(BITS[i]&4) && okCom(i) && okTempo(i) && okQuais(i))));
+  chips.push(chip(m,'figurado',css('--desejo'),true,v=>ativos.desejo=v,
+    ()=>cont(i=>NAT[i]===0 && (BITS[i]&2) && !(BITS[i]&4) && okCom(i) && okTempo(i) && okQuais(i))));
+  chips.push(chip(m,'incerto',css('--sofrer'),true,v=>ativos.sofrer=v,
+    ()=>cont(i=>NAT[i]===0 && (BITS[i]&4) && okCom(i) && okTempo(i) && okQuais(i))));
+  const q = $('#qualidades');
+  META.qualidades.forEach((nome,j)=>{
+    quais[nome] = false;
+    chips.push(chip(q, QUAL_ROT[nome], '#9aa0b6', false, v=>quais[nome]=v,
+      ()=>cont(i=>NAT[i]===0 && (BITS[i] & (1<<(3+j)))
+                   && okCom(i) && okMarc(i) && okTempo(i) && okQuais(i, nome))));
+  });
+  // ——— de onde vem: comunidades agrupadas por fonte ———
+  const cf = $('#fontesLista');
+  const porFonte = {};
+  for (let i=0;i<N;i++){
+    const f = META.fontes[FONTE[i]], k = COM[i];
+    (porFonte[f] = porFonte[f] || {})[k] = (porFonte[f][k] || 0) + 1;
+  }
+  for (const f of Object.keys(porFonte).sort()){
+    const g = document.createElement('div');
+    g.className = 'grupo';
+    cf.appendChild(g);
+    const coms = Object.entries(porFonte[f]).sort((a,b)=>b[1]-a[1]);
+    for (const [k, n] of coms){
+      const idx = +k;
+      comOn[idx] = true;
+      const rot = f === 'bluesky' ? 'bluesky' : 'r/' + META.comunidades[idx];
+      const d = chip(g, rot, f === 'bluesky' ? '#8fb3ff' : '#ff9a6b', true,
+        v => comOn[idx] = v, ()=>cont(i=>{
+          if (COM[i] !== idx || !okTempo(i)) return false;
+          if (NAT[i] !== 0) return camadas[['relato','meta','idiomatico','ruido'][NAT[i]]] === true;
+          return okMarc(i) && okQuais(i);
+        }));
+      chips.push(d); chipsFonte.push([d, idx]);
+    }
+  }
+  // 22 fontes: acender ou apagar uma a uma é trabalho demais para isolar uma só
+  const todas = $('#todasFontes');
+  todas.onclick = e => {
+    e.preventDefault();
+    const ligar = chipsFonte.some(([d]) => !d.classList.contains('on'));
+    for (const [d, idx] of chipsFonte){ d.classList.toggle('on', ligar); comOn[idx] = ligar; }
+    todas.textContent = ligar ? 'nenhuma' : 'todas';
+    atualizarContas();
+  };
+
+  const c = $('#camadas');
+  // V2: só propaganda é camada (o BERT não separa meta nem idiomático)
+  chips.push(chip(c, 'propaganda', '#5b6376', false, v=>camadas.ruido=v,
+    ()=>cont(i=>NAT[i]===3 && okCom(i) && okTempo(i))));
+  atualizarContas();
+}
+function cont(fn){ let n=0; for (let i=0;i<N;i++) if (fn(i)) n++; return n; }
+function atualizarContas(){
+  for (const d of chips) d._em.textContent = d._conta().toLocaleString('pt-BR');
+  recalcularEscala();
+  if (buscaSet) listar();      // mudar filtro muda o que está aceso na busca
+}
+
+// ——— busca ———
+// O índice invertido está partido em 256 gavetas em dados/busca/. A lista de
+// palavras vem uma vez (permite casar pedaço de palavra); as gavetas, só as
+// que as palavras casadas pedem. Várias palavras na caixa = todas juntas no
+// mesmo relato.
+let LEXICO = null;
+const GAVETAS = {};
+const TETO_PALAVRAS = 400;      // 'ca' casaria milhares: pára antes de baixar tudo
+
+async function gaveta(g){
+  if (!GAVETAS[g]) GAVETAS[g] = dado(`busca/${g}.json`).then(r=>r.json());
+  return GAVETAS[g];
+}
+
+async function acesosDe(termo){
+  if (!LEXICO) LEXICO = await (await dado('busca/lexico.json')).json();
+  const exatos = [], contidos = [];
+  for (let i=0;i<LEXICO.length;i++){
+    if (LEXICO[i] === termo) exatos.push(i);
+    else if (LEXICO[i].includes(termo)) contidos.push(i);
+  }
+  const casou = exatos.concat(contidos).slice(0, TETO_PALAVRAS);
+  const porGaveta = new Map();
+  for (const j of casou){
+    const g = j % 256;
+    if (!porGaveta.has(g)) porGaveta.set(g, []);
+    porGaveta.get(g).push(j);
+  }
+  const achados = new Set();
+  await Promise.all([...porGaveta].map(async ([g, js])=>{
+    const gav = await gaveta(g);
+    for (const j of js){
+      const deltas = gav[j];
+      if (!deltas) continue;
+      let d = 0;
+      for (const passo of deltas){ d += passo; achados.add(d); }
+    }
+  }));
+  return achados;
+}
+
+async function procurar(consulta){
+  const termos = consulta.split(/\s+/).filter(t => t.length >= 3);
+  if (!termos.length) return new Set();
+  let acc = null;
+  for (const t of termos){
+    const s = await acesosDe(t);
+    if (acc === null) acc = s;
+    else for (const i of acc) if (!s.has(i)) acc.delete(i);   // todas as palavras
+    if (!acc.size) break;
+  }
+  return acc || new Set();
+}
+
+let tq = null, vez = 0;
+$('#q').addEventListener('input', e=>{
+  clearTimeout(tq);
+  const minha = ++vez;      // gaveta que demora não pode passar na frente
+  tq = setTimeout(async ()=>{
+    const termo = e.target.value.trim().toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g,'');
+    if (termo.length < 3){ buscaSet = null; $('#conta').textContent=''; listar(); return; }
+    $('#conta').textContent = 'procurando…';
+    const achou = await procurar(termo);
+    if (minha !== vez) return;                 // já digitaram outra coisa
+    buscaSet = achou;
+    listar();          // é a listar() que escreve o contador: ela sabe
+                       // quantos estão acesos e quantos os filtros escondem
+    if (!buscaSet.size) buscaSet = null;
+  }, 200);
+});
+
+function listar(){
+  const cont = $('#achados'); cont.innerHTML = '';
+  if (!buscaSet || !buscaSet.size) return;
+  // só entra na lista quem está aceso no planeta. Antes, clicar num achado que
+  // os filtros escondiam abria a ficha e girava o globo até um ponto que não
+  // estava desenhado — o anel de seleção ficava boiando no vazio.
+  const acesos = [...buscaSet].filter(visivel);
+  const escondidos = buscaSet.size - acesos.length;
+  $('#conta').textContent = acesos.length
+    ? `${acesos.length.toLocaleString('pt-BR')} aceso${acesos.length>1?'s':''}`
+      + (escondidos ? ` · ${escondidos.toLocaleString('pt-BR')} fora dos filtros` : '')
+    : (escondidos ? `${escondidos.toLocaleString('pt-BR')} achados, todos fora dos filtros`
+                  : 'nenhum com essa palavra');
+  const ids = acesos.slice(0, 60);
+  for (const i of ids){
+    const [r,g,b] = corDe(i);
+    const d = document.createElement('div');
+    d.innerHTML = `<i style="background:rgb(${r},${g},${b})"></i><span>${ANO[i]} · carregando…</span>`;
+    const sp = d.querySelector('span');
+    pegarTexto(i).then(t=>{ sp.textContent = `${ANO[i]} · ${(t||'').slice(0,110)}`; });
+    d.onclick = ()=>{ sel = i; mostrar(i); girarPara(i); };
+    cont.appendChild(d);
+  }
+  if (buscaSet.size > 60){
+    const m = document.createElement('div');
+    m.innerHTML = `<span style="opacity:.7">…e mais ${(buscaSet.size-60).toLocaleString('pt-BR')} acesos no planeta</span>`;
+    m.style.cursor = 'default';
+    cont.appendChild(m);
+  }
+}
+
+// ——— linha do tempo ———
+function desenharLinha(){
+  const c = $('#linha'); if (!META) return;
+  const w = c.clientWidth, h = c.clientHeight, d = Math.min(2, devicePixelRatio||1);
+  c.width = w*d; c.height = h*d;
+  const g = c.getContext('2d'); g.setTransform(d,0,0,d,0,0);
+  const anos = META.ano_max - META.ano_min + 1;
+  const meses = new Array(anos*12).fill(0);
+  // o histograma é o eixo do tempo: mostra a distribuição do que os OUTROS
+  // filtros deixaram passar, para se poder escolher o período vendo onde há
+  // material. Antes somava o corpus inteiro e não reagia a filtro nenhum.
+  for (let i=0;i<N;i++){
+    if (!okCom(i)) continue;
+    if (NAT[i]!==0){
+      if (camadas[['relato','meta','idiomatico','ruido'][NAT[i]]] !== true) continue;
+    } else if (!okMarc(i) || !okQuais(i)) continue;
+    const k = (ANO[i]-META.ano_min)*12 + (MES[i]-1);
+    if (k>=0 && k<meses.length) meses[k]++;
+  }
+  const max = Math.max(...meses, 1);
+  g.clearRect(0,0,w,h);
+  for (let k=0;k<meses.length;k++){
+    const x = k/meses.length*w, bw = w/meses.length;
+    const dentro = k >= kIni && k <= kFim;
+    g.fillStyle = dentro ? 'rgba(107,168,255,.62)' : 'rgba(107,168,255,.14)';
+    const alt = (Math.log1p(meses[k]) / Math.log1p(max)) * (h-2);
+    g.fillRect(x, h-alt, Math.max(bw-0.4,0.6), alt);
+  }
+}
+const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const selCv = $('#sel');
+let nMeses = 0;
+
+function rotuloTempo(){
+  const r = document.getElementById('tsel');
+  if (kIni === 0 && kFim === nMeses-1){ r.textContent = ''; return; }
+  const f = k => `${MESES[k%12]}/${META.ano_min + Math.floor(k/12)}`;
+  r.textContent = kIni === kFim ? f(kIni) : `${f(kIni)} – ${f(kFim)}`;
+}
+
+function desenharSel(){
+  if (!META) return;
+  nMeses = (META.ano_max - META.ano_min + 1)*12;
+  const c = selCv, w = c.clientWidth, h = c.clientHeight, d = Math.min(2, devicePixelRatio||1);
+  c.width = w*d; c.height = h*d;
+  const g = c.getContext('2d'); g.setTransform(d,0,0,d,0,0);
+  g.clearRect(0,0,w,h);
+  const y = h/2;
+  const px = k => (k/(nMeses-1)) * (w-14) + 7;    // 7px de folga p/ as alças
+  // trilho escuro
+  g.strokeStyle = 'rgba(26,30,44,1)'; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(7,y); g.lineTo(w-7,y); g.stroke();
+  // faixa acesa entre as alças
+  const xa = px(kIni), xb = px(kFim);
+  g.strokeStyle = 'rgba(200,214,255,.72)'; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(xa,y); g.lineTo(xb,y); g.stroke();
+  // alças em ⊢ e ⊣
+  g.strokeStyle = 'rgba(226,232,246,.95)'; g.lineWidth = 1.6;
+  for (const [x,dir] of [[xa,1],[xb,-1]]){
+    g.beginPath();
+    g.moveTo(x, y-6); g.lineTo(x, y+6);          // haste vertical
+    g.moveTo(x, y);   g.lineTo(x + dir*5, y);     // pé horizontal, virado p/ dentro
+    g.stroke();
+  }
+}
+
+// ——— arrastar: alça esquerda, alça direita, ou o intervalo inteiro ———
+let modo = null, pegou = 0;
+const linCv = $('#linha');
+const kEm = e => {
+  const r = selCv.getBoundingClientRect(), w = r.width;
+  const f = (e.clientX - r.left - 7) / Math.max(w-14, 1);
+  return Math.max(0, Math.min(nMeses-1, Math.round(f*(nMeses-1))));
+};
+const zonaEm = e => {                     // onde o ponteiro está: alça, miolo ou fora
+  const k = kEm(e), tol = Math.max(2, Math.round(nMeses*0.025));
+  if (Math.abs(k-kIni) <= tol) return 'ini';
+  if (Math.abs(k-kFim) <= tol) return 'fim';
+  return (k > kIni && k < kFim) ? 'meio' : 'fora';
+};
+const CURSOR = {ini:'ew-resize', fim:'ew-resize', meio:'grab', fora:'crosshair'};
+function pintarCursor(e){
+  if (modo){                              // enquanto arrasta, o cursor não muda de ideia
+    const c = modo === 'meio' ? 'grabbing' : (modo === 'fora' ? 'crosshair' : 'ew-resize');
+    selCv.style.cursor = linCv.style.cursor = c;
+    return;
+  }
+  const c = CURSOR[zonaEm(e)];
+  selCv.style.cursor = linCv.style.cursor = c;
+}
+function aoPressionar(e){
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch(_){}
+  const z = zonaEm(e), k = kEm(e);
+  if (z === 'ini' || z === 'fim') modo = z;
+  else if (z === 'meio'){ modo = 'meio'; pegou = k; }
+  else { modo = 'novo'; pegou = k; kIni = kFim = k; }
+  pintarCursor(e);
+  aplicar();
+}
+function aoMover(e){
+  if (!modo){ pintarCursor(e); return; }
+  const k = kEm(e);
+  // as alças podem se cruzar e trocar de papel. Antes, com as duas coladas
+  // (depois de um duplo-clique, por exemplo) o clique sempre pegava a esquerda
+  // e arrastar para a direita não fazia nada: a alça direita ficava inalcançável.
+  if (modo === 'ini'){ kIni = k; if (kIni > kFim){ const t=kFim; kFim=kIni; kIni=t; modo='fim'; } }
+  else if (modo === 'fim'){ kFim = k; if (kFim < kIni){ const t=kIni; kIni=kFim; kFim=t; modo='ini'; } }
+  else if (modo === 'novo'){ kIni = Math.min(pegou, k); kFim = Math.max(pegou, k); }
+  else {                                        // desloca o intervalo inteiro
+    const larg = kFim - kIni, d = k - pegou;
+    let a = kIni + d;
+    a = Math.max(0, Math.min(nMeses-1-larg, a));
+    kIni = a; kFim = a + larg; pegou = k;
+  }
+  pintarCursor(e);
+  aplicar();
+}
+function aoSoltar(e){ modo = null; pintarCursor(e); }
+for (const el of [selCv, linCv]){
+  el.addEventListener('pointerdown', aoPressionar);
+  el.addEventListener('pointermove', aoMover);
+  el.addEventListener('pointerup', aoSoltar);
+  el.addEventListener('pointerleave', ()=>{ if (!modo) el.style.cursor = 'default'; });
+  el.addEventListener('dblclick', ()=>{ kIni = 0; kFim = nMeses-1; aplicar(); });
+}
+
+function aplicar(){ rotuloTempo(); desenharSel(); desenharLinha(); atualizarContas(); }
+
+carregar().catch(e => {
+  // sem isto, qualquer falha de rede deixava a tela presa em "recolhendo a
+  // atmosfera…" para sempre, com o erro só no console de quem soubesse abrir
+  console.error(e);
+  const el = $('#carregando');
+  el.hidden = false;
+  el.style.whiteSpace = 'pre-line';
+  el.textContent = 'não consegui carregar a atmosfera.\n' + (e && e.message ? e.message : e)
+                 + '\n\nrecarregue a página.';
+});
+</script>
