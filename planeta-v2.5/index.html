@@ -231,6 +231,9 @@ const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).
 // qualidade da V1). 'enorme' = passou do teto do embedder e foi cortado nele.
 const QUAL_ROT = {curto:'curto (<100)', medio:'médio', longo:'longo (>1.500)', enorme:'enorme (cortado)'};
 
+let DATAS2 = null;   // índice → [data declarada, criação real no Bluesky]
+const datasBluesky = () => DATAS2 || (DATAS2 = dado('datas_bluesky.json')
+  .then(r => r.ok ? r.json() : {}).catch(() => ({})));
 const BLOCOS = {};   // texto carregado sob demanda, um bloco por vez
 async function bloco(i){
   const b = Math.floor(i / META.por_arquivo);
@@ -1256,10 +1259,26 @@ function mostrar(i){
   alvo.textContent = '…';
   alvo.scrollTop = 0;                  // todo relato abre pelo começo
   rel.hidden = false;
-  pegarQuando(i).then(q => {
+  Promise.all([pegarQuando(i), datasBluesky()]).then(([q, D2]) => {
     const el = rel.querySelector('.quando');
+    if (sel !== i || !el) return;
+    const duas = D2[i];
+    if (duas){
+      // posts importados (migração do X): a data declarada é a do post original
+      // e o rkey do Bluesky diz quando ele chegou lá. Datas guardadas em
+      // dados/datas_bluesky.json (2.009 posts com diferença > 1 dia).
+      if (!duas[0]){                     // o coletor não gravou a data: só a do Bluesky
+        el.textContent = `criado no Bluesky em ${formatarQuando(duas[1])}`;
+        return;
+      }
+      const [decl, real] = duas.map(formatarQuando);
+      el.textContent = duas[0] < duas[1]
+        ? `publicado originalmente em ${decl} · trazido ao Bluesky em ${real}`
+        : `data declarada ${decl} · criado no Bluesky em ${real}`;
+      return;
+    }
     const bonito = q && formatarQuando(q);
-    if (sel === i && bonito && el) el.textContent = bonito;
+    if (bonito) el.textContent = bonito;
   });
   pegarTexto(i).then(t=>{
     if (sel !== i) return;
