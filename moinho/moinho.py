@@ -172,15 +172,38 @@ def preparar(linha, com_ocr=True):
                 quals=quals, idade=idade, genero=genero, eh_en=eh_en, nat=nat,
                 autor_hash=autor_hash,
                 extra_bert=extra_bert,
-                **_embeddar(texto),
+                emb=None, emb_versao=None, cortado=False,   # vem em lote, no main
                 permalink=p.get('permalink'), oid=p.get('id'))
 
 
-def _embeddar(texto):
-    if SEM_EMBED:
-        return dict(emb=None, emb_versao=None, cortado=False)
-    v, cortado = embedder.embeddar(texto)
-    return dict(emb=v, emb_versao=embedder.VERSAO, cortado=cortado)
+def _embeddar_lote(itens):
+    """Embedda o lote inteiro de uma vez, depois das threads.
+
+    Um item por chamada (dentro das threads) derrubou o moinho de 5,2 para
+    3,2/s. Em lote, como o backfill, o Ollama faz ~30/s. Curtos vão juntos;
+    acima de LOTE_CURTO vai um por chamada, porque só assim a contagem de
+    tokens é do texto e o corte no teto é detectável.
+
+    Se o Ollama falhar, o item grava SEM vetor (embed_versao nulo) em vez de
+    parar o moinho: `arquivo/embeddar.py` preenche depois. Nada se perde.
+    """
+    if SEM_EMBED or not itens:
+        return
+    LOTE_CURTO = 4000
+    curtos = [r for r in itens if len(r['texto'] or '') <= LOTE_CURTO]
+    longos = [r for r in itens if len(r['texto'] or '') > LOTE_CURTO]
+    try:
+        for i in range(0, len(curtos), 32):
+            parte = curtos[i:i + 32]
+            vs = embedder.embeddar_lote([r['texto'] or ' ' for r in parte])
+            assert len(vs) == len(parte)
+            for r, v in zip(parte, vs):
+                r.update(emb=v, emb_versao=embedder.VERSAO, cortado=False)
+        for r in longos:
+            v, cortado = embedder.embeddar(r['texto'])
+            r.update(emb=v, emb_versao=embedder.VERSAO, cortado=cortado)
+    except Exception as e:
+        print(f'  embedding falhou no lote ({type(e).__name__}); grava sem vetor', flush=True)
 
 
 def _gravar_predicao(con, rid, e):
@@ -278,6 +301,7 @@ def main():
             print(f'★ fila vazia. {ok} moídos nesta sessão.'); return
         with ThreadPoolExecutor(max_workers=PARALELO) as pool:
             resultados = list(pool.map(lambda l: (l, _tentar(l)), lote))
+        _embeddar_lote([res for _, res in resultados if isinstance(res, dict)])
         for linha, res in resultados:
             if isinstance(res, dict):
                 try:
