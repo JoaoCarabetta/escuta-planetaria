@@ -373,7 +373,18 @@ const okQuais = (i, menos) => { const b = BITS[i];
   }
   return !algum; };
 
+// Duplicatas exatas (mesma conta + mesmo texto + mesma data declarada até o
+// segundo — importação dupla do Twitter, ou post repetido no mesmo segundo):
+// um ponto fica, os outros somem, e a ficha dele lista todas as datas.
+// dados/duplicatas_exatas.json; a régua nova vai gravar isso no banco.
+let OCULTOS = null, DUPS = {};
+dado('duplicatas_exatas.json').then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => {
+  DUPS = d; OCULTOS = new Set();
+  for (const k in d) for (const j of d[k].esconde) OCULTOS.add(j);
+  if (typeof N !== 'undefined' && N && VIS){ recalcularEscala(); atualizarContas(); }
+});
 function visivel(i){
+  if (OCULTOS && OCULTOS.has(i)) return false;
   const nat = NAT[i];
   if (nat !== 0){
     const nome = ['relato','meta','idiomatico','ruido'][nat];
@@ -1262,6 +1273,16 @@ function mostrar(i){
   Promise.all([pegarQuando(i), datasBluesky()]).then(([q, D2]) => {
     const el = rel.querySelector('.quando');
     if (sel !== i || !el) return;
+    const dup = DUPS[i];
+    if (dup){
+      const lista = dup.no_bluesky.map(formatarQuando);
+      const e = lista.length === 2 ? lista.join(' e ') : lista.slice(0,-1).join(', ') + ' e ' + lista.at(-1);
+      const importado = (Date.parse(dup.no_bluesky[0]) - Date.parse(dup.declarada)) > 86400e3;
+      el.textContent = importado
+        ? `publicado originalmente em ${formatarQuando(dup.declarada)} · trazido ao Bluesky ${lista.length} vezes: ${e}`
+        : `publicado ${lista.length} vezes no Bluesky, no mesmo segundo: ${formatarQuando(dup.declarada)}`;
+      return;
+    }
     const duas = D2[i];
     if (duas){
       // posts importados (migração do X): a data declarada é a do post original
@@ -1475,7 +1496,9 @@ function listar(){
   // os filtros escondiam abria a ficha e girava o globo até um ponto que não
   // estava desenhado — o anel de seleção ficava boiando no vazio.
   const acesos = [...buscaSet].filter(visivel);
-  const escondidos = buscaSet.size - acesos.length;
+  // cópias escondidas (duplicatas exatas) não são "fora dos filtros": não contam
+  const copias = OCULTOS ? [...buscaSet].filter(i => OCULTOS.has(i)).length : 0;
+  const escondidos = buscaSet.size - acesos.length - copias;
   $('#conta').textContent = (acesos.length
     ? `${acesos.length.toLocaleString('pt-BR')} aceso${acesos.length>1?'s':''}`
       + (escondidos ? ` · ${escondidos.toLocaleString('pt-BR')} fora dos filtros` : '')
