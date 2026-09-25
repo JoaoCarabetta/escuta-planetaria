@@ -1192,11 +1192,20 @@ function mostrar(i){
   if (i < 0){ rel.hidden = true; return; }
   const b = BITS[i], [r,g,bl] = corDe(i);
   const marcs = [];
+  // A tag colorida é a que explica a cor do ponto AGORA: pintando pelo que o
+  // sonho é, literal/figurado/incerto ganham cor e sonho/pesadelo ficam
+  // cinza; pintando pela palavra, o contrário. (Fitipe, 25/09: sonho/pesadelo
+  // em cor fixa chamavam mais atenção que o resto.)
+  const tag = (txt, cor, ativa) => ativa ? `<span style="color:${cor}">${txt}</span>` : txt;
+  const pPortao = pintura === 'portao', pPalavra = pintura === 'palavra';
   if (NAT[i] === 3) marcs.push('propaganda');
-  else if (b&4) marcs.push('incerto: literal ou figurado?');
-  else { if (b&1) marcs.push('literal'); if (b&2) marcs.push('figurado'); }
-  if (b & 128) marcs.push('<span style="color:#6edc96">sonho</span>');
-  if (b & 256) marcs.push('<span style="color:#ff5c5c">pesadelo</span>');
+  else if (b&4) marcs.push(tag('incerto: literal ou figurado?', '#c39bff', pPortao));
+  else {
+    if (b&1) marcs.push(tag('literal', '#6ba8ff', pPortao));
+    if (b&2) marcs.push(tag('figurado', '#ffbe5c', pPortao));
+  }
+  if (b & 128) marcs.push(tag('sonho', (b & 256) ? '#ffa046' : '#6edc96', pPalavra));
+  if (b & 256) marcs.push(tag('pesadelo', (b & 128) ? '#ffa046' : '#ff5c5c', pPalavra));
   // estimativa do modelo, não certeza: na amostra-prova ela erra para o lado
   // da cautela (diz 70-90% literal e acerta ~100%)
   marcs.push(`<span title="estimativa do classificador">literal ${P_LIT[i]}% · figurado ${P_FIG[i]}%</span>`);
@@ -1250,6 +1259,7 @@ function montarHUD(){
     for (const [d, k] of opcoes) d.classList.toggle('on', k === qual);
     prepararCores();
     if (GL.ok) GL.carregado = false;          // a placa relê as cores
+    if (sel >= 0) mostrar(sel);               // a ficha aberta troca as cores das tags
   };
   for (const [k, rot, cor] of [['portao','o que o sonho é','#9aa0b6'],['palavra','sonho · pesadelo','#6edc96']]){
     const d = document.createElement('div');
