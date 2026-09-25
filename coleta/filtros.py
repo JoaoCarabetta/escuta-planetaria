@@ -42,6 +42,31 @@ def camada0(p):
     return True, None
 
 
+
+def urls_de_galeria(p):
+    """URLs diretas das imagens de um post de galeria do Reddit.
+
+    O media_metadata vem indexado por id de mídia; a url fica em ['s']['u'] e
+    chega com &amp; no lugar de &. Guarda no máximo 4: o que interessa é o texto
+    dentro da imagem, e print de conversa raramente passa disso.
+    """
+    mm = p.get('media_metadata')
+    if not isinstance(mm, dict):
+        return None
+    urls = []
+    for k in (p.get('gallery_data', {}) or {}).get('items', []) or []:
+        m = mm.get(k.get('media_id'))
+        u = ((m or {}).get('s') or {}).get('u')
+        if u:
+            urls.append(u.replace('&amp;', '&'))
+    if not urls:                          # sem gallery_data: pega na ordem do dict
+        for m in mm.values():
+            u = ((m or {}).get('s') or {}).get('u')
+            if u:
+                urls.append(u.replace('&amp;', '&'))
+    return urls[:4] or None
+
+
 def enxugar(p):
     """Reduz o payload ao essencial antes de guardar na fila."""
     url = p.get('url') or ''
@@ -56,6 +81,11 @@ def enxugar(p):
         'url': url if ('reddit.com' not in url) else None,
         'post_hint': p.get('post_hint'),
         'is_video': bool(p.get('is_video')),
+        # GALERIA: guardava só um booleano e jogava fora as URLs das imagens.
+        # Como o post de galeria tem url 'reddit.com/gallery/...' (que vira None
+        # na linha acima), o relato ficava sem nada além do título e o texto do
+        # sonho, que estava na imagem, sumia sem deixar rastro.
+        'imagens': urls_de_galeria(p),
         'tem_media_metadata': bool(p.get('media_metadata')),
         'num_comments': p.get('num_comments'),
     }

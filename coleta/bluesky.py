@@ -156,9 +156,21 @@ def rodar_job(con, job, termo, cursor):
             if cursor:
                 anterior = datetime.datetime.fromisoformat(
                     cursor.replace('Z', '+00:00')).astimezone(datetime.timezone.utc)
-            mediana = conv[len(conv) // 2]
-            menor_plausivel = max(conv[0], anterior - datetime.timedelta(days=30))
-            alvo = min(mediana, menor_plausivel)
+            # O cursor anda para o post mais antigo desta página — mas o Bluesky
+            # deixa forjar createdAt, e um único post com data de 2018 envenenava
+            # tudo. A versão anterior tentava se proteger com
+            #     alvo = min(mediana, max(conv[0], anterior - 30 dias))
+            # e isso INVERTIA o sentido: com a página envenenada, o `min` escolhia
+            # justamente o salto de 30 dias e pulava o mês inteiro entre a mediana
+            # e ele. Foi assim que sumiram 29 dias em agosto de 2024 — o mês do
+            # bloqueio do X no Brasil, quando o Bluesky brasileiro nasceu.
+            #
+            # Agora usa um percentil baixo: descarta os poucos forjados sem pular
+            # nada de verdade. Os posts entre conv[0] e o percentil já foram
+            # gravados NESTA página, e a próxima página os repete (INSERT OR
+            # IGNORE), então a sobreposição não custa nada além de alguns pedidos.
+            k = min(len(conv) - 1, max(0, len(conv) // 20))      # 5º percentil
+            alvo = max(conv[k], anterior - datetime.timedelta(days=30))
             if alvo >= anterior:
                 alvo = anterior - datetime.timedelta(hours=6)
             cursor = alvo.strftime('%Y-%m-%dT%H:%M:%SZ')

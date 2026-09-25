@@ -1,0 +1,101 @@
+# Instruções para quem anota (v3.2)
+
+Trabalhe no seu nível máximo de cuidado. Português brasileiro.
+Diretório: `/Users/fitipe/Desktop/arte_c_joao_tta/escuta_planetaria`
+
+## 1. Leia antes de julgar qualquer coisa
+- `rubrica/rubrica-v3.2.md` — a rubrica inteira.
+- `rubrica/decisoes-v3.1.md (histórico das decisões)` — por que cada campo existe e de quem veio a
+  decisão. Vários campos existem porque anotadores anteriores travaram sem eles.
+
+## 2. Pegue a sua leva
+Fatia disjunta: ninguém pega o mesmo texto que você.
+
+    python3 rubrica/lote_v32.py pegar --agente=N --n=90 --fonte=FONTE
+
+`--fonte=reanotar` são textos já julgados na rubrica v3 antiga, que você relê com
+a v3.1. **Não consulte o julgamento antigo**: o objetivo é medir o que a rubrica
+nova muda, e olhar o veredito velho contamina isso.
+`--fonte=prova` são relatos sorteados uniformemente do arquivo.
+
+## 3. Julgue
+
+Regras que custaram caro e precisam ser respeitadas à risca:
+
+- **`literal` não exige que o texto diga "dormi" ou "sonhei".** Reconhece-se pela
+  impossibilidade da cena, pelo tempo verbal, pela ausência de intenção, pelo
+  despertar mencionado.
+- "meu sonho é X" é quase sempre `figurado` — mas "sonhei com X e se realizou"
+  também é, e "tive um pesadelo" é literal. A preposição "com" costuma marcar o
+  onírico e às vezes não marca.
+- **`recorrente` exige que O SONHO se repita.** "sonhei que tava trabalhando de
+  novo" é cena, não recorrência. Foi o falso positivo que cinco anotadores
+  independentes acharam.
+- **`lucido` é lucidez**, saber que se está sonhando — não vivacidade. "sonho
+  muito lúcido" quase sempre quer dizer vívido; não marque.
+- **`morto` é visita de quem já morreu.** Alguém morrendo dentro do sonho é
+  `morte_no_sonho`. Par de calibração: "sonhei com meu pai e ele morreu tem 8
+  anos" contra "sonhei que meu pai morreu".
+- **`ironico` exige duas coisas juntas**: conteúdo que o próprio texto marca como
+  ruim E um sinal de leveza (kkk, emoji de riso, exagero que estoura o registro,
+  ressalva que desmente). **Nunca marque ironia só porque o desejo parece
+  inconcebível** — isso é limite de quem lê, não propriedade do texto.
+- **`carga` nunca é inferida.** Se o texto não diz o que se passou dentro do
+  sonho, use `nao_dito`. Carga obrigatória fabrica dado.
+- **`descartavel` exige justificativa escrita** na nota. Na dúvida, não descarte:
+  o arquivo perde as bordas, que são o material.
+- **As marcas combinam com qualquer coisa do portão**: `meta`,
+  `suspeita_circulacao`, `falta_imagem`, `falta_fio`, `texto_truncado`,
+  `bandeira`.
+- **A falta de contexto virou três marcas.** Use só quando o texto **não puder
+  ser julgado** sem o que falta — não por qualquer "isso daí" solto. E
+  `texto_truncado` é defeito da coleta, não do arquivo.
+- **`carga` só existe sob `literal`.** No figurado não há "dentro do sonho".
+- **`repeticao`**: o desempate está na posição do "de novo". Colado ao ato de
+  sonhar ("sonhei com ele de novo") é repetição; colado à cena ("sonhei que tava
+  trabalhando de novo") não é.
+- **`modo` continua existindo, separado de `repeticao`**: `lucido` ·
+  `paralisia_do_sono` · `falso_despertar` · `hipnagogico` · `memoria_revivida`.
+  `repeticao` é o que se repete; `modo` é o fenômeno do sonhar. Um sonho pode
+  ter os dois.
+- **`figura`** (só sob `figurado`): `desejo` · `intensificador` ·
+  `nome_expressao` · `comercial`.
+- **`sonhador`**: `proprio` · `terceiro` · `citado`. Quando o sonhador é outro, a
+  carga é de quem sonhou e o tom é de quem conta.
+- **`suspeita_circulacao`**: você reconhece letra, meme ou copypasta — levante a
+  suspeita; a máquina confirma. Não precisa ter certeza.
+
+`confianca` é obrigatória: `alta` · `media` · `duvida`. Use `duvida` de verdade
+quando for dúvida — a calibração dela é medida depois, e dúvida inflada estraga
+tanto quanto confiança inflada. Escreva em `nota` o que travou.
+
+## 4. Grave
+
+    python3 rubrica/lote_v32.py gravar --agente=N < /caminho/do/seu.json
+
+**Use nome de arquivo único, com o seu número de agente.** Vários anotadores
+trabalham no mesmo diretório de scratchpad ao mesmo tempo, e nome genérico
+(`p1.json`, `lote.json`) já causou colisão silenciosa: um agente teve os blocos
+sobrescritos no meio do trabalho e a fusão saiu com 193 objetos de dois lotes
+misturados. Ele detectou conferindo os ids contra o lote servido, e é a
+verificação que vale fazer sempre: **antes de gravar, confira que os ids do seu
+JSON são exatamente os que o `pegar` te serviu, nem um a mais.**
+
+Chaves por objeto — `id` e `confianca` obrigatórias;
+`literal, figurado, devaneio, fala_do_sonhar, obra, noticia, propaganda,
+descartavel, meta, suspeita_circulacao, falta_imagem, falta_fio,
+texto_truncado, bandeira` como 0 ou 1;
+`figura, carga, tom, despertar, memoria, repeticao, modo, presencas,
+atribuicao, desejo_estado, sonhador` como listas; `nota` como texto.
+
+## 5. Relatório final
+
+Curto e específico: distribuição do portão, contagem de confiança e, sobretudo,
+**o que a v3.1 ainda não comporta** — casos concretos, com id e citação, que
+você teve de forçar num campo.
+
+E o contrário também: se algum campo novo (`despertar`, `memoria`,
+`falta_contexto`, `copy_paste`) se mostrou inútil ou confuso na prática, diga.
+**Cortar campo é tão valioso quanto criar.**
+
+Não altere nenhum arquivo do projeto além da gravação pelo script.

@@ -28,7 +28,13 @@ não ruído. Só é duplicata quando há evidência de ser a MESMA pessoa repeti
                                           postaram "sonhei q o twitter voltava"
                                           com minutos de diferença na mesma
                                           noite, e isso é o ouro, não o lixo.)
-  ≥0,97 + autores diferentes            → eco_forte   (liga, não funde)
+  ≥0,995 + mesmo autor, sem janela      → duplicata   (verbatim da mesma conta é
+                                          repost, tenha passado quanto tempo for)
+  ≥0,97 + autores diferentes            → eco_forte   (liga, não funde. Se forem
+                                          três ou mais cópias, `copias.py` ainda
+                                          as agrupa como copy-paste ou obra —
+                                          e não esconde nenhuma, porque 24
+                                          pessoas repostando é dado.)
   0,90–0,97                             → sonho_gemeo (liga — o material precioso)
 
 Uso: python3 regua.py [--aplicar]   (sem --aplicar só relata)
@@ -44,7 +50,11 @@ from pathlib import Path
 
 DB = Path(__file__).parent / 'arquivo.db'
 APLICAR = '--aplicar' in sys.argv
+# --min-chars N: só compara textos com pelo menos N caracteres (25/09: a régua
+# por embedding explodiu com tuítes curtos; o curto vai para agrupamento exato)
+MIN_CHARS = next((int(x.split('=')[1]) for x in sys.argv if x.startswith('--min-chars=')), 0)
 LIM_GEMEO, LIM_FORTE, DIAS_DUP = 0.90, 0.97, 90
+LIM_VERBATIM = 0.995   # praticamente letra por letra
 MIN_REPOST = 60          # minutos: janela do repost institucional
 DIAS_REPOST = 7          # dias: janela do repost da própria pessoa, com edição
 TAM_REPOST = 200         # caracteres: abaixo disso, texto igual é coincidência real
@@ -130,18 +140,13 @@ def main():
     reconciliar_urls(con, APLICAR)
     linhas = con.execute("""SELECT r.id, r.embedding, r.interno_autor_hash, r.data_relato,
                r.texto
-        FROM relatos r JOIN anotacoes a ON a.id = (
-            -- UMA anotação por relato. Sem isto, os 216 relatos que sobraram
-            -- dos testes A/B entre modelos (gemma4, qwen 2b/4b/9b) viravam 2, 3
-            -- ou 4 pontos na MESMA posição do planeta — e a régua chegava a
-            -- comparar um relato com a própria cópia e marcá-lo como duplicata
-            -- de si mesmo, fazendo-o sumir. Prefere o juiz de produção.
-            SELECT a2.id FROM anotacoes a2
-            WHERE a2.relato_id = r.id AND a2.versao = 'v2.1'
-              AND a2.anotador LIKE 'ollama%'
-            ORDER BY CASE WHEN a2.anotador = 'ollama:qwen3.5-9b' THEN 0 ELSE 1 END, a2.id
-            LIMIT 1)
-        WHERE r.embedding IS NOT NULL AND a.natureza_texto = 'relato'""").fetchall()
+        -- Todo relato com vetor, uma linha por relato (a chave de relatos). A
+        -- versão anterior juntava com anotacoes 'ollama%' natureza='relato':
+        -- os ~290 mil moídos pelo BERT (25/09) nunca seriam comparados, e o
+        -- figurado — que a V2 do planeta mostra — também não.
+        FROM relatos r
+        WHERE r.embedding IS NOT NULL AND length(r.embedding) > 0
+          AND length(r.texto) >= ?""", (MIN_CHARS,)).fetchall()
     if not linhas:
         print('nenhum relato com embedding ainda'); return
     ids = [l[0] for l in linhas]
@@ -182,7 +187,14 @@ def main():
                 repost = (marcas[i] == marcas[int(j)] and not mesmo
                           and min(tams[i], tams[int(j)]) >= TAM_REPOST
                           and minutos is not None and minutos <= MIN_REPOST)
-                if sim >= LIM_FORTE and mesmo and dias is not None and dias <= DIAS_DUP:
+                # verbatim da MESMA conta é repost, tenha passado quanto tempo
+                # for: 15 pares escapavam só por estarem a mais de 90 dias de
+                # distância. O que NÃO entra aqui é o verbatim entre contas
+                # diferentes — isso é copy-paste, e some para `grupos_copia`,
+                # onde nenhuma cópia é escondida (ver arquivo/copias.py).
+                if sim >= LIM_VERBATIM and mesmo:
+                    tipo = 'duplicata'
+                elif sim >= LIM_FORTE and mesmo and dias is not None and dias <= DIAS_DUP:
                     tipo = 'duplicata'
                 elif mesmo and dias is not None and dias <= DIAS_REPOST:
                     tipo = 'duplicata'

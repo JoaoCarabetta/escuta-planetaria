@@ -29,6 +29,18 @@ MODELO = 'qwen3.5:9b'   # gemma4:e4b tem erros benignos e é mais rápido isolad
 # mas ocupa 9.5GB vs 5.4GB: em 24GB apertado fica MAIS lento (0.36 vs 0.48/s)
 VERSAO = 'v2.1'
 ANOTADOR = 'ollama:' + MODELO.replace(':', '-')
+# --bert troca o juiz: o classificador faz o mesmo julgamento em 12 ms contra
+# 1,1 s do generativo, com 91% de acerto num teto humano de 93%. Os 335 mil
+# pendentes deixam de ser quatro dias.
+USA_BERT = '--bert' in sys.argv
+# --sem-embed desacopla: a classificação lê o texto cru e não precisa do
+# embedding. Quem precisa dele é o planeta, a régua e a busca — e como pode ser
+# que a gente troque de embedder depois de comparar, embeddar agora seria
+# trabalho a refazer. O campo fica nulo e um backfill preenche depois.
+SEM_EMBED = '--sem-embed' in sys.argv
+if USA_BERT:
+    from anotar_bert import anotar as anotar_bert
+    ANOTADOR = 'bert:v32'
 PARALELO = 4
 
 import anotar_v2  # noqa: E402
@@ -43,14 +55,11 @@ UF_POR_SUB = {'saopaulo': 'SP', 'riodejaneiro': 'RJ', 'brasilia': 'DF',
 SUBS_EN = {'Dreams', 'LucidDreaming', 'DreamInterpretation'}
 
 
-def embed(texto):
-    req = urllib.request.Request(
-        'http://localhost:11434/api/embed',
-        data=json.dumps({'model': 'bge-m3', 'input': texto[:2000]}).encode(),
-        headers={'Content-Type': 'application/json'})
-    with urllib.request.urlopen(req, timeout=120) as r:
-        import numpy as np
-        return np.array(json.load(r)['embeddings'][0], dtype='float32').tobytes()
+# O embedding mora em arquivo/embedder.py, o mesmo que o backfill usa: texto
+# INTEIRO até o teto de 8.192 tokens (a versão antiga daqui cortava em 2.000
+# caracteres, e o Ollama cortava de novo em 2.048 tokens sem avisar).
+import embedder  # noqa: E402
+import revisao  # noqa: E402
 
 
 def baixar_e_ocr(url):
@@ -119,18 +128,29 @@ def preparar(linha, com_ocr=True):
 
     # extração multimodal
     midia = 0
-    if com_ocr and p.get('url') and len((p.get('selftext') or '').strip()) < 40:
-        u = p['url']
+    if com_ocr and len((p.get('selftext') or '').strip()) < 40:
+        # imagem única no `url`, ou galeria em `imagens` (que a camada 0 agora
+        # preserva — antes ela guardava só um booleano e as urls se perdiam)
+        alvos = []
+        u = p.get('url') or ''
         if any(k in u for k in ('i.redd.it', 'imgur', '.jpg', '.png', '.jpeg')):
+            alvos.append(url_de_imagem(u))
+        alvos += list(p.get('imagens') or [])
+        if alvos:
             midia = 1
-            extra = baixar_e_ocr(url_de_imagem(u))
-            if extra:
-                texto += '\n\n[texto extraído da imagem] ' + extra
+            partes = [t for t in (baixar_e_ocr(a) for a in alvos[:4]) if t]
+            if partes:
+                texto += '\n\n[texto extraído da imagem] ' + '\n'.join(partes)
             else:
                 midia = 2      # tinha mídia e a extração NÃO deu certo
 
     idioma, _ = detectar_idioma(texto)
-    nat, sonho, desejo, sofr, quals = anotar_llm(texto)
+    if USA_BERT:
+        nat, sonho, extra_bert = anotar_bert(texto)
+        desejo, sofr, quals = None, None, None
+    else:
+        nat, sonho, desejo, sofr, quals = anotar_llm(texto)
+        extra_bert = None
     idade, genero = extrair_demo(texto, idioma or 'pt')
 
     fonte = p.get('fonte', 'reddit')
@@ -151,11 +171,54 @@ def preparar(linha, com_ocr=True):
                 texto=texto, midia=midia, sonho=sonho, desejo=desejo, sofr=sofr,
                 quals=quals, idade=idade, genero=genero, eh_en=eh_en, nat=nat,
                 autor_hash=autor_hash,
-                emb=embed(texto), permalink=p.get('permalink'), oid=p.get('id'))
+                extra_bert=extra_bert,
+                emb=None, emb_versao=None, cortado=False,   # vem em lote, no main
+                permalink=p.get('permalink'), oid=p.get('id'))
+
+
+def _embeddar_lote(itens):
+    """Embedda o lote inteiro de uma vez, depois das threads.
+
+    Um item por chamada (dentro das threads) derrubou o moinho de 5,2 para
+    3,2/s. Em lote, como o backfill, o Ollama faz ~30/s. Curtos vão juntos;
+    acima de LOTE_CURTO vai um por chamada, porque só assim a contagem de
+    tokens é do texto e o corte no teto é detectável.
+
+    Se o Ollama falhar, o item grava SEM vetor (embed_versao nulo) em vez de
+    parar o moinho: `arquivo/embeddar.py` preenche depois. Nada se perde.
+    """
+    if SEM_EMBED or not itens:
+        return
+    LOTE_CURTO = 4000
+    curtos = [r for r in itens if len(r['texto'] or '') <= LOTE_CURTO]
+    longos = [r for r in itens if len(r['texto'] or '') > LOTE_CURTO]
+    try:
+        for i in range(0, len(curtos), 32):
+            parte = curtos[i:i + 32]
+            vs = embedder.embeddar_lote([r['texto'] or ' ' for r in parte])
+            assert len(vs) == len(parte)
+            for r, v in zip(parte, vs):
+                r.update(emb=v, emb_versao=embedder.VERSAO, cortado=False)
+        for r in longos:
+            v, cortado = embedder.embeddar(r['texto'])
+            r.update(emb=v, emb_versao=embedder.VERSAO, cortado=cortado)
+    except Exception as e:
+        print(f'  embedding falhou no lote ({type(e).__name__}); grava sem vetor', flush=True)
+
+
+def _gravar_predicao(con, rid, e):
+    if not e:
+        return
+    con.execute("""INSERT OR REPLACE INTO predicoes_v32
+        (relato_id, portao, tem_conteudo, carga, tom, margem, p_literal, p_figurado)
+        VALUES (?,?,?,?,?,?,?,?)""",
+        (rid, json.dumps(e['portao']), e['tem_conteudo'], e['carga'],
+         '[]', e['margem'], e['p_literal'], e['p_figurado']))
 
 
 def gravar(con, r):
     fid, rid, fonte, sub = r['fid'], r['rid'], r['fonte'], r['sub']
+    _gravar_predicao(con, rid, r.get('extra_bert'))
     data, idioma, texto = r['data'], r['idioma'], r['texto']
     # tem_midia e midia_extraida são coisas DIFERENTES: a segunda dizia 'tentei',
     # não 'consegui', e um OCR falho ficava registrado como extração bem-sucedida
@@ -169,8 +232,8 @@ def gravar(con, r):
          tem_midia,midia_extraida,tem_relato_onirico,julgador,embedding,
          geo_pais,geo_regiao,geo_metodo,geo_confianca,
          sonhador_idade,sonhador_genero,demo_metodo,demo_confianca,
-         interno_url,interno_id_original,interno_autor_hash)
-        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+         interno_url,interno_id_original,interno_autor_hash,embed_versao)
+        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (rid, fonte, sub, data, idioma, texto, tem_midia, extraida, sonho, ANOTADOR, r['emb'],
          None if eh_en else 'BR', UF_POR_SUB.get(sub),
          # o MÉTODO tem de dizer a verdade. No Bluesky não há comunidade nenhuma
@@ -184,7 +247,12 @@ def gravar(con, r):
          0.85 if (idade or genero) else None,
          ((('https://bsky.app' if fonte == 'bluesky' else 'https://www.reddit.com')
            + p['permalink']) if p.get('permalink') else None),
-         p.get('id'), r['autor_hash']))
+         p.get('id'), r['autor_hash'], r['emb_versao']))
+    # a lista de revisão se alimenta sozinha: portão indeciso ou vazio (pelo
+    # BERT) e texto enorme (cortado no teto do embedder)
+    revisao.abrir_pela_predicao(con, rid, r.get('extra_bert'))
+    if r['cortado']:
+        revisao.abrir(con, rid, 'enorme', {'chars': len(texto)})
     con.execute("""INSERT OR REPLACE INTO anotacoes (relato_id,anotador,versao,natureza_texto,
         tem_sonho_dormido,tem_desejo,tem_sofrimento,qualidades)
         VALUES (?,?,?,?,?,?,?,?)""", (rid, ANOTADOR, VERSAO, r['nat'], sonho,
@@ -233,6 +301,7 @@ def main():
             print(f'★ fila vazia. {ok} moídos nesta sessão.'); return
         with ThreadPoolExecutor(max_workers=PARALELO) as pool:
             resultados = list(pool.map(lambda l: (l, _tentar(l)), lote))
+        _embeddar_lote([res for _, res in resultados if isinstance(res, dict)])
         for linha, res in resultados:
             if isinstance(res, dict):
                 try:
