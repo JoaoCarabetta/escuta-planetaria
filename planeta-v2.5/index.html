@@ -282,9 +282,9 @@ let nVisiveis = 0, escalaPonto = 1;
 // V2: a visibilidade vira uma máscara, recalculada só quando um filtro muda
 // (todo filtro passa por aqui via atualizarContas). O desenho lê a máscara em
 // vez de reavaliar os filtros 450 mil vezes por quadro.
-let VIS = null;
+let VIS = null, VIS_VERSAO = 0;     // a versão avisa a placa de vídeo que a máscara mudou
 function recalcularEscala(){
-  nVisiveis = 0;
+  nVisiveis = 0; VIS_VERSAO++;
   if (!VIS || VIS.length !== N) VIS = new Uint8Array(N);
   for (let i=0;i<N;i++){ const v = visivel(i) ? 1 : 0; VIS[i] = v; nVisiveis += v; }
   // poucos pontos → grandes e nítidos; muitos → finos, para a densidade aparecer
@@ -572,6 +572,16 @@ function explorarQuadro(t){
   const dt = EXPLORA.ultimo ? Math.min(0.1, (t - EXPLORA.ultimo) / 1000) : 0;
   EXPLORA.ultimo = t;
   moverCamera(dt);
+  if (GL.ok){
+    const base = baseCamera(), foc = Math.min(W,H) * 0.9;
+    glDesenhar({modo:1, base, foc});
+    if (sel >= 0){                     // o sonho aberto, marcado onde está
+      const p = projetarExp(sel, base, MAT, foc);
+      if (p){ cx.strokeStyle = 'rgba(255,255,255,.8)'; cx.lineWidth = 1;
+        cx.beginPath(); cx.arc(p[0], p[1], Math.max(6, 0.012*foc/p[2]), 0, 6.2832); cx.stroke(); }
+    }
+    return;
+  }
   if (!CR) prepararCores();
   if (!VIS) recalcularEscala();
   const base = baseCamera(), m = MAT, foc = Math.min(W,H) * 0.9;
@@ -636,6 +646,151 @@ function explorarQuadro(t){
   }
 }
 
+// ——— V2.5: DESENHO NA PLACA DE VÍDEO (WebGL) ———
+// As mesmas contas do laço do processador (rotação, projeção, foco de
+// profundidade, cinza da distância, véu da busca; perspectiva e névoa no modo
+// explorar), mas num shader: a placa faz os 453 mil pontos em paralelo e o
+// JavaScript só manda ~15 números por quadro. A soma de luz ('lighter') vira
+// blending aditivo; o disco, um descarte fora do círculo. A tela WebGL fica por
+// cima da 2D (fundo, estrelas, halo, anéis) com mix-blend-mode: plus-lighter —
+// a mesma soma de luz entre as duas camadas. Sem WebGL (ou com ?cpu na
+// URL), o desenho do processador continua valendo.
+const GL = { ok:false };
+(function iniciarGL(){
+  if (/[?&]cpu\b/.test(location.search)) return;
+  const tela = document.createElement('canvas');
+  tela.id = 'luz';
+  tela.style.cssText = 'position:fixed;inset:0;pointer-events:none;mix-blend-mode:plus-lighter';
+  cv.after(tela);
+  const gl = tela.getContext('webgl', {premultipliedAlpha:true, antialias:false, alpha:true});
+  if (!gl){ tela.remove(); return; }
+  const VS = `
+    attribute vec3 aPos; attribute vec3 aCor; attribute vec2 aFlag;
+    uniform vec3 uM0, uM1, uM2;
+    uniform float uModo;             // 0 órbita · 1 explorar
+    uniform vec2 uEscala;            // órbita: R/(W/2), R/(H/2) · explorar: foc/(W/2), foc/(H/2)
+    uniform float uDPR, uRaio, uAlfa, uFoco, uLarg, uAlc, uBusca;
+    uniform vec3 uCam, uFwd, uDir, uCima;
+    uniform float uFoc;
+    varying vec3 vCor; varying float vA; varying float vDisco;
+    const vec3 CINZA = vec3(122.0, 128.0, 150.0) / 255.0;
+    void main(){
+      if (aFlag.x < 0.5){ gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; return; }
+      vec3 p = vec3(dot(uM0, aPos), dot(uM1, aPos), dot(uM2, aPos));
+      vec3 cor = aCor; float a; float r2;
+      if (uModo < 0.5){
+        float t = (p.z - uFoco) / uLarg;
+        float prof = 0.07 + 0.93 * exp(-t*t);
+        float g = min(0.80, pow(abs(p.z - uFoco) / uAlc, 3.0));
+        cor = mix(cor, CINZA, g);
+        a = uAlfa * prof; r2 = uRaio;
+        gl_Position = vec4(p.x * uEscala.x, p.y * uEscala.y, 0.0, 1.0);
+      } else {
+        vec3 q = p - uCam;
+        float d = dot(q, uFwd);
+        if (d < 0.004){ gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; return; }
+        float px = dot(q, uDir), py = dot(q, uCima);
+        r2 = clamp(0.0035 * uFoc / d, 0.9, 12.0);
+        a = min(0.95, 0.10 + 0.85 * exp(-d / 0.55)) * (r2 < 1.5 ? 0.55 : 1.0);
+        gl_Position = vec4(px / d * uEscala.x, py / d * uEscala.y, 0.0, 1.0);
+      }
+      if (uBusca > 0.5){                       // véu: o achado acende, o resto recua
+        if (aFlag.y > 0.5){ a = min(1.0, a * (uModo < 0.5 ? 7.0 : 4.0)); r2 *= (uModo < 0.5 ? 1.9 : 1.0); }
+        else { a *= 0.16; cor = (cor + vec3(120.0, 126.0, 146.0) / 255.0) * 0.5; }
+      }
+      float s = r2 * uDPR;
+      // abaixo de 1 px a placa desenha 1 px: a luz é reduzida na proporção
+      // da área, como o acumulador do processador fazia
+      if (s < 1.0){ a *= s * s; s = 1.0; }
+      gl_PointSize = s;
+      vDisco = s >= 3.0 ? 1.0 : 0.0;
+      vCor = cor; vA = a * (vDisco > 0.5 && uModo > 0.5 ? 1.2732 : 1.0);
+    }`;
+  const FS = `
+    precision mediump float;
+    varying vec3 vCor; varying float vA; varying float vDisco;
+    void main(){
+      if (vDisco > 0.5){ vec2 c = gl_PointCoord - 0.5; if (dot(c, c) > 0.25) discard; }
+      vec3 luz = vCor * vA;
+      gl_FragColor = vec4(luz, max(luz.r, max(luz.g, luz.b)));
+    }`;
+  const sh = (tipo, src) => { const s = gl.createShader(tipo); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  let prog;
+  try {
+    prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+  } catch (e){ console.warn('WebGL indisponível, desenho pelo processador:', e.message); tela.remove(); return; }
+  gl.useProgram(prog);
+  const U = {};
+  for (const n of ['uM0','uM1','uM2','uModo','uEscala','uDPR','uRaio','uAlfa','uFoco','uLarg','uAlc',
+                   'uBusca','uCam','uFwd','uDir','uCima','uFoc']) U[n] = gl.getUniformLocation(prog, n);
+  Object.assign(GL, { ok:true, gl, tela, prog, U, carregado:false, visVersao:-1, buscaRef:undefined });
+})();
+
+function glCarregar(){
+  const {gl, prog} = GL;
+  const buf = (dados, nome, n, tipo, norm) => {
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+    gl.bufferData(gl.ARRAY_BUFFER, dados, gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, nome);
+    gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, n, tipo, norm, 0, 0);
+    return b;
+  };
+  buf(POS, 'aPos', 3, gl.FLOAT, false);
+  const cor = new Uint8Array(N*3);
+  for (let i=0;i<N;i++){ cor[i*3]=CR[i]; cor[i*3+1]=CG[i]; cor[i*3+2]=CB[i]; }
+  buf(cor, 'aCor', 3, gl.UNSIGNED_BYTE, true);
+  GL.flags = new Uint8Array(N*2);
+  GL.bufFlag = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, GL.bufFlag);
+  gl.bufferData(gl.ARRAY_BUFFER, GL.flags, gl.DYNAMIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'aFlag');
+  gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.UNSIGNED_BYTE, true, 0, 0);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+  GL.carregado = true;
+}
+function glFlags(){
+  if (GL.visVersao === VIS_VERSAO && GL.buscaRef === buscaSet) return;
+  const f = GL.flags;
+  for (let i=0;i<N;i++){ f[i*2] = VIS[i] ? 255 : 0; f[i*2+1] = (buscaSet && buscaSet.has(i)) ? 255 : 0; }
+  GL.gl.bindBuffer(GL.gl.ARRAY_BUFFER, GL.bufFlag);
+  GL.gl.bufferSubData(GL.gl.ARRAY_BUFFER, 0, f);
+  GL.visVersao = VIS_VERSAO; GL.buscaRef = buscaSet;
+}
+// desenha um quadro na placa; `o` traz o que muda por quadro
+function glDesenhar(o){
+  const {gl, tela, U} = GL;
+  if (!CR) prepararCores();
+  if (!VIS) recalcularEscala();
+  if (!GL.carregado) glCarregar();
+  glFlags();
+  const DW = Math.round(W*DPR), DH = Math.round(H*DPR);
+  if (tela.width !== DW || tela.height !== DH){ tela.width = DW; tela.height = DH;
+    tela.style.width = W+'px'; tela.style.height = H+'px'; }
+  gl.viewport(0, 0, DW, DH);
+  gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+  const m = MAT;
+  gl.uniform3f(U.uM0, m[0][0], m[0][1], m[0][2]);
+  gl.uniform3f(U.uM1, m[1][0], m[1][1], m[1][2]);
+  gl.uniform3f(U.uM2, m[2][0], m[2][1], m[2][2]);
+  gl.uniform1f(U.uModo, o.modo); gl.uniform1f(U.uDPR, DPR);
+  gl.uniform1f(U.uBusca, buscaSet ? 1 : 0);
+  if (o.modo === 0){
+    gl.uniform2f(U.uEscala, o.R/(W/2), o.R/(H/2));
+    gl.uniform1f(U.uRaio, o.raio); gl.uniform1f(U.uAlfa, o.alfa);
+    gl.uniform1f(U.uFoco, foco); gl.uniform1f(U.uLarg, o.larg); gl.uniform1f(U.uAlc, o.alc);
+  } else {
+    const b = o.base;
+    gl.uniform2f(U.uEscala, o.foc/(W/2), o.foc/(H/2)); gl.uniform1f(U.uFoc, o.foc);
+    gl.uniform3f(U.uCam, EXPLORA.x, EXPLORA.y, EXPLORA.z);
+    gl.uniform3f(U.uFwd, ...b.fwd); gl.uniform3f(U.uDir, ...b.dir); gl.uniform3f(U.uCima, ...b.cima);
+  }
+  gl.drawArrays(gl.POINTS, 0, N);
+}
+function glApagar(){ if (GL.ok && GL.carregado){ GL.gl.clearColor(0,0,0,0); GL.gl.clear(GL.gl.COLOR_BUFFER_BIT); } }
+
 function desenhar(t){
   cx.fillStyle = css('--vazio'); cx.fillRect(0,0,W,H);
   for (const [x,y,a] of estrelas){ cx.fillStyle = `rgba(190,196,220,${a})`; cx.fillRect(x*W,y*H,1,1); }
@@ -664,6 +819,12 @@ function desenhar(t){
                                   * Math.pow(escalaPonto, 0.9));
   const larg = fatia(), alc = alcance();
   mostrarProfundidade();
+  if (GL.ok){                          // placa de vídeo: mesmas contas, em paralelo
+    glDesenhar({modo:0, R, raio, alfa:alfaBase, larg, alc});
+    if (sel >= 0) marcarSel(R);
+    requestAnimationFrame(desenhar);
+    return;
+  }
   cx.globalCompositeOperation = 'lighter';
   if (!CR) prepararCores();
   if (!VIS) recalcularEscala();
