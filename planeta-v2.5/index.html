@@ -418,7 +418,12 @@ function medir(){
   if (W > 760){
     // encosta no rodapé do cabeçalho e pára acima da linha do tempo
     const topo = Math.round(document.querySelector('header').getBoundingClientRect().bottom + 16);
-    const fundo = $('#tempo').getBoundingClientRect().top;
+    // pára acima da linha do tempo E do botão "explorar por dentro" (V2.5:
+    // a lista de achados entrava no botão)
+    const btn = $('#explorar');
+    const fundo = Math.min($('#tempo').getBoundingClientRect().top,
+      // (offsetParent é sempre nulo em elemento fixo: checar o display)
+      btn && getComputedStyle(btn).display !== 'none' ? btn.getBoundingClientRect().top : Infinity);
     esq.style.top = topo + 'px';
     esq.style.maxHeight = Math.max(120, Math.round(fundo - topo - 16)) + 'px';
   } else {
@@ -1448,22 +1453,25 @@ function listar(){
       + (escondidos ? ` · ${escondidos.toLocaleString('pt-BR')} fora dos filtros` : '')
     : (escondidos ? `${escondidos.toLocaleString('pt-BR')} achados, todos fora dos filtros`
                   : 'nenhum com essa palavra')) + pulou;
-  const ids = acesos.slice(0, 60);
-  for (const i of ids){
-    const [r,g,b] = corDe(i);
-    const d = document.createElement('div');
-    d.innerHTML = `<i style="background:rgb(${r},${g},${b})"></i><span>${ANO[i]} · carregando…</span>`;
-    const sp = d.querySelector('span');
-    pegarTexto(i).then(t=>{ sp.textContent = `${ANO[i]} · ${(t||'').slice(0,110)}`; });
-    d.onclick = ()=>{ sel = i; mostrar(i); girarPara(i); };
-    cont.appendChild(d);
-  }
-  if (buscaSet.size > 60){
-    const m = document.createElement('div');
-    m.innerHTML = `<span style="opacity:.7">…e mais ${(buscaSet.size-60).toLocaleString('pt-BR')} acesos no planeta</span>`;
-    m.style.cursor = 'default';
-    cont.appendChild(m);
-  }
+  // Todos os achados, de 60 em 60 conforme se rola (V2.5; antes parava em 60
+  // com "…e mais N"). Cada item só busca o próprio texto quando entra na lista.
+  let feitos = 0;
+  const maisUm = () => {
+    for (const i of acesos.slice(feitos, feitos + 60)){
+      const [r,g,b] = corDe(i);
+      const d = document.createElement('div');
+      d.innerHTML = `<i style="background:rgb(${r},${g},${b})"></i><span>${ANO[i]} · carregando…</span>`;
+      const sp = d.querySelector('span');
+      pegarTexto(i).then(t=>{ sp.textContent = `${ANO[i]} · ${(t||'').slice(0,110)}`; });
+      d.onclick = ()=>{ sel = i; mostrar(i); girarPara(i); };
+      cont.appendChild(d);
+    }
+    feitos = Math.min(acesos.length, feitos + 60);
+  };
+  maisUm();
+  cont.onscroll = () => {
+    if (feitos < acesos.length && cont.scrollTop + cont.clientHeight > cont.scrollHeight - 120) maisUm();
+  };
 }
 
 // ——— linha do tempo ———
