@@ -1386,8 +1386,19 @@ async function acesosDe(termo){
   return achados;
 }
 
+// Palavras que estão em mais de 1/4 dos relatos ficaram FORA do índice
+// (que, meu, sonho, sonhei, com). Numa combinação elas quebravam tudo:
+// "sonhei cobra" dava zero. Agora são puladas — estando em quase todo relato,
+// quase não filtram — e a página diz quais pulou.
+let FREQUENTES = null, PULADAS = [];
 async function procurar(consulta){
-  const termos = consulta.split(/\s+/).filter(t => t.length >= 3);
+  if (!FREQUENTES){
+    try { FREQUENTES = await (await dado('busca/frequentes.json')).json(); }
+    catch(_){ FREQUENTES = {}; }
+  }
+  const todos = consulta.split(/\s+/).filter(t => t.length >= 3);
+  PULADAS = todos.filter(t => t in FREQUENTES);
+  const termos = todos.filter(t => !(t in FREQUENTES));
   if (!termos.length) return new Set();
   let acc = null;
   for (const t of termos){
@@ -1406,7 +1417,7 @@ $('#q').addEventListener('input', e=>{
   tq = setTimeout(async ()=>{
     const termo = e.target.value.trim().toLowerCase()
       .normalize('NFD').replace(/[̀-ͯ]/g,'');
-    if (termo.length < 3){ buscaSet = null; $('#conta').textContent=''; listar(); return; }
+    if (termo.length < 3){ buscaSet = null; PULADAS = []; $('#conta').textContent=''; listar(); return; }
     $('#conta').textContent = 'procurando…';
     const achou = await procurar(termo);
     if (minha !== vez) return;                 // já digitaram outra coisa
@@ -1419,17 +1430,24 @@ $('#q').addEventListener('input', e=>{
 
 function listar(){
   const cont = $('#achados'); cont.innerHTML = '';
-  if (!buscaSet || !buscaSet.size) return;
+  const pulou = PULADAS.length
+    ? ` · pulei ${PULADAS.map(w => `"${w}"`).join(', ')} (em quase todo relato)` : '';
+  if (!buscaSet || !buscaSet.size){
+    if (PULADAS.length && $('#q').value.trim().length >= 3)
+      $('#conta').textContent = `${PULADAS.map(w => `"${w}" está em ${Math.round(100*FREQUENTES[w])}%`).join(', ')}`
+        + ' dos relatos — combine com outra palavra';
+    return;
+  }
   // só entra na lista quem está aceso no planeta. Antes, clicar num achado que
   // os filtros escondiam abria a ficha e girava o globo até um ponto que não
   // estava desenhado — o anel de seleção ficava boiando no vazio.
   const acesos = [...buscaSet].filter(visivel);
   const escondidos = buscaSet.size - acesos.length;
-  $('#conta').textContent = acesos.length
+  $('#conta').textContent = (acesos.length
     ? `${acesos.length.toLocaleString('pt-BR')} aceso${acesos.length>1?'s':''}`
       + (escondidos ? ` · ${escondidos.toLocaleString('pt-BR')} fora dos filtros` : '')
     : (escondidos ? `${escondidos.toLocaleString('pt-BR')} achados, todos fora dos filtros`
-                  : 'nenhum com essa palavra');
+                  : 'nenhum com essa palavra')) + pulou;
   const ids = acesos.slice(0, 60);
   for (const i of ids){
     const [r,g,b] = corDe(i);
