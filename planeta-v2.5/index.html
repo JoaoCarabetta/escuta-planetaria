@@ -191,6 +191,7 @@
 
 <div id="direita">
   <div class="caixa" id="marcadores"><h2>o sonho é…</h2></div>
+  <div class="caixa" id="pintura"><h2>pintar por</h2></div>
   <div class="caixa" id="qualidades"><h2>tamanho do relato</h2></div>
   <div class="caixa" id="camadas"><h2>camadas</h2></div>
   <div class="caixa" id="fontes">
@@ -373,9 +374,21 @@ function visivel(i){
   return okCom(i) && okMarc(i) && okTempo(i) && okQuais(i);
 }
 
+// V2.5: duas pinturas sobre as mesmas posições. 'portao' = o que o sonho é
+// (literal/figurado/incerto); 'palavra' = a palavra no texto (bits 7-8):
+// sonho verde, pesadelo vermelho, os dois laranja, nenhum cinza. Uma OU
+// outra: somadas, azul+vermelho viraria o lilás dos incertos.
+let pintura = 'portao';
 function corDe(i){
   const b = BITS[i];
   if (NAT[i] !== 0) return [91,99,118];
+  if (pintura === 'palavra'){
+    const so = b & 128, pe = b & 256;
+    if (so && pe) return [255,160,70];
+    if (pe) return [255,92,92];
+    if (so) return [110,220,150];
+    return [122,128,150];
+  }
   if (b&4) return [195,155,255];          // incerto: cor própria, sempre
   let r=0,g=0,bl=0,n=0;
   if (b&1){ r+=107; g+=168; bl+=255; n++; }
@@ -750,6 +763,7 @@ function glCarregar(){
   gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.UNSIGNED_BYTE, true, 0, 0);
   gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
   GL.carregado = true;
+  GL.visVersao = -1;                   // buffer de máscara novo: reenviar
 }
 function glFlags(){
   if (GL.visVersao === VIS_VERSAO && GL.buscaRef === buscaSet) return;
@@ -1176,6 +1190,8 @@ function mostrar(i){
   if (NAT[i] === 3) marcs.push('propaganda');
   else if (b&4) marcs.push('incerto: literal ou figurado?');
   else { if (b&1) marcs.push('literal'); if (b&2) marcs.push('figurado'); }
+  if (b & 128) marcs.push('<span style="color:#6edc96">sonho</span>');
+  if (b & 256) marcs.push('<span style="color:#ff5c5c">pesadelo</span>');
   // estimativa do modelo, não certeza: na amostra-prova ela erra para o lado
   // da cautela (diz 70-90% literal e acerta ~100%)
   marcs.push(`<span title="estimativa do classificador">literal ${P_LIT[i]}% · figurado ${P_FIG[i]}%</span>`);
@@ -1222,6 +1238,21 @@ function montarHUD(){
     ()=>cont(i=>NAT[i]===0 && (BITS[i]&2) && !(BITS[i]&4) && okCom(i) && okTempo(i) && okQuais(i))));
   chips.push(chip(m,'incerto',css('--sofrer'),true,v=>ativos.sofrer=v,
     ()=>cont(i=>NAT[i]===0 && (BITS[i]&4) && okCom(i) && okTempo(i) && okQuais(i))));
+  // pintar por: uma das duas, como botões de rádio
+  const pz = $('#pintura'), opcoes = [];
+  const escolher = (qual) => {
+    pintura = qual;
+    for (const [d, k] of opcoes) d.classList.toggle('on', k === qual);
+    prepararCores();
+    if (GL.ok) GL.carregado = false;          // a placa relê as cores
+  };
+  for (const [k, rot, cor] of [['portao','o que o sonho é','#9aa0b6'],['palavra','sonho · pesadelo','#6edc96']]){
+    const d = document.createElement('div');
+    d.className = 'ch' + (k === pintura ? ' on' : '');
+    d.innerHTML = `<i style="--cor:${cor}"></i>${rot}`;
+    d.onclick = () => escolher(k);
+    pz.appendChild(d); opcoes.push([d, k]);
+  }
   const q = $('#qualidades');
   META.qualidades.forEach((nome,j)=>{
     quais[nome] = false;

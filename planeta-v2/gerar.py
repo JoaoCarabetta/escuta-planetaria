@@ -9,6 +9,8 @@ Formato de cada ponto (22 bytes): posição 3f · camada B · fonte B · comunid
 · ano H · mês B · bits H · p_literal B · p_figurado B (0-100)
   bits: 0 literal · 1 figurado · 2 incerto (na revisão pelo portão)
         3 curto · 4 médio · 5 longo · 6 enorme (um só dos quatro)
+        7 tem a palavra sonho/sonhos/sonhei · 8 tem pesadelo/pesadelos
+        (25/09, pedido do Fitipe; independentes — 7.860 relatos têm as duas)
   camada: 0 campo · 3 propaganda (apagada por padrão)
 
 Princípios (acordados 2026-09-20/22):
@@ -37,7 +39,9 @@ SAIDA.mkdir(exist_ok=True)
 # os bits 3-6 são o tamanho; a página os trata como os filtros de qualidade
 # da V1 (mesmo mecanismo, outra semântica)
 QUALIDADES = ['curto', 'medio', 'longo', 'enorme']
-CURTO, LONGO = 100, 1500     # < CURTO · CURTO..LONGO · > LONGO · enorme = cortado no embedder
+CURTO, LONGO = 100, 1500
+PAL_SONHO = re.compile(r'\bsonh(?:o|os|ei)\b', re.I)
+PAL_PESADELO = re.compile(r'\bpesadelos?\b', re.I)     # < CURTO · CURTO..LONGO · > LONGO · enorme = cortado no embedder
 MAX_TEXTO = 40000        # sem corte: no GitHub Pages nao ha o teto de 64MB do Artifacts
 STOP = set("""a o e de da do das dos em um uma que com para por nao não mais eu me minha meu se
 ela ele isso essa esse sua seu você vc ja já como mas ou foi era ser ter tem tinha muito muita
@@ -140,7 +144,10 @@ def main():
           -- a mesma pessoa repostando entra uma vez só; duas pessoas sonhando
           -- a mesma coisa entram as duas — isso é o achado, não ruído
           AND r.canonico_de IS NULL
-        ORDER BY r.data_relato""").fetchall()
+        -- desempate pelo id: muitos posts têm o mesmo segundo, e sem isto a
+        -- ordem mudava a cada regeração — todos os arquivos de dados mudavam
+        -- e cada publicação somava ~200MB ao repositório
+        ORDER BY r.data_relato, r.id""").fetchall()
     print(f'{len(linhas)} relatos com predição e embedding')
 
     # A posição vem do projetar.py (UMAP em 3 eixos livres). O PCA que havia aqui
@@ -179,6 +186,7 @@ def main():
         n = len(texto or '')
         tam = 3 if enorme else (0 if n < CURTO else (1 if n <= LONGO else 2))
         bits |= 1 << (3 + tam)
+        bits |= (bool(PAL_SONHO.search(texto or '')) << 7) | (bool(PAL_PESADELO.search(texto or '')) << 8)
         registros.append((esfera[i], camada, f, c, ano, mes, bits,
                           round(100 * (p_lit or 0)), round(100 * (p_fig or 0))))
         textos.append(texto[:MAX_TEXTO])

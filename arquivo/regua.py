@@ -50,6 +50,9 @@ from pathlib import Path
 
 DB = Path(__file__).parent / 'arquivo.db'
 APLICAR = '--aplicar' in sys.argv
+# --min-chars N: só compara textos com pelo menos N caracteres (25/09: a régua
+# por embedding explodiu com tuítes curtos; o curto vai para agrupamento exato)
+MIN_CHARS = next((int(x.split('=')[1]) for x in sys.argv if x.startswith('--min-chars=')), 0)
 LIM_GEMEO, LIM_FORTE, DIAS_DUP = 0.90, 0.97, 90
 LIM_VERBATIM = 0.995   # praticamente letra por letra
 MIN_REPOST = 60          # minutos: janela do repost institucional
@@ -142,7 +145,8 @@ def main():
         -- os ~290 mil moídos pelo BERT (25/09) nunca seriam comparados, e o
         -- figurado — que a V2 do planeta mostra — também não.
         FROM relatos r
-        WHERE r.embedding IS NOT NULL AND length(r.embedding) > 0""").fetchall()
+        WHERE r.embedding IS NOT NULL AND length(r.embedding) > 0
+          AND length(r.texto) >= ?""", (MIN_CHARS,)).fetchall()
     if not linhas:
         print('nenhum relato com embedding ainda'); return
     ids = [l[0] for l in linhas]

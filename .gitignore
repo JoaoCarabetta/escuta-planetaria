@@ -26,3 +26,4 @@ planeta-v2.5/dados_fatias/
 # pesos do modelo: 415 MB cada, e reproduzíveis a partir do banco e da semente
 aluno/*.pt
 aluno/*.log
+arquivo/conferencia_embeddings.txt
