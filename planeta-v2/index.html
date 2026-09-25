@@ -587,8 +587,16 @@ sand.addEventListener('click', e => { e.preventDefault(); menu(); });
 
 // ——— interação ———
 let arr = null, moveu = false;
+// Dedos na tela, por id. No celular cada dedo gera seus próprios eventos de
+// arrasto: com dois, o giro recebia as posições dos dois alternadamente e o
+// globo pulava entre elas em milissegundos durante a pinça. Com 2+ dedos o
+// giro fica desligado — a pinça só aproxima.
+const dedos = new Map();
 let dispensouMenu = false;
-cv.addEventListener('pointerdown', e=>{arr={x:e.clientX,y:e.clientY}; moveu=false;
+cv.addEventListener('pointerdown', e=>{
+  dedos.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if (dedos.size > 1){ arr = null; moveu = true; return; }   // começou uma pinça
+  arr={x:e.clientX,y:e.clientY}; moveu=false;
   // tocar na atmosfera recolhe os índices — e esse toque só recolhe, não abre
   // um relato junto: quem está fechando um menu não está escolhendo um sonho
   dispensouMenu = document.body.classList.contains('menu');
@@ -597,6 +605,8 @@ cv.addEventListener('pointerdown', e=>{arr={x:e.clientX,y:e.clientY}; moveu=fals
   try { cv.setPointerCapture(e.pointerId); } catch(_){}   // ponteiro já solto: segue sem capturar
 });
 cv.addEventListener('pointermove', e=>{
+  if (dedos.has(e.pointerId)) dedos.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if (dedos.size > 1){ arr = null; return; }
   if (arr){
     const dx=e.clientX-arr.x, dy=e.clientY-arr.y;
     if (Math.abs(dx)+Math.abs(dy) > 4) moveu = true;
@@ -616,9 +626,18 @@ cv.addEventListener('pointermove', e=>{
   }
   if (e.pointerType === 'mouse'){ pausa = true; nomear(e.clientX, e.clientY); }
 });
+const soltarDedo = e => {
+  dedos.delete(e.pointerId);
+  // de dois para um: o dedo que ficou volta a girar a partir de onde está
+  if (dedos.size === 1){ const [p] = dedos.values(); arr = {x:p.x, y:p.y}; }
+};
+cv.addEventListener('pointercancel', e => { soltarDedo(e); if (!dedos.size) arr = null; });
 cv.addEventListener('pointerup', e=>{
+  const eraPinca = dedos.size > 1 || moveu;
+  soltarDedo(e);
+  if (dedos.size){ return; }                // ainda há dedo na tela
   cv.classList.remove('arrastando');
-  if (!moveu && !dispensouMenu) tocar(e.clientX, e.clientY);
+  if (!eraPinca && !dispensouMenu) tocar(e.clientX, e.clientY);
   dispensouMenu = false;
   arr = null;
 });
@@ -718,14 +737,10 @@ cv.addEventListener('touchmove', e=>{
     const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
                          e.touches[0].clientY-e.touches[1].clientY);
     if (pin){
-      const antes = zoom;
+      // Pinça = zoom simples pelo centro (pedido do Fitipe, 25/09). O foco
+      // automático em profundidade e o mergulho no teto trocavam a camada acesa
+      // durante o gesto — no celular isso parecia o globo pulando.
       zoom = Math.max(.6, Math.min(ZOOM_MAX, zoom * d/pin));
-      // No toque a pinça amplia pelo CENTRO, sem puxar o giro atrás dos dedos:
-      // o dedo já move o planeta arrastando, e as duas coisas juntas faziam a
-      // imagem fugir da mão. Só o foco em profundidade continua automático, e
-      // pelo meio da tela, senão a ampliação cairia no vazio do polo.
-      if (zoom === ZOOM_MAX && d > pin) mergulhar(-0.7);
-      else if (zoom > antes) focarSobCursor(W/2, H/2, 0.4);
       if (zoom < 3) foco += (1 - foco) * 0.3;
     }
     pin = d; }
