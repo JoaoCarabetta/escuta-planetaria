@@ -75,6 +75,12 @@ def main():
         metric='cosine',      # a métrica em que os embeddings fazem sentido
         n_components=3,       # três eixos livres: a bola, não a casca
         n_epochs=200,
+        # V2: posição inicial pela PCA, não a espectral (padrão). Com 453 mil
+        # relatos a espectral (ARPACK) passou 50 min sem convergir — os
+        # aglomerados de tuítes quase idênticos deixam o grafo em ilhas. A PCA
+        # começa pelos grandes eixos de variação (boa forma global); as 200
+        # épocas acertam o local. Sinal preservado medido abaixo pela régua.
+        init='pca',
         random_state=2015,
         verbose=True,
     ).fit_transform(X).astype('float64')
