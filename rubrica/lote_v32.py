@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Serve e grava anotações da rubrica v3.2. Vários anotadores em paralelo.
 
-  pegar:   python3 lote_v31.py pegar --agente=1 --n=90 [--fonte=reanotar|prova]
+  pegar:   python3 lote_v31.py pegar --agente=1 --n=90 [--fonte=reanotar|prova|sabado] [--bolsa=carga_literal]
   gravar:  python3 lote_v31.py gravar --agente=1 < julgamentos.json
 
 Duas fontes, e a diferença entre elas é o ponto:
@@ -59,8 +59,26 @@ def conectar():
     return c
 
 
-def pegar(agente, n, fonte):
+LOTES_SABADO = Path(__file__).parent / 'lotes' / 'sabado_26-09.jsonl'
+
+
+def pegar(agente, n, fonte, bolsa=None):
     c = conectar()
+    if fonte == 'sabado':
+        # ANOTAÇÃO DIRIGIDA de 26/09: lotes congelados por rubrica/lotes_sabado.py.
+        # Fatia disjunta pelo último caractere do id (até 8 agentes); o que o
+        # agente já gravou não volta — pode pegar e gravar em rodadas de 20.
+        feitos = {r[0] for r in c.execute(
+            "SELECT relato_id FROM anotacoes_v3 WHERE anotador LIKE 'claude:sab:%'")}
+        itens = [json.loads(l) for l in open(LOTES_SABADO)]
+        itens = [x for x in itens if (bolsa is None or x['bolsa'] == bolsa)
+                 and x['id'] not in feitos
+                 and '0123456789abcdef'.index(x['id'][-1]) % 8 == agente % 8][:int(n)]
+        print(f'### {len(itens)} textos (sábado{" · " + bolsa if bolsa else ""}) para o agente {agente}\n')
+        for i, x in enumerate(itens, 1):
+            print(f'--- {i} | {x["id"]} | {x["bolsa"]}')
+            print(x['texto'].replace('\n', ' ') + '\n')
+        return
     if fonte == 'auditoria_modelo':
         # AUDITORIA DAS PREDIÇÕES: o anotador julga textos que o classificador
         # já rotulou, SEM ver o rótulo dele. Medir contra rótulos antigos mostra
@@ -137,7 +155,9 @@ def pegar(agente, n, fonte):
             AND r.id NOT IN (SELECT relato_id FROM amostra_prova)
             AND r.id NOT IN (SELECT relato_id FROM anotacoes_v3 WHERE anotador='fitipe')
             AND r.id NOT IN (SELECT relato_id FROM grupos_copia
-                             WHERE tipo IN ('copy_paste','obra'))
+                             WHERE tipo IN ('copy_paste','obra','circulacao'))
+            -- 'obra' virou 'circulacao' na régua 2 (25/09): sem este nome a
+            -- exclusão deixaria de valer calada
             AND NOT EXISTS (SELECT 1 FROM anotacoes_v3 v WHERE v.relato_id=r.id
                             AND v.anotador LIKE 'claude:v32:%')
             AND (instr('0123456789abcdef', substr(r.id,-1)) % 8) = ?
@@ -192,6 +212,7 @@ def gravar(agente, fonte='reanotar'):
             (d['id'], (f'claude:audmod:agente{agente}' if fonte == 'auditoria_modelo'
                        else f'claude:audtr:agente{agente}' if fonte == 'auditoria_treino'
                        else f'claude:aud:agente{agente}' if fonte == 'auditoria'
+                       else f'claude:sab:agente{agente}' if fonte == 'sabado'
                        else f'claude:v32:agente{agente}'),
              p['literal'], p['figurado'], p['devaneio'],
              json.dumps(lista(d.get('figura')), ensure_ascii=False),
@@ -211,7 +232,7 @@ def main():
     arg = {a.split('=')[0]: a.split('=')[-1] for a in sys.argv[2:]}
     if sys.argv[1] == 'pegar':
         pegar(int(arg.get('--agente', 1)), int(arg.get('--n', 90)),
-              arg.get('--fonte', 'reanotar'))
+              arg.get('--fonte', 'reanotar'), arg.get('--bolsa'))
     elif sys.argv[1] == 'gravar':
         gravar(int(arg.get('--agente', 1)), arg.get('--fonte', 'reanotar'))
     else:
