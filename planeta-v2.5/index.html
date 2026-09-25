@@ -697,7 +697,7 @@ const GL = { ok:false };
     uniform float uDPR, uRaio, uAlfa, uFoco, uLarg, uAlc, uBusca;
     uniform vec3 uCam, uFwd, uDir, uCima;
     uniform float uFoc;
-    varying vec3 vCor; varying float vA; varying float vDisco;
+    varying vec3 vCor; varying float vA; varying float vDisco; varying float vS;
     const vec3 CINZA = vec3(122.0, 128.0, 150.0) / 255.0;
     void main(){
       if (aFlag.x < 0.5){ gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; return; }
@@ -729,15 +729,24 @@ const GL = { ok:false };
       // da área, como o acumulador do processador fazia
       if (s < 1.0){ a *= s * s; s = 1.0; }
       gl_PointSize = s;
-      vDisco = s >= 3.0 ? 1.0 : 0.0;
-      vCor = cor; vA = a * (vDisco > 0.5 && uModo > 0.5 ? 1.2732 : 1.0);
+      // disco de borda suave a partir de 2 px (antes: quadrado abaixo de 3 px
+      // — na busca, com os achados 1,9× maiores e isolados, via-se o quadrado).
+      // A luz perdida nos cantos é devolvida onde antes era quadrado.
+      vDisco = s >= 2.0 ? 1.0 : 0.0; vS = s;
+      float comp = (s < 3.0 || uModo > 0.5) ? 1.2732 : 1.0;
+      vCor = cor; vA = a * (vDisco > 0.5 ? comp : 1.0);
     }`;
   const FS = `
     precision mediump float;
-    varying vec3 vCor; varying float vA; varying float vDisco;
+    varying vec3 vCor; varying float vA; varying float vDisco; varying float vS;
     void main(){
-      if (vDisco > 0.5){ vec2 c = gl_PointCoord - 0.5; if (dot(c, c) > 0.25) discard; }
-      vec3 luz = vCor * vA;
+      float borda = 1.0;
+      if (vDisco > 0.5){
+        float r = length(gl_PointCoord - 0.5) * 2.0;          // 0 no centro, 1 na borda
+        if (r > 1.0) discard;
+        borda = 1.0 - smoothstep(1.0 - 2.0 / vS, 1.0, r);     // ~1 px de transição
+      }
+      vec3 luz = vCor * vA * borda;
       gl_FragColor = vec4(luz, max(luz.r, max(luz.g, luz.b)));
     }`;
   const sh = (tipo, src) => { const s = gl.createShader(tipo); gl.shaderSource(s, src); gl.compileShader(s);
