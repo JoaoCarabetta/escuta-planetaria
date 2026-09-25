@@ -415,11 +415,14 @@ function desenhar(t){
   halo.addColorStop(0,'rgba(24,30,48,.30)'); halo.addColorStop(1,'rgba(24,30,48,0)');
   cx.fillStyle = halo; cx.beginPath(); cx.arc(cxx,cyy,R*1.3,0,7); cx.fill();
   // densidade: soma luminosa. Raio cresce com o zoom (três resoluções).
-  const zr = zoom < 1.5 ? 1.1 : (zoom < 3 ? 1.7 : Math.min(9, 2.8 * Math.pow(zoom/3, 0.42)));
+  // Tamanho e brilho CONTÍNUOS no zoom. Eram degraus (1,5× e 3×): em cada
+  // degrau tudo dobrava de uma vez, e a partir de 3× os pontos viravam
+  // círculos desenhados um a um — com quase 450 mil ainda na tela, a página
+  // travava numa faixa de zoom e voltava a fluir quando a maioria saía de cena.
+  const zr = zoom <= 1 ? 1.1 : Math.min(9, 1.1 * Math.pow(zoom, 0.7));
   const raio = zr * escalaPonto;
-  const alfaBase = Math.min(0.95, (zoom < 1.5 ? 0.16 : (zoom < 3 ? 0.34 : Math.min(0.95, 0.8 + zoom*0.01)))
+  const alfaBase = Math.min(0.95, 0.16 * Math.pow(Math.max(1, zoom), 1.35)
                                   * Math.pow(escalaPonto, 0.9));
-  const redondo = raio >= 1.9;
   const larg = fatia(), alc = alcance();
   mostrarProfundidade();
   cx.globalCompositeOperation = 'lighter';
@@ -456,21 +459,25 @@ function desenhar(t){
       if (buscaSet.has(i)){ a = Math.min(1, a*7); r2 = raio*1.9; }
       else { a *= 0.16; cr=(cr+120)>>1; cg=(cg+126)>>1; cb=(cb+146)>>1; }
     }
-    if (redondo){                       // círculo só quando o ponto é grande o bastante
+    const lado = Math.max(1, Math.round(r2*DPR));
+    if (lado > 40){                     // enorme (zoom extremo, poucos na tela)
       cx.fillStyle = `rgba(${cr|0},${cg|0},${cb|0},${a})`;
       cx.beginPath(); cx.arc(sx, sy, r2/2, 0, 6.2832); cx.fill();
-    } else {                            // abaixo de ~2px a forma não se distingue
-      const lado = Math.max(1, Math.round(r2*DPR));
+    } else {
+      // tudo pelo acumulador: quadrado abaixo de 3 px (a forma não se
+      // distingue; luz total preservada), disco a partir de 3 px (luz por
+      // pixel igual à do círculo que o canvas pintava antes)
       const px0 = Math.round((sx - r2/2)*DPR), py0 = Math.round((sy - r2/2)*DPR);
-      // mesma luz total do fillRect antigo: a área real (r2·DPR)² espalhada
-      // no quadrado inteiro de pixels que a representa
-      const k = (r2*DPR)*(r2*DPR) / (lado*lado);
+      const disco = lado >= 3, meio = (lado - 1) / 2, raio2 = (lado / 2) * (lado / 2);
+      const k = disco ? 1 : (r2*DPR)*(r2*DPR) / (lado*lado);
       const ar = cr*a*k, ag = cg*a*k, ab = cb*a*k;
       for (let yy = py0; yy < py0 + lado; yy++){
         if (yy < 0 || yy >= DH) continue;
         let o = (yy*DW + px0)*3;
+        const ddy = yy - py0 - meio;
         for (let xx = px0; xx < px0 + lado; xx++, o += 3){
           if (xx < 0 || xx >= DW) continue;
+          if (disco){ const ddx = xx - px0 - meio; if (ddx*ddx + ddy*ddy > raio2) continue; }
           ACC[o] += ar; ACC[o+1] += ag; ACC[o+2] += ab;
         }
       }
