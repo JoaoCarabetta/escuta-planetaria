@@ -21,6 +21,7 @@ planeta/dados/projecao.npy
 planeta/dados/projecao_ids.txt
 planeta-v2/dados/projecao.npy
 planeta-v2/dados/projecao_ids.txt
+planeta-v2.5/dados_fatias/
 
 # pesos do modelo: 415 MB cada, e reproduzíveis a partir do banco e da semente
 aluno/*.pt
