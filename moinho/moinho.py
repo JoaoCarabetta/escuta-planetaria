@@ -227,13 +227,30 @@ def gravar(con, r):
     extraida = 1 if midia == 1 else 0
     idade, genero = r['idade'], r['genero']
     p = {'permalink': r['permalink'], 'id': r['oid']}
-    con.execute("""INSERT OR REPLACE INTO relatos
+    # UPSERT, não INSERT OR REPLACE: o REPLACE apaga a linha inteira e o que
+    # não está no comando volta a nulo — um relato moído de novo perdia
+    # canonico_de (as marcas da régua), categoria, keywords. Agora, se o id já
+    # existe, só os campos que o moinho produz são atualizados; data_coleta
+    # guarda a primeira coleta. (Apontado pela sessão auditora, 25/09.)
+    con.execute("""INSERT INTO relatos
         (id,natureza,fonte,comunidade,data_relato,precisao_data,data_coleta,idioma,texto,
          tem_midia,midia_extraida,tem_relato_onirico,julgador,embedding,
          geo_pais,geo_regiao,geo_metodo,geo_confianca,
          sonhador_idade,sonhador_genero,demo_metodo,demo_confianca,
          interno_url,interno_id_original,interno_autor_hash,embed_versao)
-        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(id) DO UPDATE SET
+          natureza=excluded.natureza, fonte=excluded.fonte, comunidade=excluded.comunidade,
+          data_relato=excluded.data_relato, precisao_data=excluded.precisao_data,
+          idioma=excluded.idioma, texto=excluded.texto, tem_midia=excluded.tem_midia,
+          midia_extraida=excluded.midia_extraida, tem_relato_onirico=excluded.tem_relato_onirico,
+          julgador=excluded.julgador, embedding=excluded.embedding,
+          geo_pais=excluded.geo_pais, geo_regiao=excluded.geo_regiao,
+          geo_metodo=excluded.geo_metodo, geo_confianca=excluded.geo_confianca,
+          sonhador_idade=excluded.sonhador_idade, sonhador_genero=excluded.sonhador_genero,
+          demo_metodo=excluded.demo_metodo, demo_confianca=excluded.demo_confianca,
+          interno_url=excluded.interno_url, interno_id_original=excluded.interno_id_original,
+          interno_autor_hash=excluded.interno_autor_hash, embed_versao=excluded.embed_versao""",
         (rid, fonte, sub, data, idioma, texto, tem_midia, extraida, sonho, ANOTADOR, r['emb'],
          None if eh_en else 'BR', UF_POR_SUB.get(sub),
          # o MÉTODO tem de dizer a verdade. No Bluesky não há comunidade nenhuma

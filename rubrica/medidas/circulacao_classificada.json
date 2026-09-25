@@ -1,0 +1,1192 @@
+[
+  {
+    "grupo": 1,
+    "categoria": "citacao",
+    "fonte": "Paulo Freire – Pedagogia do Oprimido (paráfrase)",
+    "confianca": "alta",
+    "evidencia": "frase conhecida do pensamento de Freire, amplamente citada/parafraseada"
+  },
+  {
+    "grupo": 11,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "mapa fictício viral do metrô de SP, texto extraído de imagem; não é letra/citação"
+  },
+  {
+    "grupo": 12,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "copypasta de desabafo pessoal genérico, gênero comum em posts virais"
+  },
+  {
+    "grupo": 15,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "ditado/piada popular sobre casamento, sem fonte musical confirmada"
+  },
+  {
+    "grupo": 17,
+    "categoria": "letra",
+    "fonte": "Elis Regina – Fascinação",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou letra de 'Fascinação' (Rossini Pinto/Leo Claviere)"
+  },
+  {
+    "grupo": 19,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "post de fã sobre Cazuza, comentário pessoal, não é citação direta"
+  },
+  {
+    "grupo": 23,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 24,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "copypasta de auto-promoção 'sempre sonhei em ser famoso', repetida"
+  },
+  {
+    "grupo": 27,
+    "categoria": "letra",
+    "fonte": "Luiz Gonzaga – Pagode Russo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 29,
+    "categoria": "letra",
+    "fonte": "Luiz Gonzaga – Pagode Russo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 32,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "piada/formato 'sonhei que X e acordei com X'"
+  },
+  {
+    "grupo": 33,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "mesma piada de sonho/realidade"
+  },
+  {
+    "grupo": 39,
+    "categoria": "letra",
+    "fonte": "Calcinha Preta – Sonho Lindo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 46,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "mesma copypasta de fama de 24"
+  },
+  {
+    "grupo": 51,
+    "categoria": "letra",
+    "fonte": "Roberto Carlos/Erasmo Carlos – Olha",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 52,
+    "categoria": "letra",
+    "fonte": "Petrúcio Amorim – Tareco e Mariola",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 54,
+    "categoria": "letra",
+    "fonte": "Luiz Gonzaga – Pagode Russo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 57,
+    "categoria": "letra",
+    "fonte": "Roberto Carlos/Erasmo Carlos – Olha",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 67,
+    "categoria": "letra",
+    "fonte": "Alceu Valença – Flor de Tangerina",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 73,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 79,
+    "categoria": "letra",
+    "fonte": "ExaltaSamba – Por Tão Pouco",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 92,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "piada/verso sombrio circulante sobre pular de prédio"
+  },
+  {
+    "grupo": 103,
+    "categoria": "letra",
+    "fonte": "Cazuza/Paralamas do Sucesso – Quase Um Segundo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (comp. Herbert Vianna)"
+  },
+  {
+    "grupo": 107,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "trecho de blog pessoal 'MetafísicaOffVento', link próprio no texto"
+  },
+  {
+    "grupo": 108,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "post poético-espiritual pessoal, sem fonte identificável"
+  },
+  {
+    "grupo": 109,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "trecho de blog pessoal 'MetafísicaOffVento', link próprio no texto"
+  },
+  {
+    "grupo": 110,
+    "categoria": "letra",
+    "fonte": "Belchior – Alucinação",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 111,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "corrente religiosa/espiritual genérica"
+  },
+  {
+    "grupo": 112,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "post de fã sobre Cazuza, comentário pessoal"
+  },
+  {
+    "grupo": 113,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "post de fã sobre Cazuza, comentário pessoal"
+  },
+  {
+    "grupo": 114,
+    "categoria": "letra",
+    "fonte": "Eu Sem Você (Por Que Te Vás) – Lílian/Leno e Lílian (tb. Banda Cascavél)",
+    "confianca": "media",
+    "evidencia": "busca web achou múltiplas versões/regravações"
+  },
+  {
+    "grupo": 117,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "corrente mística 'eu sou a verdade...' sem autor identificado"
+  },
+  {
+    "grupo": 118,
+    "categoria": "lista",
+    "fonte": "Barão Vermelho – álbum Rock'n Geral (1987)",
+    "confianca": "alta",
+    "evidencia": "lista de títulos de faixas do álbum, confirmada por busca"
+  },
+  {
+    "grupo": 119,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "trecho poético, não foi possível identificar fonte musical/literária"
+  },
+  {
+    "grupo": 124,
+    "categoria": "letra",
+    "fonte": "Cartola – O Mundo É Um Moinho",
+    "confianca": "alta",
+    "evidencia": "conhecimento – samba clássico de Cartola"
+  },
+  {
+    "grupo": 126,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "post pessoal reflexivo/místico, sem fonte"
+  },
+  {
+    "grupo": 127,
+    "categoria": "citacao",
+    "fonte": "atribuída a Cícero",
+    "confianca": "media",
+    "evidencia": "citação amplamente compartilhada em bancos de frases, atribuição não totalmente confiável"
+  },
+  {
+    "grupo": 128,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "post poético-espiritual pessoal, sem fonte identificável (variação de 108)"
+  },
+  {
+    "grupo": 131,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "post pessoal reflexivo/místico, sem fonte"
+  },
+  {
+    "grupo": 133,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "post pessoal reflexivo/místico, sem fonte"
+  },
+  {
+    "grupo": 134,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "post pessoal reflexivo/místico, sem fonte"
+  },
+  {
+    "grupo": 135,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "post pessoal reflexivo/místico, sem fonte"
+  },
+  {
+    "grupo": 137,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "comentário sobre reunião da banda Rouge (evento real de 2024)"
+  },
+  {
+    "grupo": 138,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "comentário sobre reunião da banda Rouge (evento real de 2024)"
+  },
+  {
+    "grupo": 139,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "reflexão pessoal motivacional, sem fonte"
+  },
+  {
+    "grupo": 140,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "corrente mística 'eu sou a verdade...' (repetição de 117)"
+  },
+  {
+    "grupo": 141,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "post pessoal reflexivo/místico, sem fonte"
+  },
+  {
+    "grupo": 142,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "post pessoal reflexivo/místico, sem fonte"
+  },
+  {
+    "grupo": 143,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "post pessoal reflexivo/místico, sem fonte"
+  },
+  {
+    "grupo": 144,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "trecho poético repetido de 119, sem fonte confirmada"
+  },
+  {
+    "grupo": 145,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "reflexão espiritual pessoal, sem fonte"
+  },
+  {
+    "grupo": 147,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "frase motivacional sobre sonhos, sem fonte confirmada"
+  },
+  {
+    "grupo": 153,
+    "categoria": "letra",
+    "fonte": "KLB/Luan Santana – A Dor Desse Amor",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (comp. Luan/Elias Wagner)"
+  },
+  {
+    "grupo": 167,
+    "categoria": "letra",
+    "fonte": "Raul Seixas – Medo da Chuva",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (comp. c/ Paulo Coelho)"
+  },
+  {
+    "grupo": 169,
+    "categoria": "letra",
+    "fonte": "Renata Rosa – Caçador (álbum Manto dos Sonhos, 2008)",
+    "confianca": "alta",
+    "evidencia": "texto cita explicitamente artista/faixa/álbum"
+  },
+  {
+    "grupo": 194,
+    "categoria": "citacao",
+    "fonte": "Clarice Lispector",
+    "confianca": "alta",
+    "evidencia": "atribuição explícita em grupo irmão (2482) e amplamente conhecida"
+  },
+  {
+    "grupo": 198,
+    "categoria": "letra",
+    "fonte": "Caetano Veloso/Gilberto Gil (Os Mutantes) – Panis Et Circenses",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 199,
+    "categoria": "letra",
+    "fonte": "Milton Nascimento/Lô Borges/Márcio Borges – Clube da Esquina Nº 2",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 207,
+    "categoria": "letra",
+    "fonte": "Luan Santana – Tudo Que Você Quiser",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (tema de novela Malhação)"
+  },
+  {
+    "grupo": 211,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "formato de piada/diálogo sobre sonho, sem autor"
+  },
+  {
+    "grupo": 218,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 224,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "frase viral tipo 'minha memória é tipo...'"
+  },
+  {
+    "grupo": 231,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 235,
+    "categoria": "letra",
+    "fonte": "Annick – Te Ver de Novo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 242,
+    "categoria": "letra",
+    "fonte": "Charlie Brown Jr. – Dias de Luta, Dias de Glória",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (comp. Chorão)"
+  },
+  {
+    "grupo": 248,
+    "categoria": "letra",
+    "fonte": "Charlie Brown Jr. – Dias de Luta, Dias de Glória",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 250,
+    "categoria": "letra",
+    "fonte": "Petrúcio Amorim – Tareco e Mariola",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 258,
+    "categoria": "letra",
+    "fonte": "Raça Negra – É Tarde Demais",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 262,
+    "categoria": "letra",
+    "fonte": "Roberto Carlos/Erasmo Carlos – Olha",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 264,
+    "categoria": "letra",
+    "fonte": "Peninha/Caetano Veloso – Sonhos",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 277,
+    "categoria": "letra",
+    "fonte": "Zé Neto & Cristiano – Sonha Comigo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 280,
+    "categoria": "letra",
+    "fonte": "Charlie Brown Jr. – Dias de Luta, Dias de Glória",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 286,
+    "categoria": "letra",
+    "fonte": "Zarastruta – Mente Fértil",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 299,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 302,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "relato pessoal tipo tweet, formato relatable comum"
+  },
+  {
+    "grupo": 327,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 360,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "trecho reflexivo sobre sonhos/desistência, fonte não confirmada"
+  },
+  {
+    "grupo": 371,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (formatação em versos)"
+  },
+  {
+    "grupo": 395,
+    "categoria": "letra",
+    "fonte": "ExaltaSamba – Por Tão Pouco",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 399,
+    "categoria": "letra",
+    "fonte": "Charlie Brown Jr. – Hoje Eu Acordei Feliz",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 453,
+    "categoria": "letra",
+    "fonte": "ExaltaSamba – Tchau e Bença",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 523,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "frase viral tipo 'minha memória é tipo...' (repetição de 224)"
+  },
+  {
+    "grupo": 525,
+    "categoria": "letra",
+    "fonte": "Zezé Di Camargo & Luciano – Nem É Bom Lembrar",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 528,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (formatação em versos)"
+  },
+  {
+    "grupo": 549,
+    "categoria": "letra",
+    "fonte": "Os Mutantes/Rita Lee – Ando Meio Desligado",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 569,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 650,
+    "categoria": "letra",
+    "fonte": "Tom Jobim – Lígia",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 684,
+    "categoria": "letra",
+    "fonte": "Pullovers – Tudo Que Eu Sempre Sonhei",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 739,
+    "categoria": "letra",
+    "fonte": "Tom Jobim – Lígia",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 742,
+    "categoria": "letra",
+    "fonte": "Chico Buarque – Acorda Amor",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (não é Gilberto Gil como se supôs)"
+  },
+  {
+    "grupo": 748,
+    "categoria": "letra",
+    "fonte": "Luiz Gonzaga – Pagode Russo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 785,
+    "categoria": "letra",
+    "fonte": "Nação Zumbi – Um Sonho",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 884,
+    "categoria": "lista",
+    "fonte": "títulos de filmes de terror (Halloween, Massacre da Serra Elétrica, etc.)",
+    "confianca": "alta",
+    "evidencia": "lista clara de títulos de filmes clássicos de terror"
+  },
+  {
+    "grupo": 958,
+    "categoria": "lista",
+    "fonte": "títulos de filmes de terror (Halloween, Massacre da Serra Elétrica, etc.)",
+    "confianca": "alta",
+    "evidencia": "mesma lista de 884"
+  },
+  {
+    "grupo": 1216,
+    "categoria": "lista",
+    "fonte": "títulos de filmes de terror (Halloween, Massacre da Serra Elétrica, etc.)",
+    "confianca": "alta",
+    "evidencia": "mesma lista de 884"
+  },
+  {
+    "grupo": 1319,
+    "categoria": "letra",
+    "fonte": "Trem da Alegria/The Fevers – Uni Duni Tê",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 1341,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "alta",
+    "evidencia": "copypasta de humor negro 'meu sonho é...', gênero viral conhecido"
+  },
+  {
+    "grupo": 1356,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "formato de piada 'meu sonho é...'"
+  },
+  {
+    "grupo": 1378,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "formato de piada relatable 'meu sonho é...'"
+  },
+  {
+    "grupo": 1398,
+    "categoria": "letra",
+    "fonte": "BK' – Amanhecer",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 1405,
+    "categoria": "letra",
+    "fonte": "BK' – Amanhecer",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 1513,
+    "categoria": "letra",
+    "fonte": "Nação Zumbi – Um Sonho",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 1524,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "alta",
+    "evidencia": "piada absurda citando Casas Bahia, humor viral"
+  },
+  {
+    "grupo": 1527,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "alta",
+    "evidencia": "copypasta de humor negro 'meu sonho é...' (repetição de 1341)"
+  },
+  {
+    "grupo": 1648,
+    "categoria": "letra",
+    "fonte": "BK' – Amanhecer",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 1652,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "formato de piada relatable 'meu sonho é...' (repetição de 1378)"
+  },
+  {
+    "grupo": 1848,
+    "categoria": "letra",
+    "fonte": "Tarcísio do Acordeon (e outros) – Meu Sonho",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 1922,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "alta",
+    "evidencia": "copypasta de humor negro 'meu sonho é...' (repetição de 1341)"
+  },
+  {
+    "grupo": 2200,
+    "categoria": "letra",
+    "fonte": "Cazuza/Paralamas do Sucesso – Quase Um Segundo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2213,
+    "categoria": "letra",
+    "fonte": "Jorge & Mateus – Mil Anos",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2268,
+    "categoria": "letra",
+    "fonte": "Tim Maia – Me Dê Motivo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2288,
+    "categoria": "citacao",
+    "fonte": "Fernando Pessoa (Álvaro de Campos) – Tabacaria",
+    "confianca": "alta",
+    "evidencia": "poema famoso, confirmado por atribuição em grupo irmão (3768)"
+  },
+  {
+    "grupo": 2299,
+    "categoria": "letra",
+    "fonte": "Charlie Brown Jr. – Dias de Luta, Dias de Glória",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou trecho da mesma música"
+  },
+  {
+    "grupo": 2346,
+    "categoria": "citacao",
+    "fonte": "Augusto Cury",
+    "confianca": "alta",
+    "evidencia": "atribuição explícita no texto"
+  },
+  {
+    "grupo": 2367,
+    "categoria": "letra",
+    "fonte": "Liniker feat. BaianaSystem – Negona dos Olhos Terríveis",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2390,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "reflexão genérica sobre sonhos/paixões, sem fonte"
+  },
+  {
+    "grupo": 2399,
+    "categoria": "letra",
+    "fonte": "Cartola – O Mundo É Um Moinho",
+    "confianca": "alta",
+    "evidencia": "conhecimento – samba clássico de Cartola"
+  },
+  {
+    "grupo": 2403,
+    "categoria": "letra",
+    "fonte": "Charlie Brown Jr. – Dias de Luta, Dias de Glória",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2404,
+    "categoria": "letra",
+    "fonte": "Soweto/Belo/Altay Veloso – Farol das Estrelas",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2435,
+    "categoria": "letra",
+    "fonte": "Milton Nascimento/Lô Borges/Márcio Borges – Clube da Esquina Nº 2",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2465,
+    "categoria": "citacao",
+    "fonte": "Stephanie Garber – Caraval",
+    "confianca": "alta",
+    "evidencia": "atribuição explícita no texto"
+  },
+  {
+    "grupo": 2482,
+    "categoria": "citacao",
+    "fonte": "Clarice Lispector",
+    "confianca": "alta",
+    "evidencia": "atribuição explícita no texto"
+  },
+  {
+    "grupo": 2525,
+    "categoria": "letra",
+    "fonte": "Tim Maia – Me Dê Motivo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2528,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "frase motivacional genérica sobre sonhos, sem fonte"
+  },
+  {
+    "grupo": 2531,
+    "categoria": "letra",
+    "fonte": "Charlie Brown Jr. – Dias de Luta, Dias de Glória",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2536,
+    "categoria": "citacao",
+    "fonte": "Hilda Hilst",
+    "confianca": "alta",
+    "evidencia": "atribuição explícita no texto"
+  },
+  {
+    "grupo": 2547,
+    "categoria": "citacao",
+    "fonte": "Eleanor Roosevelt (atribuída)",
+    "confianca": "media",
+    "evidencia": "citação amplamente atribuída, autoria popularmente aceita mas não 100% verificável"
+  },
+  {
+    "grupo": 2580,
+    "categoria": "citacao",
+    "fonte": "Mia Couto – O Universo Num Grão de Areia",
+    "confianca": "alta",
+    "evidencia": "atribuição explícita no texto, com título do livro"
+  },
+  {
+    "grupo": 2695,
+    "categoria": "letra",
+    "fonte": "Cazuza/Frejat – Poema (regravada por Ney Matogrosso)",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2747,
+    "categoria": "anuncio",
+    "fonte": "",
+    "confianca": "alta",
+    "evidencia": "divulgação de conteúdo adulto com link de canal Telegram"
+  },
+  {
+    "grupo": 2874,
+    "categoria": "citacao",
+    "fonte": "Clarice Lispector (atribuída)",
+    "confianca": "media",
+    "evidencia": "atribuição explícita no texto; frase muito repetida como atribuída a ela"
+  },
+  {
+    "grupo": 2877,
+    "categoria": "letra",
+    "fonte": "Os Paralamas do Sucesso – Aonde Quer Que Eu Vá",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2878,
+    "categoria": "letra",
+    "fonte": "Jorge & Mateus – Mil Anos",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2903,
+    "categoria": "letra",
+    "fonte": "Pitty – Equalize",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2906,
+    "categoria": "citacao",
+    "fonte": "Mia Couto – O Universo Num Grão de Areia",
+    "confianca": "alta",
+    "evidencia": "mesma citação de 2580"
+  },
+  {
+    "grupo": 2951,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2962,
+    "categoria": "letra",
+    "fonte": "Charlie Brown Jr. – Hoje Eu Acordei Feliz",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 2970,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3020,
+    "categoria": "citacao",
+    "fonte": "Patrícia Leite – participante do BBB18 (frase viral)",
+    "confianca": "media",
+    "evidencia": "frase que se tornou meme/citação de reality show, amplamente compartilhada com essa atribuição"
+  },
+  {
+    "grupo": 3062,
+    "categoria": "letra",
+    "fonte": "Ivete Sangalo – Se Eu Não Te Amasse Tanto Assim",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3071,
+    "categoria": "letra",
+    "fonte": "Banda Kitara/Mari Fernandez – Dizem Que Sou Louca",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3081,
+    "categoria": "letra",
+    "fonte": "Fresno – Vou Ter Que Me Virar",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3139,
+    "categoria": "letra",
+    "fonte": "Cazuza/Frejat – Poema",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3252,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "frase de paquera/flerte genérica, sem fonte"
+  },
+  {
+    "grupo": 3253,
+    "categoria": "citacao",
+    "fonte": "José Saramago (atribuída)",
+    "confianca": "media",
+    "evidencia": "citação amplamente atribuída a Saramago em redes sociais"
+  },
+  {
+    "grupo": 3282,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "media",
+    "evidencia": "post relatable de humor sobre envelhecer, sem fonte"
+  },
+  {
+    "grupo": 3450,
+    "categoria": "letra",
+    "fonte": "Leonardo – Deixaria Tudo",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3451,
+    "categoria": "letra",
+    "fonte": "Eu Sem Você (Por Que Te Vás) – Lílian/Leno e Lílian (tb. Banda Cascavél)",
+    "confianca": "media",
+    "evidencia": "mesma música de 114"
+  },
+  {
+    "grupo": 3453,
+    "categoria": "letra",
+    "fonte": "Eu Sem Você (Por Que Te Vás) – Lílian/Leno e Lílian (tb. Banda Cascavél)",
+    "confianca": "media",
+    "evidencia": "mesma música de 114"
+  },
+  {
+    "grupo": 3475,
+    "categoria": "letra",
+    "fonte": "Floribella – Pobre Dos Ricos",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3546,
+    "categoria": "letra",
+    "fonte": "A Lenda da Luz da Lua – tema brasileiro de Sailor Moon",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3557,
+    "categoria": "letra",
+    "fonte": "Tribalistas – Aliança",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (trecho mais completo)"
+  },
+  {
+    "grupo": 3615,
+    "categoria": "letra",
+    "fonte": "Zezé Di Camargo & Luciano – Nem É Bom Lembrar",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3692,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "alta",
+    "evidencia": "piada de humor leve sobre pesadelo/cerveja, formato #bomdia"
+  },
+  {
+    "grupo": 3752,
+    "categoria": "citacao",
+    "fonte": "Augusto dos Anjos",
+    "confianca": "alta",
+    "evidencia": "atribuição explícita no texto"
+  },
+  {
+    "grupo": 3764,
+    "categoria": "letra",
+    "fonte": "Eu Sem Você (Por Que Te Vás) – Lílian/Leno e Lílian (tb. Banda Cascavél)",
+    "confianca": "media",
+    "evidencia": "mesma música de 114"
+  },
+  {
+    "grupo": 3768,
+    "categoria": "citacao",
+    "fonte": "Fernando Pessoa (Álvaro de Campos) – Tabacaria",
+    "confianca": "alta",
+    "evidencia": "atribuição explícita no texto"
+  },
+  {
+    "grupo": 3777,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "alta",
+    "evidencia": "copypasta existencial viral 'calma calabreu', confirmada em X/Twitter/Threads"
+  },
+  {
+    "grupo": 3788,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "alta",
+    "evidencia": "mesma copypasta 'calma calabreso' de 3777"
+  },
+  {
+    "grupo": 3798,
+    "categoria": "letra",
+    "fonte": "Raul Seixas – O Dia Em Que a Terra Parou",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3843,
+    "categoria": "letra",
+    "fonte": "Don L feat. Alt Niss e Terra Preta – Contigo Pro Que For",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (não é Cazuza como se supôs)"
+  },
+  {
+    "grupo": 3872,
+    "categoria": "letra",
+    "fonte": "Venere Vai Venus – Anjos",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3891,
+    "categoria": "letra",
+    "fonte": "Samba-enredo Salgueiro 2026 (homenagem a Rosa Magalhães)",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 3902,
+    "categoria": "letra",
+    "fonte": "Lô Borges/Milton Nascimento – Trem de Doido",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (não é Skank)"
+  },
+  {
+    "grupo": 3903,
+    "categoria": "outro",
+    "fonte": "",
+    "confianca": "baixa",
+    "evidencia": "frase motivacional sobre sonhos, sem fonte confirmada"
+  },
+  {
+    "grupo": 3980,
+    "categoria": "meme",
+    "fonte": "",
+    "confianca": "alta",
+    "evidencia": "copypasta de humor negro 'meu sonho é...' (repetição de 1341)"
+  },
+  {
+    "grupo": 4068,
+    "categoria": "letra",
+    "fonte": "Lobão – Essa Noite, Não (Marcha a Ré em Paquetá)",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 4076,
+    "categoria": "letra",
+    "fonte": "Digimon 4 – abertura brasileira",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou (letra de Nil Bernardes)"
+  },
+  {
+    "grupo": 4079,
+    "categoria": "letra",
+    "fonte": "Trem da Alegria – Cavalo de Fogo (abertura)",
+    "confianca": "alta",
+    "evidencia": "busca web confirmou"
+  },
+  {
+    "grupo": 4113,
+    "categoria": "anuncio",
+    "fonte": "",
+    "confianca": "alta",
+    "evidencia": "propaganda de produto (fios de LED) com link Shopee"
+  }
+]
