@@ -273,6 +273,13 @@ const alcance = () => Math.min(2.4, Math.max(0.30, 2.4 / Math.pow(zoom, 0.45)));
 // já é grande. É o que produz a graduação — e o que faz 10% de cinza alcançar
 // 46% do alcance em profundidade, mais longe do que a fatia em foco.
 const cinzento = (dz, alc) => Math.min(CINZA_MAX, (dz / alc) ** 3);
+// ATRAVESSAR (V2.5, 25/09): o que o foco já ultrapassou — entre quem olha e o
+// plano em foco (z > foco) — se dissolve numa faixa curta, em vez de ficar
+// cinza na frente de tudo. Recalculado a cada quadro: recuar o foco traz de
+// volta na hora.
+const faixaPassou = () => fatia() * 0.5;
+const passou = z => { const t = (z - foco) / faixaPassou();
+  return t <= 0 ? 0 : (t >= 1 ? 1 : t*t*(3 - 2*t)); };
 const ativos = {sonho:true, desejo:true, sofrer:true};
 const quais = {};
 const camadas = {meta:false, idiomatico:false, ruido:false};
@@ -693,7 +700,8 @@ const GL = { ok:false };
       vec3 cor = aCor; float a; float r2;
       if (uModo < 0.5){
         float t = (p.z - uFoco) / uLarg;
-        float prof = 0.07 + 0.93 * exp(-t*t);
+        float tp = clamp((p.z - uFoco) / (uLarg * 0.5), 0.0, 1.0);
+        float prof = (0.07 + 0.93 * exp(-t*t)) * (1.0 - tp*tp*(3.0 - 2.0*tp));
         float g = min(0.80, pow(abs(p.z - uFoco) / uAlc, 3.0));
         cor = mix(cor, CINZA, g);
         a = uAlfa * prof; r2 = uRaio;
@@ -861,8 +869,10 @@ function desenhar(t){
     // Duas pistas somadas — o brilho diz o que está em foco, o quanto de cor
     // resta diz o quão longe está. Sem a segunda, tudo que sai do plano fica
     // igualmente apagado e o miolo vira uma parede só.
+    const psd = passou(rz);
+    if (psd >= 1) continue;             // ultrapassado: já ficou para trás
     const t = (rz - foco) / larg;
-    const prof = 0.07 + 0.93*Math.exp(-t*t);
+    const prof = (0.07 + 0.93*Math.exp(-t*t)) * (1 - psd);
     const g = cinzento(Math.abs(rz - foco), alc);
     let cr = CR[i], cg = CG[i], cb = CB[i];
     if (g > 0.005){
@@ -950,6 +960,7 @@ function nomear(mx, my){
     const p = proj(i);
     if ((p.sx-mx)**2 + (p.sy-my)**2 > raio2) continue;
     if (cinzento(Math.abs(p.z - foco), alc) > CLIQUE_CINZA) continue;
+    if (passou(p.z) > 0.5) continue;
     n++;
     for (let k=PAL_OFF[i]; k<PAL_OFF[i+1]; k++)
       conta.set(PAL[k], (conta.get(PAL[k])||0) + 1);
@@ -1077,7 +1088,7 @@ function girarParaTela(mx, my, fracao){
 // dentro sem ampliar — o grupo que se olhava saía de foco, ficava cinza e
 // deixava de ser clicável (visto pelo Fitipe, 25/09). Com teto alto, os
 // pontos seguem se separando enquanto se aproxima.
-const ZOOM_MAX = 300;
+const ZOOM_MAX = 120;   // V2.5: no teto, aproximar ATRAVESSA (ver faixaPassou)
 // O passo do mergulho é uma fração do que se enxerga em profundidade, não um
 // valor fixo. Com passo fixo, cada volta da roda pulava metade da faixa visível
 // quando já se estava bem perto — atravessava-se um aglomerado inteiro sem ver.
@@ -1106,6 +1117,7 @@ function focarSobCursor(mx, my, fracao){
     const p = proj(i);
     const d = (p.sx-mx)**2 + (p.sy-my)**2;
     if (d > tol2) continue;
+    if (passou(p.z) > 0.5) continue;       // não volta a focar o que ficou para trás
     const nota = d/tol2 - 0.55*p.z;          // perto da mira, e de preferência à frente
     if (nota < melhorNota){ melhorNota = nota; melhor = i; }
   }
@@ -1142,11 +1154,13 @@ cv.addEventListener('wheel', e=>{
       giroAlvo = null;
       girarParaTela(e.clientX, e.clientY, 0.30);
       focarSobCursor(e.clientX, e.clientY, 0.45);
-    } else if (!focarSobCursor(e.clientX, e.clientY, 0.45))
-      mergulhar(-1);                     // no teto: foca o que está sob o cursor; só atravessa se não há nada
+    } else mergulhar(-1);                // no teto: seguir aproximando atravessa
   } else {
     if (foco < 1 && zoom >= ZOOM_MAX) mergulhar(1);
-    else zoom = Math.max(.6, zoom * .885);
+    else {
+      zoom = Math.max(.6, zoom * .885);
+      foco += (1 - foco) * 0.2;          // recuar traz o foco (e as camadas) de volta
+    }
   }
   // de longe não se está dentro de nada: o olhar volta sozinho para a superfície
   if (zoom < 3) foco += (1 - foco) * 0.3;
@@ -1164,9 +1178,9 @@ cv.addEventListener('touchmove', e=>{
       // o que estava à frente dele ficava cinza e não se alcançava. Voltaram.
       const antes = zoom;
       zoom = Math.max(.6, Math.min(ZOOM_MAX, zoom * d/pin));
-      if (zoom === ZOOM_MAX && d > pin){
-        if (!focarSobCursor(W/2, H/2, 0.4)) mergulhar(-0.7);
-      } else if (zoom > antes) focarSobCursor(W/2, H/2, 0.4);
+      if (zoom === ZOOM_MAX && d > pin) mergulhar(-0.7);      // no teto: atravessa
+      else if (zoom > antes) focarSobCursor(W/2, H/2, 0.4);
+      else if (zoom < antes) foco += (1 - foco) * 0.2;       // recuar traz de volta
       if (zoom < 3) foco += (1 - foco) * 0.3;
     }
     pin = d; }
@@ -1187,6 +1201,7 @@ function tocar(mx,my){
     // tela e rouba o clique de quem está na frente.
     const g = cinzento(Math.abs(p.z - foco), alc);
     if (g > CLIQUE_CINZA) continue;
+    if (passou(p.z) > 0.5) continue;       // já ficou para trás
     const nota = -(d/tol2) - g/CLIQUE_CINZA;
     if (nota > melhorNota){ melhorNota=nota; melhor=i; }
   }
