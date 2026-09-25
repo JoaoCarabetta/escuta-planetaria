@@ -737,10 +737,15 @@ cv.addEventListener('touchmove', e=>{
     const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
                          e.touches[0].clientY-e.touches[1].clientY);
     if (pin){
-      // Pinça = zoom simples pelo centro (pedido do Fitipe, 25/09). O foco
-      // automático em profundidade e o mergulho no teto trocavam a camada acesa
-      // durante o gesto — no celular isso parecia o globo pulando.
+      // Pinça = zoom pelo centro. O foco em profundidade acompanha o zoom (pelo
+      // meio da tela) e, no zoom máximo, seguir abrindo os dedos atravessa a
+      // bola. Tirei os dois em 25/09 achando que causavam o pulo — o pulo era
+      // o giro recebendo os dois dedos (já resolvido) — e o foco ficou preso:
+      // o que estava à frente dele ficava cinza e não se alcançava. Voltaram.
+      const antes = zoom;
       zoom = Math.max(.6, Math.min(ZOOM_MAX, zoom * d/pin));
+      if (zoom === ZOOM_MAX && d > pin) mergulhar(-0.7);
+      else if (zoom > antes) focarSobCursor(W/2, H/2, 0.4);
       if (zoom < 3) foco += (1 - foco) * 0.3;
     }
     pin = d; }
