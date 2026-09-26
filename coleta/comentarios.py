@@ -26,6 +26,7 @@ import sqlite3
 import sys
 import time
 import urllib.parse
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -75,6 +76,19 @@ def pedir(params):
             if err:
                 print(f'    erro da API: {resp["error"][:120]}'); return None
             return resp.get('data') or []
+        except urllib.error.HTTPError as e:
+            # O Arctic Shift devolve o "Timeout. Maybe slow down a bit" com
+            # HTTP 422. Tratar como falha de rede repetia a MESMA janela grande
+            # até desistir (28 jobs em 'erro' na primeira noite). Lendo o corpo,
+            # o timeout volta como 'timeout' e a janela encolhe.
+            try:
+                err = (json.loads(e.read().decode()).get('error') or '').lower()
+            except Exception:
+                err = ''
+            if 'timeout' in err:
+                return 'timeout'
+            print(f'    HTTP {e.code}: {err[:80]}; esperando {espera}s')
+            time.sleep(espera); espera = min(espera * 2, 480)
         except Exception as e:
             print(f'    rede: {e}; esperando {espera}s')
             time.sleep(espera); espera = min(espera * 2, 480)
