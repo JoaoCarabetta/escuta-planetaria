@@ -167,7 +167,13 @@ def preparar(linha, com_ocr=True):
     data = datetime.datetime.utcfromtimestamp(ts).strftime('%Y-%m-%dT%H:%M:%SZ') if ts else None
     eh_en = sub in SUBS_EN
 
-    return dict(fid=fid, rid=rid, fonte=fonte, sub=sub, data=data, idioma=idioma,
+    # FORMA — post, comentário ou (Bluesky) não verificado. Pedido do Fitipe
+    # (26/09): saber SEMPRE o que é post e o que é comentário, também depois
+    # que tudo se junta no arquivo e na página. O Bluesky não guardou se o post
+    # é resposta: fica 'bluesky_nao_verificado' até voltar à API.
+    forma = ('comentario' if p.get('tipo') == 'comentario'
+             else 'post' if fonte == 'reddit' else 'bluesky_nao_verificado')
+    return dict(fid=fid, rid=rid, fonte=fonte, sub=sub, data=data, idioma=idioma, forma=forma,
                 texto=texto, midia=midia, sonho=sonho, desejo=desejo, sofr=sofr,
                 quals=quals, idade=idade, genero=genero, eh_en=eh_en, nat=nat,
                 autor_hash=autor_hash,
@@ -237,8 +243,8 @@ def gravar(con, r):
          tem_midia,midia_extraida,tem_relato_onirico,julgador,embedding,
          geo_pais,geo_regiao,geo_metodo,geo_confianca,
          sonhador_idade,sonhador_genero,demo_metodo,demo_confianca,
-         interno_url,interno_id_original,interno_autor_hash,embed_versao)
-        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+         interno_url,interno_id_original,interno_autor_hash,embed_versao,forma)
+        VALUES (?,'escrito',?,?,?,'hora',date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ON CONFLICT(id) DO UPDATE SET
           natureza=excluded.natureza, fonte=excluded.fonte, comunidade=excluded.comunidade,
           data_relato=excluded.data_relato, precisao_data=excluded.precisao_data,
@@ -250,7 +256,8 @@ def gravar(con, r):
           sonhador_idade=excluded.sonhador_idade, sonhador_genero=excluded.sonhador_genero,
           demo_metodo=excluded.demo_metodo, demo_confianca=excluded.demo_confianca,
           interno_url=excluded.interno_url, interno_id_original=excluded.interno_id_original,
-          interno_autor_hash=excluded.interno_autor_hash, embed_versao=excluded.embed_versao""",
+          interno_autor_hash=excluded.interno_autor_hash, embed_versao=excluded.embed_versao,
+          forma=excluded.forma""",
         (rid, fonte, sub, data, idioma, texto, tem_midia, extraida, sonho, ANOTADOR, r['emb'],
          None if eh_en else 'BR', UF_POR_SUB.get(sub),
          # o MÉTODO tem de dizer a verdade. No Bluesky não há comunidade nenhuma
@@ -264,7 +271,7 @@ def gravar(con, r):
          0.85 if (idade or genero) else None,
          ((('https://bsky.app' if fonte == 'bluesky' else 'https://www.reddit.com')
            + p['permalink']) if p.get('permalink') else None),
-         p.get('id'), r['autor_hash'], r['emb_versao']))
+         p.get('id'), r['autor_hash'], r['emb_versao'], r['forma']))
     # a lista de revisão se alimenta sozinha: portão indeciso ou vazio (pelo
     # BERT) e texto enorme (cortado no teto do embedder)
     revisao.abrir_pela_predicao(con, rid, r.get('extra_bert'))
@@ -305,6 +312,11 @@ def main():
         return
     if BANDEIRA.exists():
         BANDEIRA.unlink()
+    con.execute("""UPDATE relatos SET forma = CASE
+          WHEN interno_id_original LIKE 't1_%' THEN 'comentario'
+          WHEN fonte = 'reddit' THEN 'post' ELSE 'bluesky_nao_verificado' END
+        WHERE forma IS NULL""")
+    con.commit()
     filtro = "" if '--tudo' in sys.argv else \
         "AND lote NOT LIKE '%Dreams%' AND lote NOT LIKE '%Lucid%'"
     t0, ok, err, ultimo_aviso = time.time(), 0, 0, 0
