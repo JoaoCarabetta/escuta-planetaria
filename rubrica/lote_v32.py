@@ -69,7 +69,7 @@ def pegar(agente, n, fonte, bolsa=None):
         # Fatia disjunta pelo último caractere do id (até 8 agentes); o que o
         # agente já gravou não volta — pode pegar e gravar em rodadas de 20.
         feitos = {r[0] for r in c.execute(
-            "SELECT relato_id FROM anotacoes_v3 WHERE anotador LIKE 'claude:sab:%'")}
+            "SELECT relato_id FROM anotacoes_v3 WHERE anotador LIKE 'claude:sab%'")}
         itens = [json.loads(l) for l in open(LOTES_SABADO)]
         itens = [x for x in itens if (bolsa is None or x['bolsa'] == bolsa)
                  and x['id'] not in feitos
@@ -193,7 +193,7 @@ def pegar(agente, n, fonte, bolsa=None):
         print(txt.replace('\n', ' ') + '\n')
 
 
-def gravar(agente, fonte='reanotar'):
+def gravar(agente, fonte='reanotar', modelo=None):
     dados = json.load(sys.stdin)
     c = conectar()
     lista = lambda v: v if isinstance(v, list) else ([v] if v else [])
@@ -212,7 +212,7 @@ def gravar(agente, fonte='reanotar'):
             (d['id'], (f'claude:audmod:agente{agente}' if fonte == 'auditoria_modelo'
                        else f'claude:audtr:agente{agente}' if fonte == 'auditoria_treino'
                        else f'claude:aud:agente{agente}' if fonte == 'auditoria'
-                       else f'claude:sab:agente{agente}' if fonte == 'sabado'
+                       else (f'claude:sab-{modelo}:agente{agente}' if modelo else f'claude:sab:agente{agente}') if fonte == 'sabado'
                        else f'claude:v32:agente{agente}'),
              p['literal'], p['figurado'], p['devaneio'],
              json.dumps(lista(d.get('figura')), ensure_ascii=False),
@@ -234,7 +234,7 @@ def main():
         pegar(int(arg.get('--agente', 1)), int(arg.get('--n', 90)),
               arg.get('--fonte', 'reanotar'), arg.get('--bolsa'))
     elif sys.argv[1] == 'gravar':
-        gravar(int(arg.get('--agente', 1)), arg.get('--fonte', 'reanotar'))
+        gravar(int(arg.get('--agente', 1)), arg.get('--fonte', 'reanotar'), arg.get('--modelo'))
     else:
         print(__doc__)
 
