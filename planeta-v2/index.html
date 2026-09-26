@@ -339,7 +339,16 @@ const okQuais = (i, menos) => { const b = BITS[i];
   }
   return !algum; };
 
+// CUIDADO (25/09): relatos com bandeira — quase todos ideação suicida ou
+// autolesão ditas acordado — ficam fora da página pública até o Fitipe ler
+// e decidir. Continuam no banco e na contagem. dados/cuidado.json.
+let CUIDADO = new Set();
+dado('cuidado.json').then(r => r.ok ? r.json() : []).catch(() => []).then(l => {
+  CUIDADO = new Set(l);
+  if (typeof N !== 'undefined' && N && VIS){ recalcularEscala(); atualizarContas(); }
+});
 function visivel(i){
+  if (CUIDADO.has(i)) return false;
   const nat = NAT[i];
   if (nat !== 0){
     const nome = ['relato','meta','idiomatico','ruido'][nat];
@@ -429,6 +438,9 @@ function desenhar(t){
   if (!CR) prepararCores();
   if (!VIS) recalcularEscala();
   const DW = cv.width, DH = cv.height;
+  // tela de largura zero (aba escondida, painel abrindo): ImageData(0,…)
+  // dava erro e o laço de desenho morria para sempre. Pula o quadro.
+  if (!DW || !DH){ if (typeof EXPLORA === 'undefined' || !EXPLORA.ativo) requestAnimationFrame(desenhar); return; }
   if (!ACC || IMG.width !== DW || IMG.height !== DH){
     ACC = new Float32Array(DW*DH*3); IMG = new ImageData(DW, DH);
     camadaPts.width = DW; camadaPts.height = DH;
@@ -968,7 +980,7 @@ function listar(){
   // os filtros escondiam abria a ficha e girava o globo até um ponto que não
   // estava desenhado — o anel de seleção ficava boiando no vazio.
   const acesos = [...buscaSet].filter(visivel);
-  const escondidos = buscaSet.size - acesos.length;
+  const escondidos = buscaSet.size - acesos.length - [...buscaSet].filter(i => CUIDADO.has(i)).length;
   $('#conta').textContent = acesos.length
     ? `${acesos.length.toLocaleString('pt-BR')} aceso${acesos.length>1?'s':''}`
       + (escondidos ? ` · ${escondidos.toLocaleString('pt-BR')} fora dos filtros` : '')
