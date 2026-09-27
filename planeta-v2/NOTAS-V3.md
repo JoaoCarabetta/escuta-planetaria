@@ -31,3 +31,9 @@
 4. **Mobile: a ficha do relato cobre a busca e os resultados.** Conserto:
    ficha como folha de baixo (bottom sheet) arrastável, ou esconder os
    resultados enquanto a ficha está aberta, com um "voltar aos resultados".
+5. **O giro automático volta sozinho após ~10 s sem interação** — mas NÃO
+   se houver um sonho selecionado (a pessoa pode ter parado numa região para
+   ler os relatos vizinhos do que está lendo). Hoje o giro depende de
+   `girando && sel<0 && !pausa && !giroAlvo` (index.html ~l.413): falta um
+   relógio de inatividade que religue `girando` (e limpe `pausa`) quando
+   `sel < 0`; qualquer toque, roda, arrasto ou tecla zera o relógio.
