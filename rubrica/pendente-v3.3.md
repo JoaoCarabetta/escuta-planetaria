@@ -312,3 +312,11 @@ acordei até mais leve"* — a exclusão cobre o **conteúdo do sonho** e não p
 Cinco textos de um lote de 175 tiveram o tom decidido **inteiramente por um
 emoji ambivalente** — 😫 😪 🥹 🤓 😍 — e a rubrica não diz uma palavra sobre
 emojis. O tom concordou em 75%, e esta é provavelmente a maior fatia desses 25%.
+
+## Decisão do Fitipe (27/09): `tom` sai
+
+Tirado da revisão às cegas e da rubrica. Ruidoso (75% de concordância, `leve`
+como resposta padrão, decidido por emoji) e não sustenta nenhum eixo central.
+As anotações antigas ficam no banco, sem uso. Em aberto para a v3.3: manter a
+ironia como marca solta ("de brincadeira"), porque ela inverte a leitura de
+carga e despertar — ver o anticlímax acima.

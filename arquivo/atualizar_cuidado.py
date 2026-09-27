@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Recalcula planeta-v2/dados/cuidado.json: TODO relato com bandeira — das
 anotações (claude:sab*) e das conferências da sonda de risco
-(rubrica/lotes/risco_conferidos*.jsonl) — fica fora da página pública até o
+(rubrica/lotes/risco_conferidos*.jsonl) e da anotação v3.3
+(rubrica/lotes/v33/*_anotado.jsonl) — fica fora da página pública até o
 Fitipe ler e decidir. Só acrescenta (nunca tira um índice já escondido).
 Mapeia id → posição na página pelo texto+data publicados."""
 import glob, json, sqlite3
@@ -22,6 +23,11 @@ for f in glob.glob(str(RAIZ / 'rubrica' / 'lotes' / 'risco_conferidos*.jsonl')):
     for l in open(f):
         x = json.loads(l)
         if x.get('bandeira') is True: ids.add(x['id'])
+# anotação v3.3 (27/09): bandeira vem na lista `marcas`
+for f in glob.glob(str(RAIZ / 'rubrica' / 'lotes' / 'v33' / '*_anotado.jsonl')):
+    for l in open(f):
+        x = json.loads(l)
+        if 'bandeira' in (x.get('marcas') or []): ids.add(x['id'])
 tx = {r: (t, d) for r, t, d in c.execute(
     f"SELECT id, texto, data_relato FROM relatos WHERE id IN ({','.join('?'*len(ids))})", list(ids))}
 idx = set(json.load(open(D / 'cuidado.json'))); antes = len(idx); fora = 0
