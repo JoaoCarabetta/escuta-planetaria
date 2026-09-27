@@ -23,8 +23,13 @@ for f in glob.glob(str(RAIZ / 'rubrica' / 'lotes' / 'risco_conferidos*.jsonl')):
     for l in open(f):
         x = json.loads(l)
         if x.get('bandeira') is True: ids.add(x['id'])
+# escondidos à mão, por decisão do Fitipe (casos que a bandeira não cobre)
+manual = RAIZ / 'rubrica' / 'lotes' / 'cuidado_manual.jsonl'
+if manual.exists():
+    for l in open(manual):
+        if l.strip(): ids.add(json.loads(l)['id'])
 # anotação v3.3 (27/09): bandeira vem na lista `marcas`
-for f in glob.glob(str(RAIZ / 'rubrica' / 'lotes' / 'v33' / '*_anotado.jsonl')):
+for f in glob.glob(str(RAIZ / 'rubrica' / 'lotes' / 'v3*' / '*_anotado.jsonl')):
     for l in open(f):
         x = json.loads(l)
         if 'bandeira' in (x.get('marcas') or []): ids.add(x['id'])
