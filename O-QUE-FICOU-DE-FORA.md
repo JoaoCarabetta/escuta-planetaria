@@ -104,3 +104,29 @@ as reconhece.
 **Tudo que está em `rubrica/pendente-v3.3.md`** — o quarto quadrante da carga, o
 `estranha`, os valores que faltam no `despertar`, a recorrência de figura, as
 espécies de atribuição, o jogo do bicho, o celebratório.
+
+---
+
+## No arquipélago (o jogo, `arquipelago/`)
+
+**O que o planeta já deixa de fora** — propaganda (camada 3) e os índices do
+`cuidado.json` — fica fora das ilhas também: na geração e de novo na página,
+que relê o `cuidado.json` do planeta enquanto ele for o mesmo de que as ilhas
+saíram.
+→ **Correto, não voltar.**
+
+**Só uma amostra vira luz.** Cada ilha mostra de 6 a 28 sonhos: 5.120 dos
+444.591. Metade são os mais centrais do aglomerado, metade ao acaso; texto
+repetido entra uma vez. Os outros contam no tamanho da ilha, mas não aparecem.
+→ **Por desenho**: é um jogo, não o arquivo — quem quer tudo tem o planeta.
+
+**Relatos muito curtos ou muito longos só entram se faltar.** A amostra
+prefere de 25 a 1.100 caracteres; os longos, quando entram, vão cortados.
+→ Menor, registrado.
+
+**O sonho de quem joga não passa pelo embedding.** O bge-m3 não roda no
+navegador: a ilha nasce onde as *palavras* do sonho são características, não
+onde o vetor dele cairia. Sonho sem palavra em comum com o arquivo nasce longe
+de todas.
+→ **Voltar se** couber um embedder pequeno na página. Um serviço próprio
+resolveria, mas aí o sonho sairia do navegador — e hoje a promessa é que não sai.
