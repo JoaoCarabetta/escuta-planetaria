@@ -30,7 +30,8 @@ if manual.exists():
     for l in open(manual):
         if l.strip(): ids.add(json.loads(l)['id'])
 # anotação v3.3 (27/09): bandeira vem na lista `marcas`
-for f in glob.glob(str(RAIZ / 'rubrica' / 'lotes' / 'v3*' / '*_anotado.jsonl')):
+for f in (glob.glob(str(RAIZ / 'rubrica' / 'lotes' / 'v3*' / '*_anotado.jsonl'))
+          + glob.glob(str(RAIZ / 'rubrica' / 'lotes' / 'afeto15k' / '*_anotado.jsonl'))):
     for l in open(f):
         x = json.loads(l)
         if 'bandeira' in (x.get('marcas') or []): ids.add(x['id'])
