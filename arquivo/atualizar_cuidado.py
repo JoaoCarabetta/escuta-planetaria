@@ -19,7 +19,8 @@ for b in range(meta['arquivos_texto']):
 c = sqlite3.connect(f'file:{RAIZ}/arquivo/arquivo.db?mode=ro', uri=True)
 ids = {r[0] for r in c.execute("""SELECT relato_id FROM anotacoes_v3 WHERE anotador LIKE 'claude:sab%'
                                    AND json_extract(extra,'$.bandeira')=1""")}
-for f in glob.glob(str(RAIZ / 'rubrica' / 'lotes' / 'risco_conferidos*.jsonl')):
+for f in (glob.glob(str(RAIZ / 'rubrica' / 'lotes' / 'risco_conferidos*.jsonl'))
+          + glob.glob(str(RAIZ / 'rubrica' / 'lotes' / 'risco_v351' / '*_conferido*.jsonl'))):
     for l in open(f):
         x = json.loads(l)
         if x.get('bandeira') is True: ids.add(x['id'])

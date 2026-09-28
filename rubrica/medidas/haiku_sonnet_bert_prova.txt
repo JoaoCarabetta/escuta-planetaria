@@ -1,0 +1,15 @@
+campo                  haiku    sonnet      bert
+literal?               80.3%     97.0%     95.7%
+portão exato           75.0%     94.3%     91.0%
+carga exata            51.1%     90.2%     82.1%
+carga toca             52.1%     91.2%     86.3%
+conteúdo               94.2%     97.4%     99.5%
+despertar exato        71.1%     92.2%     83.2%
+tem atribuição         84.6%     88.1%      nan%
+
+(n: literal/portão sobre os 300; carga/conteúdo/despertar onde os dois dizem literal)
+# Custos do teste Haiku × Sonnet (fichas de agente, 27/09)
+- haiku prova_1 (1ª, INVÁLIDA — regex): 109.786 fichas
+- haiku prova_2 (100, válida): 116.160 fichas · 6,2 min
+- sonnet prova_2 (100): 134.234 fichas · 7,2 min
+- sonnet prova_1 (200): 185.921 fichas · 14,9 min

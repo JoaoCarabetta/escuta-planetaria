@@ -53,8 +53,13 @@ def main():
     # chave primária — não há mais o risco de uma anotação por modelo virar
     # vários pontos. A V1 lia anotacoes 'ollama%' e deixaria de fora, calada,
     # todo relato moído pelo BERT.
+    # V3 (27/09): as predições vêm do aluno v3.5 (predicoes_v35), que já
+    # cobre os 505 mil — inclusive os ~50 mil comentários novos. Refazer a
+    # projeção inteira (e não encaixar os novos) foi escolha do Fitipe: com
+    # 50 mil textos a mais, a vizinhança de todos muda, e o globo deve mostrar
+    # isso. A projeção da V2 ficou guardada em dados/projecao_v2*.
     linhas = con.execute("""SELECT r.id, r.embedding FROM relatos r
-        JOIN predicoes_v32 p ON p.relato_id = r.id
+        JOIN predicoes_v35 p ON p.relato_id = r.id
         WHERE r.embedding IS NOT NULL
           AND r.canonico_de IS NULL     -- repost da mesma pessoa não vira dois pontos
         ORDER BY r.data_relato""").fetchall()
