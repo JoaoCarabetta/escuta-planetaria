@@ -1,0 +1,866 @@
+{
+ "aluno_v35.pt": {
+  "portao": {
+   "exato": 0.9222972972972973,
+   "base": 0.6283783783783784,
+   "classes": [
+    {
+     "classe": "literal",
+     "n": 192,
+     "marcados": 196,
+     "prec": 0.9642857142857143,
+     "rev": 0.984375,
+     "f1": 0.9742268041237113,
+     "f1_sempre_sim": 0.7868852459016393
+    },
+    {
+     "classe": "figurado",
+     "n": 96,
+     "marcados": 95,
+     "prec": 0.9578947368421052,
+     "rev": 0.9479166666666666,
+     "f1": 0.9528795811518325,
+     "f1_sempre_sim": 0.489795918367347
+    },
+    {
+     "classe": "fala_do_sonhar",
+     "n": 11,
+     "marcados": 15,
+     "prec": 0.4666666666666667,
+     "rev": 0.6363636363636364,
+     "f1": 0.5384615384615384,
+     "f1_sempre_sim": 0.0716612377850163
+    },
+    {
+     "classe": "devaneio",
+     "n": 0,
+     "marcados": 0,
+     "prec": null,
+     "rev": null,
+     "f1": null,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "obra",
+     "n": 1,
+     "marcados": 0,
+     "prec": null,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.006734006734006735
+    },
+    {
+     "classe": "noticia",
+     "n": 0,
+     "marcados": 2,
+     "prec": 0.0,
+     "rev": null,
+     "f1": 0.0,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "propaganda",
+     "n": 1,
+     "marcados": 1,
+     "prec": 1.0,
+     "rev": 1.0,
+     "f1": 1.0,
+     "f1_sempre_sim": 0.006734006734006735
+    },
+    {
+     "classe": "descartavel",
+     "n": 2,
+     "marcados": 1,
+     "prec": 1.0,
+     "rev": 0.5,
+     "f1": 0.6666666666666666,
+     "f1_sempre_sim": 0.013422818791946308
+    }
+   ]
+  },
+  "carga": {
+   "exato": 0.8214285714285714,
+   "base": 0.8061224489795918,
+   "classes": [
+    {
+     "classe": "prazerosa",
+     "n": 11,
+     "marcados": 18,
+     "prec": 0.3333333333333333,
+     "rev": 0.5454545454545454,
+     "f1": 0.41379310344827586,
+     "f1_sempre_sim": 0.10628019323671499
+    },
+    {
+     "classe": "aflitiva",
+     "n": 22,
+     "marcados": 20,
+     "prec": 0.8,
+     "rev": 0.7272727272727273,
+     "f1": 0.7619047619047619,
+     "f1_sempre_sim": 0.20183486238532108
+    },
+    {
+     "classe": "mista",
+     "n": 1,
+     "marcados": 0,
+     "prec": null,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.01015228426395939
+    },
+    {
+     "classe": "estranha",
+     "n": 6,
+     "marcados": 8,
+     "prec": 0.5,
+     "rev": 0.6666666666666666,
+     "f1": 0.5714285714285714,
+     "f1_sempre_sim": 0.05940594059405941
+    },
+    {
+     "classe": "sem_afeto_dito",
+     "n": 158,
+     "marcados": 154,
+     "prec": 0.935064935064935,
+     "rev": 0.9113924050632911,
+     "f1": 0.9230769230769231,
+     "f1_sempre_sim": 0.8926553672316384
+    }
+   ]
+  },
+  "despertar": {
+   "exato": 0.8367346938775511,
+   "base": 0.826530612244898,
+   "classes": [
+    {
+     "classe": "alivio",
+     "n": 0,
+     "marcados": 0,
+     "prec": null,
+     "rev": null,
+     "f1": null,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "decepcao",
+     "n": 3,
+     "marcados": 8,
+     "prec": 0.125,
+     "rev": 0.3333333333333333,
+     "f1": 0.18181818181818182,
+     "f1_sempre_sim": 0.03015075376884422
+    },
+    {
+     "classe": "acordou_mal",
+     "n": 17,
+     "marcados": 12,
+     "prec": 0.5,
+     "rev": 0.35294117647058826,
+     "f1": 0.41379310344827586,
+     "f1_sempre_sim": 0.1596244131455399
+    },
+    {
+     "classe": "acordou_bem",
+     "n": 2,
+     "marcados": 4,
+     "prec": 0.5,
+     "rev": 1.0,
+     "f1": 0.6666666666666666,
+     "f1_sempre_sim": 0.020202020202020204
+    },
+    {
+     "classe": "desorientado",
+     "n": 6,
+     "marcados": 3,
+     "prec": 0.3333333333333333,
+     "rev": 0.16666666666666666,
+     "f1": 0.2222222222222222,
+     "f1_sempre_sim": 0.05940594059405941
+    },
+    {
+     "classe": "acordou_neutro",
+     "n": 7,
+     "marcados": 9,
+     "prec": 0.3333333333333333,
+     "rev": 0.42857142857142855,
+     "f1": 0.375,
+     "f1_sempre_sim": 0.0689655172413793
+    }
+   ]
+  },
+  "figura": {
+   "exato": 0.84,
+   "base": 0.68,
+   "classes": [
+    {
+     "classe": "desejo",
+     "n": 70,
+     "marcados": 73,
+     "prec": 0.9452054794520548,
+     "rev": 0.9857142857142858,
+     "f1": 0.965034965034965,
+     "f1_sempre_sim": 0.8235294117647058
+    },
+    {
+     "classe": "intensificador",
+     "n": 19,
+     "marcados": 26,
+     "prec": 0.6923076923076923,
+     "rev": 0.9473684210526315,
+     "f1": 0.8,
+     "f1_sempre_sim": 0.319327731092437
+    },
+    {
+     "classe": "votos",
+     "n": 0,
+     "marcados": 0,
+     "prec": null,
+     "rev": null,
+     "f1": null,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "outra",
+     "n": 9,
+     "marcados": 1,
+     "prec": 0.0,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.16513761467889906
+    }
+   ]
+  },
+  "origem": {
+   "exato": 0.4594594594594595,
+   "base": 0.35135135135135137,
+   "classes": [
+    {
+     "classe": "nao_diz",
+     "n": 14,
+     "marcados": 23,
+     "prec": 0.5217391304347826,
+     "rev": 0.8571428571428571,
+     "f1": 0.6486486486486487,
+     "f1_sempre_sim": 0.5490196078431372
+    },
+    {
+     "classe": "a_si",
+     "n": 15,
+     "marcados": 9,
+     "prec": 0.7777777777777778,
+     "rev": 0.4666666666666667,
+     "f1": 0.5833333333333334,
+     "f1_sempre_sim": 0.5769230769230769
+    },
+    {
+     "classe": "entidade_religiosa",
+     "n": 5,
+     "marcados": 1,
+     "prec": 1.0,
+     "rev": 0.2,
+     "f1": 0.3333333333333333,
+     "f1_sempre_sim": 0.2380952380952381
+    },
+    {
+     "classe": "espirito_proprio",
+     "n": 2,
+     "marcados": 1,
+     "prec": 1.0,
+     "rev": 0.5,
+     "f1": 0.6666666666666666,
+     "f1_sempre_sim": 0.10256410256410257
+    },
+    {
+     "classe": "universo_destino",
+     "n": 1,
+     "marcados": 1,
+     "prec": 1.0,
+     "rev": 1.0,
+     "f1": 1.0,
+     "f1_sempre_sim": 0.052631578947368425
+    },
+    {
+     "classe": "morto",
+     "n": 0,
+     "marcados": 0,
+     "prec": null,
+     "rev": null,
+     "f1": null,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "outra",
+     "n": 2,
+     "marcados": 0,
+     "prec": null,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.10256410256410257
+    }
+   ]
+  },
+  "conteudo": {
+   "exato": 0.9744897959183674,
+   "base": 0.9285714285714286,
+   "classes": [
+    {
+     "classe": "narrado",
+     "n": 182,
+     "marcados": 187,
+     "prec": 0.9732620320855615,
+     "rev": 1.0,
+     "f1": 0.986449864498645,
+     "f1_sempre_sim": 0.962962962962963
+    },
+    {
+     "classe": "so_mencionado",
+     "n": 14,
+     "marcados": 9,
+     "prec": 1.0,
+     "rev": 0.6428571428571429,
+     "f1": 0.782608695652174,
+     "f1_sempre_sim": 0.13333333333333333
+    }
+   ]
+  },
+  "tem_atrib": {
+   "exato": 0.8706467661691543,
+   "base": 0.8159203980099502,
+   "classes": [
+    {
+     "classe": "tem_atrib",
+     "n": 37,
+     "marcados": 23,
+     "prec": 0.7391304347826086,
+     "rev": 0.4594594594594595,
+     "f1": 0.5666666666666667,
+     "f1_sempre_sim": 0.31092436974789917
+    }
+   ]
+  },
+  "bandeira": {
+   "exato": 0.9966666666666667,
+   "base": 1.0,
+   "classes": [
+    {
+     "classe": "bandeira",
+     "n": 0,
+     "marcados": 1,
+     "prec": 0.0,
+     "rev": null,
+     "f1": 0.0,
+     "f1_sempre_sim": null
+    }
+   ]
+  },
+  "cega": {
+   "acerto_literal": 0.9518072289156626,
+   "base": 0.6626506024096386,
+   "classes": [
+    {
+     "classe": "literal",
+     "n": 55,
+     "marcados": 59,
+     "prec": 0.9322033898305084,
+     "rev": 1.0,
+     "f1": 0.9649122807017544,
+     "f1_sempre_sim": 0.7971014492753623
+    },
+    {
+     "classe": "figurado",
+     "n": 21,
+     "marcados": 23,
+     "prec": 0.8695652173913043,
+     "rev": 0.9523809523809523,
+     "f1": 0.9090909090909091,
+     "f1_sempre_sim": 0.4038461538461538
+    }
+   ]
+  }
+ },
+ "aluno_v35_A2.pt": {
+  "portao": {
+   "exato": 0.9155405405405406,
+   "base": 0.6283783783783784,
+   "classes": [
+    {
+     "classe": "literal",
+     "n": 192,
+     "marcados": 191,
+     "prec": 0.9685863874345549,
+     "rev": 0.9635416666666666,
+     "f1": 0.9660574412532638,
+     "f1_sempre_sim": 0.7868852459016393
+    },
+    {
+     "classe": "figurado",
+     "n": 96,
+     "marcados": 97,
+     "prec": 0.9381443298969072,
+     "rev": 0.9479166666666666,
+     "f1": 0.9430051813471503,
+     "f1_sempre_sim": 0.489795918367347
+    },
+    {
+     "classe": "fala_do_sonhar",
+     "n": 11,
+     "marcados": 14,
+     "prec": 0.5714285714285714,
+     "rev": 0.7272727272727273,
+     "f1": 0.64,
+     "f1_sempre_sim": 0.0716612377850163
+    },
+    {
+     "classe": "devaneio",
+     "n": 0,
+     "marcados": 0,
+     "prec": null,
+     "rev": null,
+     "f1": null,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "obra",
+     "n": 1,
+     "marcados": 1,
+     "prec": 0.0,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.006734006734006735
+    },
+    {
+     "classe": "noticia",
+     "n": 0,
+     "marcados": 0,
+     "prec": null,
+     "rev": null,
+     "f1": null,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "propaganda",
+     "n": 1,
+     "marcados": 0,
+     "prec": null,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.006734006734006735
+    },
+    {
+     "classe": "descartavel",
+     "n": 2,
+     "marcados": 1,
+     "prec": 1.0,
+     "rev": 0.5,
+     "f1": 0.6666666666666666,
+     "f1_sempre_sim": 0.013422818791946308
+    }
+   ]
+  },
+  "carga": {
+   "exato": 0.7857142857142857,
+   "base": 0.8061224489795918,
+   "classes": [
+    {
+     "classe": "prazerosa",
+     "n": 11,
+     "marcados": 20,
+     "prec": 0.3,
+     "rev": 0.5454545454545454,
+     "f1": 0.3870967741935484,
+     "f1_sempre_sim": 0.10628019323671499
+    },
+    {
+     "classe": "aflitiva",
+     "n": 22,
+     "marcados": 23,
+     "prec": 0.7391304347826086,
+     "rev": 0.7727272727272727,
+     "f1": 0.7555555555555555,
+     "f1_sempre_sim": 0.20183486238532108
+    },
+    {
+     "classe": "mista",
+     "n": 1,
+     "marcados": 0,
+     "prec": null,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.01015228426395939
+    },
+    {
+     "classe": "estranha",
+     "n": 6,
+     "marcados": 7,
+     "prec": 0.42857142857142855,
+     "rev": 0.5,
+     "f1": 0.46153846153846156,
+     "f1_sempre_sim": 0.05940594059405941
+    },
+    {
+     "classe": "sem_afeto_dito",
+     "n": 158,
+     "marcados": 149,
+     "prec": 0.9261744966442953,
+     "rev": 0.8734177215189873,
+     "f1": 0.8990228013029316,
+     "f1_sempre_sim": 0.8926553672316384
+    }
+   ]
+  },
+  "despertar": {
+   "exato": 0.8214285714285714,
+   "base": 0.826530612244898,
+   "classes": [
+    {
+     "classe": "alivio",
+     "n": 0,
+     "marcados": 1,
+     "prec": 0.0,
+     "rev": null,
+     "f1": 0.0,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "decepcao",
+     "n": 3,
+     "marcados": 11,
+     "prec": 0.18181818181818182,
+     "rev": 0.6666666666666666,
+     "f1": 0.2857142857142857,
+     "f1_sempre_sim": 0.03015075376884422
+    },
+    {
+     "classe": "acordou_mal",
+     "n": 17,
+     "marcados": 14,
+     "prec": 0.5,
+     "rev": 0.4117647058823529,
+     "f1": 0.45161290322580644,
+     "f1_sempre_sim": 0.1596244131455399
+    },
+    {
+     "classe": "acordou_bem",
+     "n": 2,
+     "marcados": 5,
+     "prec": 0.4,
+     "rev": 1.0,
+     "f1": 0.5714285714285714,
+     "f1_sempre_sim": 0.020202020202020204
+    },
+    {
+     "classe": "desorientado",
+     "n": 6,
+     "marcados": 6,
+     "prec": 0.3333333333333333,
+     "rev": 0.3333333333333333,
+     "f1": 0.3333333333333333,
+     "f1_sempre_sim": 0.05940594059405941
+    },
+    {
+     "classe": "acordou_neutro",
+     "n": 7,
+     "marcados": 9,
+     "prec": 0.4444444444444444,
+     "rev": 0.5714285714285714,
+     "f1": 0.5,
+     "f1_sempre_sim": 0.0689655172413793
+    }
+   ]
+  },
+  "figura": {
+   "exato": 0.84,
+   "base": 0.68,
+   "classes": [
+    {
+     "classe": "desejo",
+     "n": 70,
+     "marcados": 73,
+     "prec": 0.9452054794520548,
+     "rev": 0.9857142857142858,
+     "f1": 0.965034965034965,
+     "f1_sempre_sim": 0.8235294117647058
+    },
+    {
+     "classe": "intensificador",
+     "n": 19,
+     "marcados": 26,
+     "prec": 0.6923076923076923,
+     "rev": 0.9473684210526315,
+     "f1": 0.8,
+     "f1_sempre_sim": 0.319327731092437
+    },
+    {
+     "classe": "votos",
+     "n": 0,
+     "marcados": 0,
+     "prec": null,
+     "rev": null,
+     "f1": null,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "outra",
+     "n": 9,
+     "marcados": 1,
+     "prec": 0.0,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.16513761467889906
+    }
+   ]
+  },
+  "origem": {
+   "exato": 0.5135135135135135,
+   "base": 0.35135135135135137,
+   "classes": [
+    {
+     "classe": "nao_diz",
+     "n": 14,
+     "marcados": 23,
+     "prec": 0.5217391304347826,
+     "rev": 0.8571428571428571,
+     "f1": 0.6486486486486487,
+     "f1_sempre_sim": 0.5490196078431372
+    },
+    {
+     "classe": "a_si",
+     "n": 15,
+     "marcados": 11,
+     "prec": 0.6363636363636364,
+     "rev": 0.4666666666666667,
+     "f1": 0.5384615384615384,
+     "f1_sempre_sim": 0.5769230769230769
+    },
+    {
+     "classe": "entidade_religiosa",
+     "n": 5,
+     "marcados": 0,
+     "prec": null,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.2380952380952381
+    },
+    {
+     "classe": "espirito_proprio",
+     "n": 2,
+     "marcados": 1,
+     "prec": 1.0,
+     "rev": 0.5,
+     "f1": 0.6666666666666666,
+     "f1_sempre_sim": 0.10256410256410257
+    },
+    {
+     "classe": "universo_destino",
+     "n": 1,
+     "marcados": 2,
+     "prec": 0.5,
+     "rev": 1.0,
+     "f1": 0.6666666666666666,
+     "f1_sempre_sim": 0.052631578947368425
+    },
+    {
+     "classe": "morto",
+     "n": 0,
+     "marcados": 0,
+     "prec": null,
+     "rev": null,
+     "f1": null,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "outra",
+     "n": 2,
+     "marcados": 1,
+     "prec": 1.0,
+     "rev": 0.5,
+     "f1": 0.6666666666666666,
+     "f1_sempre_sim": 0.10256410256410257
+    }
+   ]
+  },
+  "conteudo": {
+   "exato": 0.9846938775510204,
+   "base": 0.9285714285714286,
+   "classes": [
+    {
+     "classe": "narrado",
+     "n": 182,
+     "marcados": 185,
+     "prec": 0.9837837837837838,
+     "rev": 1.0,
+     "f1": 0.9918256130790191,
+     "f1_sempre_sim": 0.962962962962963
+    },
+    {
+     "classe": "so_mencionado",
+     "n": 14,
+     "marcados": 11,
+     "prec": 1.0,
+     "rev": 0.7857142857142857,
+     "f1": 0.88,
+     "f1_sempre_sim": 0.13333333333333333
+    }
+   ]
+  },
+  "tem_atrib": {
+   "exato": 0.8855721393034826,
+   "base": 0.8159203980099502,
+   "classes": [
+    {
+     "classe": "tem_atrib",
+     "n": 37,
+     "marcados": 30,
+     "prec": 0.7333333333333333,
+     "rev": 0.5945945945945946,
+     "f1": 0.6567164179104478,
+     "f1_sempre_sim": 0.31092436974789917
+    }
+   ]
+  },
+  "bandeira": {
+   "exato": 1.0,
+   "base": 1.0,
+   "classes": [
+    {
+     "classe": "bandeira",
+     "n": 0,
+     "marcados": 0,
+     "prec": null,
+     "rev": null,
+     "f1": null,
+     "f1_sempre_sim": null
+    }
+   ]
+  },
+  "cega": {
+   "acerto_literal": 0.9397590361445783,
+   "base": 0.6626506024096386,
+   "classes": [
+    {
+     "classe": "literal",
+     "n": 55,
+     "marcados": 58,
+     "prec": 0.9310344827586207,
+     "rev": 0.9818181818181818,
+     "f1": 0.9557522123893806,
+     "f1_sempre_sim": 0.7971014492753623
+    },
+    {
+     "classe": "figurado",
+     "n": 21,
+     "marcados": 21,
+     "prec": 0.9523809523809523,
+     "rev": 0.9523809523809523,
+     "f1": 0.9523809523809523,
+     "f1_sempre_sim": 0.4038461538461538
+    }
+   ]
+  }
+ },
+ "aluno.pt": {
+  "portao": {
+   "exato": 0.902027027027027,
+   "base": 0.6283783783783784,
+   "classes": [
+    {
+     "classe": "literal",
+     "n": 192,
+     "marcados": 190,
+     "prec": 0.9736842105263158,
+     "rev": 0.9635416666666666,
+     "f1": 0.9685863874345549,
+     "f1_sempre_sim": 0.7868852459016393
+    },
+    {
+     "classe": "figurado",
+     "n": 96,
+     "marcados": 99,
+     "prec": 0.8888888888888888,
+     "rev": 0.9166666666666666,
+     "f1": 0.9025641025641026,
+     "f1_sempre_sim": 0.489795918367347
+    },
+    {
+     "classe": "fala_do_sonhar",
+     "n": 11,
+     "marcados": 0,
+     "prec": null,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.0716612377850163
+    },
+    {
+     "classe": "devaneio",
+     "n": 0,
+     "marcados": 0,
+     "prec": null,
+     "rev": null,
+     "f1": null,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "obra",
+     "n": 1,
+     "marcados": 0,
+     "prec": null,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.006734006734006735
+    },
+    {
+     "classe": "noticia",
+     "n": 0,
+     "marcados": 0,
+     "prec": null,
+     "rev": null,
+     "f1": null,
+     "f1_sempre_sim": null
+    },
+    {
+     "classe": "propaganda",
+     "n": 1,
+     "marcados": 2,
+     "prec": 0.5,
+     "rev": 1.0,
+     "f1": 0.6666666666666666,
+     "f1_sempre_sim": 0.006734006734006735
+    },
+    {
+     "classe": "descartavel",
+     "n": 2,
+     "marcados": 0,
+     "prec": null,
+     "rev": 0.0,
+     "f1": 0.0,
+     "f1_sempre_sim": 0.013422818791946308
+    }
+   ]
+  },
+  "cega": {
+   "acerto_literal": 0.8192771084337349,
+   "base": 0.6626506024096386,
+   "classes": [
+    {
+     "classe": "literal",
+     "n": 55,
+     "marcados": 62,
+     "prec": 0.8225806451612904,
+     "rev": 0.9272727272727272,
+     "f1": 0.8717948717948718,
+     "f1_sempre_sim": 0.7971014492753623
+    },
+    {
+     "classe": "figurado",
+     "n": 21,
+     "marcados": 9,
+     "prec": 0.5555555555555556,
+     "rev": 0.23809523809523808,
+     "f1": 0.3333333333333333,
+     "f1_sempre_sim": 0.4038461538461538
+    }
+   ]
+  }
+ }
+}
