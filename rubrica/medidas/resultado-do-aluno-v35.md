@@ -295,3 +295,87 @@ prazerosa, e a bandeira (regra aberta).
   descartadas: arquivo antigo / morreu por memória)
 - `aluno/treino_v35.log`, `aluno/aluno_v35_*_historico.json`
 - `aluno/avaliacao_v35.md` e `.json`: todas as tabelas, inclusive A2
+
+## Taxa de acerto do palpite, para a página
+
+*Acrescentado 27/09, 23h. É o número para mostrar ao lado de cada palpite do
+aluno: **quando ele diz X, quantas vezes X está certo** (precisão na
+amostra-prova, 300 sorteados, gabarito v3.5). "Palpites na prova" é o n que
+sustenta o número; a faixa é o intervalo de 95% (Wilson), que é o que 300
+sorteados permitem afirmar. Limiar 0,5 em todas as classes.*
+
+Critério da coluna "mostrar" (sugestão): **sim** com ≥20 palpites e a faixa
+toda acima de 60%; **com aviso** com ≥10 palpites; **não** abaixo disso. Aí a
+página diz "palpite sem taxa medida". Classes que o aluno não marcou nenhuma
+vez na prova (devaneio, obra, votos, mista, alívio, morto…) não têm taxa.
+
+Duas ressalvas para quem escrever a legenda. **(1)** Nas cabeças condicionais
+(carga, conteúdo, despertar, figura, atribuição) a taxa foi medida nos textos
+em que o *gabarito* abre a cabeça. Na página, o palpite aparece onde o *aluno*
+abre a cabeça, e o portão erra cerca de 4%, então a taxa real ali fica um pouco
+abaixo. **(2)** A taxa vale para a população da prova: posts e comentários
+elegíveis, curtos, sem nenhum texto acima de 1.000 caracteres. Em texto longo o
+portão foi medido só na validação (94% por célula).
+
+| cabeça | palpite | palpites na prova | acertos | **taxa de acerto** | faixa 95% | mostrar |
+|---|---|---|---|---|---|---|
+| portao | literal | 196 | 189 | **96%** | 93–98% | sim |
+| portao | figurado | 95 | 91 | **96%** | 90–98% | sim |
+| portao | fala_do_sonhar | 15 | 7 | **47%** | 25–70% | com aviso |
+| portao | noticia | 2 | 0 | **0%** | 0–66% | não (n pequeno) |
+| portao | propaganda | 1 | 1 | **100%** | 21–100% | não (n pequeno) |
+| portao | descartavel | 1 | 1 | **100%** | 21–100% | não (n pequeno) |
+| carga | prazerosa | 18 | 6 | **33%** | 16–56% | com aviso |
+| carga | aflitiva | 20 | 16 | **80%** | 58–92% | com aviso |
+| carga | estranha | 8 | 4 | **50%** | 22–78% | não (n pequeno) |
+| carga | sem_afeto_dito | 154 | 144 | **94%** | 88–96% | sim |
+| conteudo | narrado | 187 | 182 | **97%** | 94–99% | sim |
+| conteudo | so_mencionado | 9 | 9 | **100%** | 70–100% | não (n pequeno) |
+| despertar | decepcao | 8 | 1 | **12%** | 2–47% | não (n pequeno) |
+| despertar | acordou_mal | 12 | 6 | **50%** | 25–75% | com aviso |
+| despertar | acordou_bem | 4 | 2 | **50%** | 15–85% | não (n pequeno) |
+| despertar | desorientado | 3 | 1 | **33%** | 6–79% | não (n pequeno) |
+| despertar | acordou_neutro | 9 | 3 | **33%** | 12–65% | não (n pequeno) |
+| figura | desejo | 73 | 69 | **95%** | 87–98% | sim |
+| figura | intensificador | 26 | 18 | **69%** | 50–83% | com aviso |
+| figura | outra | 1 | 0 | **0%** | 0–79% | não (n pequeno) |
+| tem_atrib | tem_atrib | 23 | 17 | **74%** | 54–87% | com aviso |
+| origem | nao_diz | 23 | 12 | **52%** | 33–71% | com aviso |
+| origem | a_si | 9 | 7 | **78%** | 45–94% | não (n pequeno) |
+| origem | entidade_religiosa | 1 | 1 | **100%** | 21–100% | não (n pequeno) |
+| origem | espirito_proprio | 1 | 1 | **100%** | 21–100% | não (n pequeno) |
+| origem | universo_destino | 1 | 1 | **100%** | 21–100% | não (n pequeno) |
+| bandeira | bandeira | 1 | 0 | **0%** | 0–79% | não (n pequeno) |
+
+## Inferência no arquivo inteiro (27–28/09)
+
+`aluno/inferir_v35.py` → tabela nova `predicoes_v35` (505.320 linhas, uma por
+relato; `predicoes_v32` intocada). Guarda a probabilidade de cada classe de cada
+cabeça, a decisão com limiar 0,5 e as portas da rubrica, `margem_portao`,
+`n_janelas` e `herdado_de`. **Tempo: 36 minutos** (MPS, ~235 textos/s).
+**Duplicatas herdam do canônico**: 7.961 linhas, com `herdado_de` preenchido;
+52 delas eram cadeias (o canônico também era duplicata). Conferência: lendo a
+decisão da tabela, a prova dá os mesmos 92,2%.
+
+| portão (limiar 0,5) | todos (505.320) | post (340.993) | comentário (147.289) | continuação (16.517) |
+|---|---|---|---|---|
+| literal | 40,5% | 51,7% | 16,1% | 27,5% |
+| figurado | 54,2% | 44,0% | 77,2% | 61,9% |
+| fala_do_sonhar | 10,5% | 9,4% | 12,4% | 15,0% |
+| propaganda | 1,3% | 1,6% | 0,3% | 4,6% |
+| notícia | 0,8% | 1,0% | 0,1% | 1,2% |
+| descartável | 0,7% | 0,8% | 0,3% | 2,8% |
+| obra | 0,6% | 0,7% | 0,2% | 1,7% |
+| devaneio | 93 textos | | | |
+| nenhuma classe | 0,8% | 0,7% | 1,0% | 1,6% |
+
+**Como ler.** Isto é o arquivo inteiro, não os 135 mil elegíveis da prova (onde
+o literal é 64%). A taxa de acerto medida vale para a população da prova. Fora
+dela, e sobretudo nos comentários, é extrapolação.
+**fala_do_sonhar a 10,5% está inflada**: na prova o aluno marcou 5% contra 3,7%
+reais, com precisão de 47%. **Bandeira: 2.479 marcados (0,5%)**, e muitos são
+desabafos depressivos sem plano ("sou um infeliz, deprimido"). Isso vale só como
+fila de leitura humana, até a regra fechar. **Portão vazio (3.973)**: textos
+curtos de uma linha ("pesadelo mds", "Odeio acordar de sonhos bons") em que
+nenhuma classe passa de 0,5. São os primeiros candidatos a anotação, junto com
+os 34.745 de margem < 0,1.
