@@ -66,8 +66,6 @@
     pointer-events:none;max-width:calc(100vw - 150px)}
   #lugar{margin:0;font:italic 200 clamp(21px,3.6vw,29px)/1.1 Spectral,serif;color:var(--claro);
     text-shadow:0 0 14px rgba(0,0,0,.95),0 0 3px #000;text-wrap:balance}
-  #detalhe{margin:5px 0 0;font-size:10.5px;color:var(--fraco);letter-spacing:.05em;
-    text-shadow:0 0 8px #000,0 0 2px #000}
   #rumoTxt{margin:9px 0 0;font-size:11px;color:var(--texto);text-shadow:0 0 8px #000;display:flex;
     gap:7px;align-items:center}
   #rumoTxt i{display:inline-block;font-style:normal;color:var(--desejo);transition:transform .2s}
@@ -82,7 +80,7 @@
     white-space:nowrap;box-shadow:0 0 24px rgba(0,0,0,.6)}
   #acao kbd{margin-right:9px;vertical-align:2px}
   #dica{position:fixed;z-index:5;left:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
-    font-size:10.5px;color:var(--fraco);pointer-events:none;max-width:min(62vw,520px);
+    font-size:10.5px;color:var(--fraco);pointer-events:none;max-width:min(62vw,600px);
     text-shadow:0 0 8px #000;transition:opacity 2s;line-height:1.7}
   #avisos{position:fixed;z-index:7;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 88px);
     transform:translateX(-50%);width:min(620px,calc(100vw - 40px));text-align:center;pointer-events:none;
@@ -99,30 +97,28 @@
     text-shadow:0 0 22px #000,0 0 4px #000;text-wrap:balance}
   #chegada .info{font-size:10.5px;letter-spacing:.12em;color:var(--fraco);margin:8px 0 0;
     text-transform:uppercase;text-shadow:0 0 8px #000}
-  #chegada .pal{font:italic 300 15px Spectral,serif;color:#b8bccb;margin:6px 0 0;
-    text-shadow:0 0 10px #000,0 0 2px #000}
 
-  /* ——— ficha do sonho ——— */
-  #ficha{position:fixed;z-index:8;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
-    transform:translateX(-50%);width:min(620px,calc(100vw - 24px));max-height:min(64vh,580px);
-    display:flex;flex-direction:column;padding:16px 18px 14px;touch-action:pan-y}
-  #ficha .de{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--fraco);
-    margin:0 0 10px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
-  #ficha .de b{font-weight:400;color:var(--texto)}
-  #ficha .tipo{display:inline-flex;align-items:center;gap:6px}
-  #ficha .tipo i{width:7px;height:7px;border-radius:50%;background:var(--cor,var(--sonho))}
-  #ficha .texto{font:300 18.5px/1.56 Spectral,Georgia,serif;color:var(--claro);overflow-y:auto;
-    white-space:pre-wrap;overflow-wrap:anywhere;margin:0;padding-right:6px;touch-action:pan-y;
-    -webkit-user-select:text;user-select:text;min-height:0}
-  #ficha .texto::-webkit-scrollbar{width:4px}
-  #ficha .texto::-webkit-scrollbar-thumb{background:rgba(160,168,196,.3);border-radius:2px}
-  #ficha .pe{display:flex;gap:14px;align-items:center;margin-top:12px;font-size:11px;
-    color:var(--fraco);flex-wrap:wrap}
-  #ficha .pe button{color:var(--fraco);border-bottom:1px solid var(--linha)}
-  #ficha .pe button:hover{color:var(--claro)}
-  #ficha .pe .fechar{margin-left:auto}
-  #ficha .eco{font-size:11px;color:var(--fraco);margin:10px 0 0;line-height:1.6}
-  #ficha .eco em{font:italic 300 14px Spectral,serif;color:var(--texto)}
+  /* ——— conversa ——— */
+  #fala{position:fixed;z-index:8;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
+    transform:translateX(-50%);width:min(680px,calc(100vw - 20px));max-height:min(60vh,540px);
+    display:flex;gap:14px;align-items:flex-start;padding:14px 16px 12px;touch-action:pan-y;cursor:pointer;
+    box-shadow:0 10px 40px rgba(0,0,0,.55)}
+  #retrato{width:64px;height:64px;flex:none;border-radius:50%;border:1px solid #2a3046;
+    background:radial-gradient(circle at 50% 40%,#1b2238,#0a0d17)}
+  #fala .corpo{flex:1;min-width:0;display:flex;flex-direction:column;max-height:inherit}
+  #fala .quem{margin:2px 0 6px;font:italic 300 19px/1.2 Spectral,serif;color:var(--desejo)}
+  #fala .quem span{font:400 9.5px/1 "IBM Plex Mono",monospace;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--fraco);margin-left:10px}
+  #fala .texto{font:300 18.5px/1.55 Spectral,Georgia,serif;color:var(--claro);margin:0;
+    white-space:pre-wrap;overflow-wrap:anywhere;min-height:3.1em;overflow-y:auto}
+  #fala .opcoes{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center;
+    margin-top:10px;min-height:28px}
+  #fala .opcoes button{padding:7px 16px 8px;border:1px solid #4a5478;border-radius:20px;
+    background:rgba(107,168,255,.07);font:italic 300 17px/1 Spectral,serif;color:var(--claro)}
+  #fala .opcoes button:hover{background:rgba(107,168,255,.16)}
+  #fala .opcoes button.fraco{border-color:var(--linha);background:none;color:var(--fraco)}
+  #fala .seguir{font-size:10.5px;letter-spacing:.08em;color:var(--fraco)}
+  .estrela{color:var(--desejo);font-weight:400}
 
   /* ——— carta náutica ——— */
   #carta{position:fixed;inset:0;z-index:12;background:#060812}
@@ -132,7 +128,6 @@
     display:flex;justify-content:space-between;align-items:flex-start;gap:12px;pointer-events:none}
   #carta .topo > *{pointer-events:auto}
   #carta h2{margin:0;font:italic 200 clamp(22px,3.6vw,30px)/1.1 Spectral,serif;color:var(--claro)}
-  #carta .conta{margin:5px 0 0;font-size:10.5px;color:var(--fraco)}
   #carta .legenda{position:absolute;left:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
     font-size:10.5px;color:var(--fraco);line-height:1.8;pointer-events:none;max-width:calc(100vw - 36px)}
   #carta .legenda i{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 5px 0 12px;
@@ -157,11 +152,6 @@
   .painel p{margin:0 0 12px;color:#b4b8c8}
   .painel h3{margin:20px 0 9px;font:400 9.5px/1 "IBM Plex Mono",monospace;letter-spacing:.18em;
     text-transform:uppercase;color:var(--fraco)}
-  .numeros{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 6px}
-  .numeros div{border:1px solid var(--linha);border-radius:3px;padding:8px 9px}
-  .numeros b{display:block;font:italic 200 24px/1 Spectral,serif;color:var(--claro);
-    font-variant-numeric:tabular-nums}
-  .numeros span{font-size:9.5px;color:var(--fraco);letter-spacing:.06em}
   .lido{border-top:1px solid var(--linha);padding:9px 0;cursor:pointer}
   .lido .onde{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--fraco);
     display:flex;gap:7px;align-items:center}
@@ -177,76 +167,89 @@
   .proprio .pe button:hover{color:var(--claro)}
   #outroSonho textarea{min-height:96px;font-size:17px;margin-top:6px}
   .perigo{color:#8a6e78!important;border-bottom-color:#3a2a33!important}
-  #sobre{z-index:25}                /* abre também por cima da abertura */
-  #sobre .rolar p{font-size:12.5px;line-height:1.7}
-  #sobre .rolar p b{color:var(--claro);font-weight:400}
+  #ajuda{z-index:25}                /* abre também por cima da abertura */
+  #ajuda .rolar p{font:300 17px/1.55 Spectral,serif;color:#c9ccd8}
+  #ajuda .rolar p.miudo{font:400 11px/1.7 "IBM Plex Mono",monospace}
+  .missao{border:1px solid var(--linha);border-radius:3px;padding:10px 12px;margin:0 0 8px}
+  .missao .t{margin:0 0 6px;font:italic 300 16.5px/1.45 Spectral,serif;color:var(--claro)}
+  .missao .pe{display:flex;gap:12px;font-size:10.5px;color:var(--fraco);flex-wrap:wrap}
+  .missao .pe button{color:var(--fraco);border-bottom:1px solid var(--linha)}
+  .missao .pe button:hover,.missao .pe button.on{color:var(--desejo)}
+  .missao.feita{border-style:dashed}
+  .missao.feita .t{color:#9aa0b6}
+  .rodape{margin-top:26px!important;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+  .rodape a{color:var(--fraco);border-bottom-color:var(--linha)}
 
   @media (max-width:560px){
     #hud{left:14px;max-width:calc(100vw - 96px)}
     #botoes{flex-direction:column;right:10px;gap:4px;align-items:flex-end}
     #botoes button{padding:5px 7px;font-size:10px;min-width:62px}
     #chegada{top:calc(env(safe-area-inset-top,0px) + 142px)}
-    #chegada .pal{font-size:14px}
     .miudo .sep{display:none}
     .miudo .link{display:inline-block;margin:0 0 6px}
     #dica{left:14px;max-width:calc(100vw - 28px)}
     .painel{top:auto;height:min(78vh,640px);right:8px;width:calc(100vw - 16px);
       bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
-    #ficha .texto{font-size:17.5px}
+    #fala{gap:10px;padding:12px 12px 10px}
+    #retrato{width:46px;height:46px}
+    #fala .texto{font-size:17px}
     #avisos{bottom:calc(env(safe-area-inset-bottom,0px) + 84px)}
   }
+  /* no toque não há tecla: some a etiqueta do E e do M */
+  @media (pointer: coarse){ #acao kbd, .acoesCarta kbd{display:none} }
 </style>
 
 <canvas id="mar" aria-label="o mar do arquipélago"></canvas>
 
 <section id="abertura" aria-labelledby="titulo">
   <div class="coluna">
-    <p class="volta"><a href="../">← Escuta Planetária</a></p>
     <h1 id="titulo">Arquipélago Onírico</h1>
-    <p class="sub">um mar feito de <span id="nSonhos">444.591</span> sonhos</p>
-    <p>Cada ilha deste mar é um aglomerado de sonhos de pessoas reais, que o arquivo juntou
-      <b>pelo que eles dizem</b>. Ilhas vizinhas guardam sonhos parecidos.</p>
-    <p>Para nascer aqui, conte um sonho seu. A sua ilha vai surgir perto das ilhas onde ele
-      ecoa, com os sonhos de outras pessoas que se parecem com o seu — e um barco na praia.</p>
+    <p class="sub">um mar feito de sonhos</p>
+    <p>Neste mar, cada ilha é feita dos sonhos de muita gente — e quem mora nelas ainda está
+      sonhando. Cada pessoa tem um sonho para contar e alguém, do outro lado da água, que sonhou
+      a mesma coisa.</p>
+    <p>Conte um sonho seu. Ele vai virar a sua ilha, e na praia haverá um barco.</p>
     <textarea id="sonho" maxlength="4000" placeholder="sonhei que…" aria-label="o seu sonho"></textarea>
     <div class="botoes">
       <button id="sonhar" class="principal" disabled>fazer nascer a ilha</button>
       <button id="continuar" class="segundo" hidden>continuar a viagem</button>
     </div>
     <p class="miudo"><button id="semSonho" class="link">não lembro de nenhum sonho</button>
-      <span class="sep">&nbsp;·&nbsp;</span> <button class="link" data-abre="sobre">como este mar foi feito</button></p>
-    <p class="miudo">O seu sonho não sai deste navegador: é lido aqui mesmo e fica guardado só aqui.</p>
+      <span class="sep">&nbsp;·&nbsp;</span> <button class="link" data-abre="ajuda">como jogar</button></p>
+    <p class="miudo">Seu sonho fica só com você.</p>
     <p id="estado" class="miudo" role="status"></p>
+    <p class="rodape"><a href="../">Escuta Planetária</a></p>
   </div>
 </section>
 
 <header id="hud" hidden>
   <p id="lugar"></p>
-  <p id="detalhe"></p>
   <p id="rumoTxt" hidden><i>➤</i><span></span></p>
 </header>
 <nav id="botoes" hidden>
   <button data-abre="carta" title="carta náutica (M)">carta</button>
   <button data-abre="caderno" title="caderno de bordo (C)">caderno</button>
   <button id="som" title="som ligado">som</button>
-  <button data-abre="sobre" title="como este mar foi feito">?</button>
+  <button data-abre="ajuda" title="como jogar">?</button>
 </nav>
 <button id="acao" hidden></button>
 <div id="dica" hidden></div>
 <div id="avisos" aria-live="polite"></div>
-<div id="chegada" aria-live="polite"><p class="nome"></p><p class="info"></p><p class="pal"></p></div>
+<div id="chegada" aria-live="polite"><p class="nome"></p><p class="info"></p></div>
 
-<section id="ficha" class="caixa" hidden role="dialog" aria-label="um sonho">
-  <p class="de"></p>
-  <p class="texto"></p>
-  <p class="eco" hidden></p>
-  <div class="pe"></div>
+<section id="fala" class="caixa" hidden role="dialog" aria-live="polite">
+  <canvas id="retrato" width="112" height="112" aria-hidden="true"></canvas>
+  <div class="corpo">
+    <p class="quem"></p>
+    <p class="texto"></p>
+    <div class="opcoes"></div>
+  </div>
 </section>
 
 <section id="carta" hidden role="dialog" aria-label="carta náutica">
   <canvas id="cartaCv"></canvas>
   <div class="topo">
-    <div><h2>carta náutica</h2><p class="conta" id="cartaConta"></p></div>
+    <div><h2>carta náutica</h2></div>
     <div class="acoesCarta">
       <button id="cartaCentro">aqui</button>
       <button id="cartaMais" aria-label="aproximar">+</button>
@@ -255,37 +258,44 @@
       <button data-fecha="carta">fechar <kbd>M</kbd></button>
     </div>
   </div>
-  <div class="legenda" id="cartaLegenda"></div>
+  <div class="legenda">toque numa ilha para traçar o rumo · arraste para mover</div>
 </section>
 
 <section id="caderno" class="caixa painel" hidden role="dialog" aria-label="caderno de bordo">
   <div class="cab"><h2>caderno de bordo</h2><button data-fecha="caderno">fechar</button></div>
   <div class="rolar">
-    <div class="numeros">
-      <div><b id="nVisitadas">0</b><span>ilhas pisadas</span></div>
-      <div><b id="nLidos">0</b><span>sonhos lidos</span></div>
-      <div><b id="nPassos">0</b><span>mil passos no mar</span></div>
-    </div>
+    <h3>missões</h3>
+    <div id="missoesLista"></div>
+    <h3>gente que você conheceu</h3>
+    <div id="genteLista"></div>
     <h3>os seus sonhos</h3>
     <div id="proprios"></div>
     <div id="outroSonho">
-      <p class="miudo">Lembrou de outro sonho? Conte, e uma ilha nova surge no mar, perto das
-        ilhas onde ele ecoa.</p>
+      <p class="miudo">Lembrou de outro sonho? Conte, e uma ilha nova surge no mar.</p>
       <textarea id="sonho2" maxlength="4000" placeholder="sonhei que…" aria-label="outro sonho"></textarea>
       <div class="botoes"><button id="sonhar2" class="principal" disabled>fazer surgir a ilha</button></div>
     </div>
-    <h3>sonhos lidos</h3>
-    <div id="lidosLista"><p class="miudo">Nenhum ainda. As luzes nas ilhas são sonhos:
-      chegue perto e leia.</p></div>
     <h3>recomeçar</h3>
-    <p class="miudo">Apagar a viagem guardada neste navegador (o seu sonho, as ilhas e o que foi
-      lido) e voltar ao começo. <button id="apagar" class="link perigo">apagar e recomeçar</button></p>
+    <p class="miudo">Esquecer esta viagem e começar de novo.
+      <button id="apagar" class="link perigo">recomeçar</button></p>
   </div>
 </section>
 
-<section id="sobre" class="caixa painel" hidden role="dialog" aria-label="como este mar foi feito">
-  <div class="cab"><h2>como este mar foi feito</h2><button data-fecha="sobre">fechar</button></div>
-  <div class="rolar" id="sobreTexto"></div>
+<section id="ajuda" class="caixa painel" hidden role="dialog" aria-label="como jogar">
+  <div class="cab"><h2>como jogar</h2><button data-fecha="ajuda">fechar</button></div>
+  <div class="rolar">
+    <p>Quem mora nas ilhas está sonhando. Quem tem uma estrela <b class="estrela">✦</b> sobre a
+      cabeça tem um pedido: alguém, em outra ilha, sonhou com a mesma coisa.</p>
+    <p>Aceite o pedido, pegue o barco e siga a estrela que aparece na borda da tela. Quando
+      encontrar quem você procura — a pessoa com <b class="estrela">?</b> —, uma luz nova acende
+      na sua ilha. Às vezes essa pessoa também procura alguém.</p>
+    <p>As correntes do mar levam o barco mais depressa.</p>
+    <h3>controles</h3>
+    <p class="miudo">setas ou WASD andam (shift corre) · <kbd>E</kbd> conversa, embarca e desembarca ·
+      <kbd>M</kbd> carta · <kbd>C</kbd> caderno · roda do mouse: zoom</p>
+    <p class="miudo">No celular: toque onde quer ir; toque numa pessoa para ir falar com ela; segure
+      para guiar; pinça para zoom.</p>
+  </div>
 </section>
 
 <script>
@@ -362,12 +372,6 @@ function corDoSonho(b) {
   if (b & 8) c = mistura(c, COR_TIPO.pesadelo, 0.35);
   return c;
 }
-function nomeDoTipo(b) {
-  if (b & 4) return 'incerto';
-  if (b & 1) return 'sonho dormindo';
-  if (b & 2) return 'sonho acordado';
-  return 'incerto';
-}
 const corDaIlha = il => mistura(mistura(COR_TIPO.sono, COR_TIPO.vigilia, il.fig / Math.max(0.01, il.lit + il.fig)),
                                 COR_TIPO.incerto, clamp(il.inc * 1.2, 0, 0.6));
 
@@ -430,15 +434,70 @@ const jog = {x: 0, y: 0, noBarco: false, lado: 1, andando: 0, passo: 0, cor: [12
   visivel: false, alvo: null, quer: null, caminho: null};
 const barco = {x: 0, y: 0, ang: 0, vel: 0, vela: 0, rastro: [], naCorrente: 0};
 let humor = 0.3;
-const vistas = new Set(), visitadas = new Set(), ouvidas = new Set(), lidos = new Map();
+const vistas = new Set(), visitadas = new Set(), ouvidas = new Set();
 let rota = [], rumo = null, ilhaAtual = null, passosMar = 0, natalId = null;
 let T = 0, ultimoQuadro = 0;
 const LUZES = [], BRILHOS = [];
 let interacao = null;                           // o que E / o botão fazem agora
+let VISITANTES = new Set();
+
+// ——— gente: cada sonho da amostra é uma pessoa ———
+// A pessoa é a mesma em qualquer máquina: nome e aparência saem da ilha de
+// onde ela é e da posição dela na amostra. Nomes não se repetem numa ilha.
+const NOMES_F = `Ana Bia Cida Dora Elza Flora Glória Iara Joana Lia Luzia Marta Nina Olga Rita Selma Tereza
+  Vera Zélia Alice Clara Diana Irene Lúcia Neide Rosa Sônia Cecília Dalva Estela Fátima Helena Inês Jussara
+  Lara Mara Noêmia Odete Penha Sílvia Tânia Violeta Yara Aurora Bruna Célia Denise Eva Gilda Ivone Jane
+  Laís Maia Nair Olívia Pietra Raquel Sara Tuane Vitória`.split(/\s+/);
+const NOMES_M = `Abel Bento Caio Davi Élio Fábio Gil Heitor Ivo Jonas Lauro Mauro Nilo Otávio Paulo Raul Sérgio
+  Tomás Ulisses Vicente Zeca Nico Beto Dito Lino Miro Ciro Dimas Edu Fausto Guto Hélio Ícaro Jairo Levi
+  Marcos Noel Orlando Pedro Renato Samuel Téo Valter Wilson Artur Benício Cauã Diogo Enzo Felipe Gael Hugo
+  Igor Juca Leo Murilo Nuno Oto`.split(/\s+/);
+const PELES = [[241, 214, 190], [228, 190, 160], [200, 152, 114], [164, 114, 82], [126, 86, 60], [94, 64, 48]];
+const CABELOS = [[32, 26, 28], [68, 46, 32], [118, 82, 50], [176, 136, 86], [214, 204, 194], [150, 62, 40], [56, 40, 62]];
+const GENTE = new Map();                        // 'ilha:k' → aparência e nome
+function genteDaIlha(id) {
+  const n = PORID.get(id)?.ns || 0, usados = new Set();
+  for (let k = 0; k < n; k++) {
+    const chave = id + ':' + k;
+    if (GENTE.has(chave)) { usados.add(GENTE.get(chave).nome); continue; }
+    const r = acaso(hashTexto('pessoa:' + chave)), f = r() < 0.5, lista = f ? NOMES_F : NOMES_M;
+    let i = Math.floor(r() * lista.length);
+    while (usados.has(lista[i])) i = (i + 1) % lista.length;
+    usados.add(lista[i]);
+    GENTE.set(chave, {nome: lista[i], f, pele: PELES[Math.floor(r() * PELES.length)],
+      cabelo: CABELOS[Math.floor(r() * CABELOS.length)],
+      roupa: girarMatiz([110 + r() * 90, 80 + r() * 70, 100 + r() * 90], r() * 360),
+      chapeu: r() < 0.22, longo: f ? r() < 0.8 : r() < 0.12, voz: f ? 330 + r() * 160 : 170 + r() * 120});
+  }
+}
+function quem(chave) {
+  if (!GENTE.has(chave)) genteDaIlha(+chave.split(':')[0]);
+  return GENTE.get(chave) || {nome: 'alguém', f: false, pele: PELES[1], cabelo: CABELOS[0],
+    roupa: [120, 120, 150], chapeu: false, longo: false, voz: 240};
+}
+// a chave de uma pessoa é a da ilha de onde ela é, mesmo quando está de visita
+function chaveDe(il, k) {
+  const s = il.sonhos?.[k];
+  return il.propria && s && s.k0 !== undefined ? s.de + ':' + s.k0 : il.id + ':' + k;
+}
+// onde a pessoa está agora: em casa, ou visitando uma ilha de quem joga
+function ondeEsta(chave) {
+  for (const il of PROPRIAS) {
+    const k = (il.sonhos || []).findIndex(v => v && v.k0 !== undefined && v.de + ':' + v.k0 === chave);
+    if (k >= 0) return {il, k};
+  }
+  const [id, k] = chave.split(':').map(Number);
+  return {il: PORID.get(id), k};
+}
+const aparenciaDoJogador = () => ({roupa: jog.cor, pele: [232, 210, 189], cabelo: clarear(jog.cor, -0.45),
+  chapeu: false, longo: false, f: false});
 
 function juntarTodas() {
   TODAS = ILHAS.concat(PROPRIAS);
   PORID = new Map(TODAS.map(il => [il.id, il]));
+  // quem veio visitar a ilha de quem joga não está, ao mesmo tempo, em casa
+  VISITANTES = new Set(PROPRIAS.flatMap(il => (il.sonhos || []).filter(v => v && v.k0 !== undefined)
+    .map(v => v.de + ':' + v.k0)));
   montarGrade();
   montarCorrentes();
 }
@@ -452,7 +511,6 @@ async function carregarMundo() {
   MUNDO = await dado('mundo.json');
   ILHAS = MUNDO.ilhas.map(il => Object.assign(il, {semente: hashTexto('ilha:' + il.id), geo: null, sonhos: null}));
   juntarTodas();
-  $('#nSonhos').textContent = fmt(MUNDO.total);
 }
 let palavrasPromessa = null;
 function carregarPalavras() {
@@ -475,13 +533,15 @@ async function carregarCuidado() {
     if (!r.ok || Number(r.headers.get('content-length')) !== MUNDO.planeta.bytes_pontos) return;
     const lista = await fetch('../planeta-v2/dados/cuidado.json', {cache: 'no-cache'}).then(r => r.json());
     CUIDADO = new Set(lista);
-    for (const il of ILHAS) if (il.sonhos) il.sonhos = il.sonhos.filter(s => !CUIDADO.has(s.p));
+    for (const il of ILHAS) if (il.sonhos) il.sonhos = il.sonhos.map(s => s && CUIDADO.has(s.p) ? null : s);
   } catch (e) { /* sem o planeta ao lado, vale o corte feito na geração */ }
 }
 function sonhosDa(il) {
   if (il.propria) return Promise.resolve(il.sonhos);
   if (!il._sonhos) il._sonhos = dado(`ilhas/${il.id}.json`).then(d => {
-    il.sonhos = d.sonhos.filter(s => !(CUIDADO && CUIDADO.has(s.p)));
+    // as missões apontam para a posição de cada pessoa na ilha: quem ganhou
+    // bandeira de cuidado vira um buraco, sem empurrar as outras
+    il.sonhos = d.sonhos.map(s => CUIDADO && CUIDADO.has(s.p) ? null : s);
     return il.sonhos;
   }).catch(() => { il._sonhos = null; return []; });
   return il._sonhos;
@@ -748,6 +808,7 @@ function gerarGeo(il) {
   }
   il.geo = g;
   mobiliar(il, g, rnd);
+  if (il.natal) plantarLembrancas();            // as luzes das missões cumpridas
   return g;
 }
 
@@ -782,9 +843,9 @@ function mobiliar(il, g, rnd) {
     itens.push({tipo: 'monumento', x: m.x, y: m.y});
     g.monumento = m;
   }
-  g.luzes = [];
+  g.pessoas = [];
   sortear(il.ns || 0, clamp(il.r / 9, 12, 27), h => h > campo + 0.04 && h < 0.7, null, 900 + (il.ns || 0) * 90)
-    .forEach((p, k) => { const it = {tipo: 'luz', x: p.x, y: p.y, k}; g.luzes.push(it); itens.push(it); });
+    .forEach((p, k) => { const it = {tipo: 'pessoa', x: p.x, y: p.y, k}; g.pessoas.push(it); itens.push(it); });
 
   const nCasas = Math.round((f('casa') + 0.6 * f('familia')) * 7);
   if (nCasas > 0) {
@@ -852,9 +913,9 @@ function mobiliar(il, g, rnd) {
     for (let k = 0; k < 2; k++) vivos.push({tipo: 'nuvem', x: (rnd() - 0.5) * il.r * 2, y: (rnd() - 0.5) * il.r * 2,
       s: 30 + rnd() * 30, v: 6 + rnd() * 6});
   }
-  // estradas: um caminho de terra passando pelas luzes (ilhas de estrada, e toda ilha própria)
-  if ((f('estrada') >= 0.3 || il.propria) && g.luzes.length > 1) {
-    const pts = g.luzes.map(l => [l.x, l.y + 4]);
+  // estradas: um caminho de terra passando pelas pessoas (ilhas de estrada, e toda ilha própria)
+  if ((f('estrada') >= 0.3 || il.propria) && g.pessoas.length > 1) {
+    const pts = g.pessoas.map(l => [l.x, l.y + 4]);
     if (g.monumento) pts.unshift([g.monumento.x, g.monumento.y + 6]);
     const ordem = [pts.shift()];
     while (pts.length) {                      // vizinho mais próximo: uma trilha, não uma teia
@@ -904,7 +965,6 @@ const luz = (x, y, r, a, c = null) => LUZES.push({x: x + ORIGEM.x, y: y + ORIGEM
 const brilho = (x, y, r, c, a, olho = false) => BRILHOS.push({x: x + ORIGEM.x, y: y + ORIGEM.y, r, c, a, olho});
 const SOMBRA = 'rgba(0,0,0,.28)';
 
-function chaveSonho(il, k) { return il.id + ':' + k; }
 
 const DESENHO = {
   arvore(c, it, g) {
@@ -925,20 +985,27 @@ const DESENHO = {
       circulo(c, x + r * 0.05, y - 5 - r * 1.2, 1.3);
     }
   },
-  luz(c, it, g, il) {
+  pessoa(c, it, g, il) {
     const s = il.sonhos ? il.sonhos[it.k] : null;
-    if (il.sonhos && !s) return;                // tirado pelo cuidado
-    const col = s ? corDoSonho(s.b) : [170, 180, 210];
-    const lido = lidos.has(chaveSonho(il, it.k));
-    const oy = it.y - 12 + Math.sin(T * 1.7 + it.k * 1.3) * 1.6;
-    c.fillStyle = SOMBRA; elipse(c, it.x + 1.5, it.y + 0.8, 5.5, 2.2);
-    c.fillStyle = css(clarear(g.pal.rocha, 0.1)); elipse(c, it.x, it.y - 0.6, 4.2, 2.5);
-    c.fillStyle = css(clarear(g.pal.rocha, 0.3)); elipse(c, it.x, it.y - 1.4, 3, 1.4);
-    c.fillStyle = css(col, lido ? 0.55 : 1); circulo(c, it.x, oy, lido ? 2.8 : 4);
-    c.fillStyle = 'rgba(255,255,255,.85)'; circulo(c, it.x - 1, oy - 1.1, lido ? 0.9 : 1.3);
-    if (lido) { c.strokeStyle = css(col, 0.45); c.lineWidth = 0.7; c.beginPath(); c.arc(it.x, oy, 5, 0, TAU); c.stroke(); }
-    luz(it.x, oy, lido ? 38 : 62, lido ? 0.4 : 0.85, col);
-    brilho(it.x, oy, lido ? 10 : 20, col, lido ? 0.28 : 0.62);
+    if (!s) return;                             // ainda chegando, ou tirada pelo cuidado
+    const chave = chaveDe(il, it.k);
+    if (!il.propria && VISITANTES.has(chave)) return;   // foi visitar a ilha de quem joga
+    const p = quem(chave), wx = il.x + it.x, wy = il.y + it.y;
+    const perto = !jog.noBarco && Math.hypot(jog.x - wx, jog.y - wy) < 90;
+    const lado = perto ? (jog.x > wx ? 1 : -1) : (hashTexto(chave) & 1 ? 1 : -1);
+    const cl = corDoSonho(s.b), l = figura(c, it.x, it.y, p, lado, 0, 0, cl, it.k);
+    luz(l.lx, l.ly, 62, 0.8, cl);
+    brilho(l.lx, l.ly, 9, cl, 0.55);
+    const marca = marcaDe(chave, s);
+    if (marca) desenharMarca(c, it.x, it.y - 32 + Math.sin(T * 2.4 + it.k) * 1.6, marca);
+  },
+  lembranca(c, it) {
+    const {x, y} = it, fl = 0.85 + 0.15 * Math.sin(T * 2.2 + it.i);
+    c.fillStyle = SOMBRA; elipse(c, x + 2, y + 0.5, 4, 1.6);
+    c.strokeStyle = '#4a3c2c'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y - 13); c.stroke();
+    c.fillStyle = `rgba(255,214,140,${fl})`; circulo(c, x, y - 14.5, 2.6);
+    luz(x, y - 14, 70, 0.75 * fl, [255, 214, 140]);
+    brilho(x, y - 14.5, 12, [255, 214, 140], 0.7 * fl);
   },
   monumento(c, it) {
     const {x, y} = it, pulso = 0.6 + 0.4 * Math.sin(T * 1.3);
@@ -1383,25 +1450,59 @@ function desenharBarco(c, t) {
   luz(lx, ly, jog.noBarco ? 230 : 90, jog.noBarco ? 0.95 : 0.6, [255, 213, 138]);
   brilho(lx, ly, jog.noBarco ? 14 : 8, [255, 213, 138], 0.7);
 }
-function desenharPessoa(c) {
-  const {x, y} = jog, s = jog.lado, anda = jog.andando, pa = Math.sin(jog.passo) * 2.2 * anda;
-  const bob = Math.abs(Math.sin(jog.passo)) * 1.1 * anda;
+function figura(c, x, y, ap, s, anda, passo, lanterna, fase = 0) {
+  const pa = Math.sin(passo) * 2.2 * anda;
+  const bob = Math.abs(Math.sin(passo)) * 1.1 * anda + (anda ? 0 : Math.sin(T * 1.7 + fase) * 0.3);
   c.fillStyle = 'rgba(0,0,0,.32)'; elipse(c, x + 2, y + 0.6, 6.2, 2.2);
   c.strokeStyle = '#262833'; c.lineWidth = 2.1; c.lineCap = 'round';
   c.beginPath(); c.moveTo(x - 1.6, y - 6); c.lineTo(x - 1.6 + pa, y - 0.8); c.moveTo(x + 1.6, y - 6); c.lineTo(x + 1.6 - pa, y - 0.8); c.stroke();
   c.lineCap = 'butt';
-  const cp = css(jog.cor);
-  c.fillStyle = cp;
+  c.fillStyle = css(ap.roupa);
   c.beginPath(); c.moveTo(x - 5, y - 5 - bob); c.lineTo(x + 5, y - 5 - bob); c.lineTo(x + 3.2, y - 15 - bob); c.lineTo(x - 3.2, y - 15 - bob); c.closePath(); c.fill();
-  c.fillStyle = css(clarear(jog.cor, -0.25)); c.fillRect(x - 5, y - 6.5 - bob, 10, 1.5);
-  c.fillStyle = '#e8d2bd'; circulo(c, x, y - 18.5 - bob, 3.6);
-  c.fillStyle = css(clarear(jog.cor, -0.45));
-  c.beginPath(); c.arc(x - s * 0.6, y - 18.8 - bob, 3.9, s > 0 ? Math.PI * 0.55 : -Math.PI * 0.55, s > 0 ? Math.PI * 1.95 : Math.PI * 0.45, s < 0); c.fill();
-  const lx = x + s * 6.2, ly = y - 8 - bob;
-  c.strokeStyle = '#3a3230'; c.lineWidth = 0.9; c.beginPath(); c.moveTo(x + s * 3.5, y - 11 - bob); c.lineTo(lx, ly - 2.6); c.stroke();
-  c.fillStyle = '#ffd58a'; circulo(c, lx, ly, 1.9);
-  luz(lx, ly, 175, 0.95, [255, 213, 138]);
-  brilho(lx, ly, 12, [255, 213, 138], 0.75);
+  c.fillStyle = css(clarear(ap.roupa, -0.25)); c.fillRect(x - 5, y - 6.5 - bob, 10, 1.5);
+  const hy = y - 18.5 - bob;
+  if (ap.longo) { c.fillStyle = css(ap.cabelo); c.fillRect(x - 3.9 - s * 0.4, hy - 1, 7.8, 7.5); }
+  c.fillStyle = css(ap.pele); circulo(c, x, hy, 3.6);
+  c.fillStyle = css(ap.cabelo);
+  c.beginPath(); c.arc(x - s * 0.6, hy - 0.3, 3.9, s > 0 ? Math.PI * 0.55 : -Math.PI * 0.55, s > 0 ? Math.PI * 1.95 : Math.PI * 0.45, s < 0); c.fill();
+  if (ap.chapeu) {
+    c.fillStyle = '#c9a86a'; elipse(c, x, hy - 2.6, 6.4, 1.8);
+    c.fillStyle = '#b08f52'; c.beginPath(); c.ellipse(x, hy - 3, 3.4, 2.8, 0, Math.PI, 0); c.fill();
+  }
+  if (lanterna) {
+    const lx = x + s * 6.2, ly = y - 8 - bob;
+    c.strokeStyle = '#3a3230'; c.lineWidth = 0.9; c.beginPath(); c.moveTo(x + s * 3.5, y - 11 - bob); c.lineTo(lx, ly - 2.6); c.stroke();
+    c.fillStyle = css(mistura(lanterna, [255, 255, 255], 0.35)); circulo(c, lx, ly, 1.9);
+    return {lx, ly};
+  }
+  return null;
+}
+function desenharPessoa(c) {
+  const l = figura(c, jog.x, jog.y, aparenciaDoJogador(), jog.lado, jog.andando, jog.passo, [255, 213, 138]);
+  luz(l.lx, l.ly, 175, 0.95, [255, 213, 138]);
+  brilho(l.lx, l.ly, 12, [255, 213, 138], 0.75);
+}
+// ✦ quem tem um pedido · ? quem você procura
+function desenharMarca(c, x, y, tipo) {
+  const pulso = 0.75 + 0.25 * Math.sin(T * 3);
+  if (tipo === '✦') {
+    c.fillStyle = `rgba(255,210,120,${pulso})`;
+    c.beginPath();
+    for (let k = 0; k < 8; k++) {
+      const a = k * Math.PI / 4 - Math.PI / 2, r = k % 2 ? 1.6 : 5;
+      c.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+    }
+    c.closePath(); c.fill();
+    brilho(x, y, 15, [255, 210, 120], 0.55 * pulso);
+  } else {
+    // quem você procura: um ? que pula, mais claro que tudo em volta
+    const sobe = y - 2 - 2.5 * Math.abs(Math.sin(T * 2.6));
+    c.font = 'italic 600 17px Spectral, Georgia, serif'; c.textAlign = 'center';
+    c.lineWidth = 3; c.strokeStyle = 'rgba(10,14,28,.55)'; c.strokeText('?', x, sobe + 6);
+    c.fillStyle = `rgba(255,236,190,${0.85 + 0.15 * pulso})`; c.fillText('?', x, sobe + 6);
+    c.textAlign = 'start';
+    brilho(x, sobe, 22, [255, 220, 150], 0.8 * pulso);
+  }
 }
 
 // ——— luz ———
@@ -1483,10 +1584,15 @@ addEventListener('keydown', e => {
   if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault();
   if (k === 'escape') { fecharTudo(); return; }
   if (fase !== 'jogo') return;
+  if (FALA.ativa) {                             // conversando: as teclas são da conversa
+    if (k === 'e' || k === ' ' || k === 'enter') avancarFala();
+    else if (/^[1-9]$/.test(k) && FALA.escolhendo) escolher(+k - 1);
+    return;
+  }
   if (k === 'm') { alternarPainel('carta'); return; }
   if (k === 'c') { alternarPainel('caderno'); return; }
   if (!$('#carta').hidden) return;
-  if (k === 'e' || k === ' ' || k === 'enter') { if (!$('#ficha').hidden && k !== 'e') fecharFicha(); else agir(); return; }
+  if (k === 'e' || k === ' ' || k === 'enter') { agir(); return; }
   teclas.add(k); jog.alvo = null; jog.quer = null; jog.caminho = null;
 });
 addEventListener('keyup', e => teclas.delete(e.key.toLowerCase()));
@@ -1549,6 +1655,7 @@ function tocar(sx, sy) {
   // um toque perto do alvo da ação vale como a ação; num objeto longe, vai até
   // ele e age ao chegar (lê a luz, embarca); na terra, a partir do barco,
   // navega até lá e desembarca
+  if (FALA.ativa) { avancarFala(); return; }
   if (interacao?.tela && Math.hypot(interacao.tela.x - sx, interacao.tela.y - sy) < 40) { agir(); return; }
   const x = mundoX(sx), y = mundoY(sy);
   jog.alvo = {x, y};
@@ -1565,14 +1672,16 @@ function objetoTocado(sx, sy) {
   const perto = (x, y, o) => { const d = Math.hypot(telaX(x) - sx, telaY(y) - sy); if (d < md) { md = d; melhor = o; } };
   const il = ilhaEm(mundoX(sx), mundoY(sy)) || ilhaEm(jog.x, jog.y);
   if (il?.geo) {
-    for (const l of il.geo.luzes) perto(il.x + l.x, il.y + l.y - 12, {tipo: 'ler', il, k: l.k});
+    for (const l of il.geo.pessoas) if (presente(il, l.k)) perto(il.x + l.x, il.y + l.y - 12, {tipo: 'falar', il, k: l.k});
     if (il.geo.monumento) perto(il.x + il.geo.monumento.x, il.y + il.geo.monumento.y - 20, {tipo: 'monumento', il});
   }
   perto(barco.x, barco.y, {tipo: 'embarcar'});
   return melhor;
 }
-const mesmoObjeto = (a, q) => a && q && a.tipo === q.tipo && (q.tipo !== 'ler' || (a.il === q.il && a.k === q.k))
+const mesmoObjeto = (a, q) => a && q && a.tipo === q.tipo && (q.tipo !== 'falar' || (a.il === q.il && a.k === q.k))
   && (q.tipo !== 'monumento' || a.il === q.il);
+// a pessoa está ali para conversar? (chegou, não tem bandeira, não foi visitar ninguém)
+const presente = (il, k) => !!il.sonhos?.[k] && (il.propria || !VISITANTES.has(chaveDe(il, k)));
 
 // ——— caminho em terra: A* sobre a grade de relevo da ilha ———
 // Andar em linha reta empacava em lagoas e enseadas; tocar num ponto da ilha
@@ -1661,7 +1770,7 @@ function atualizarJogador(dt) {
     if (d < (jog.noBarco ? 26 : 5)) { if (!jog.alvo.segue && alvo === jog.alvo) jog.alvo = null; }
     else dir = {x: dx / d, y: dy / d};
   }
-  if (!$('#ficha').hidden && dir) fecharFicha();
+  if (FALA.ativa) { dir = null; jog.alvo = null; }   // conversando, fica parado
   if (jog.noBarco) return moverBarco(dir, dt);
   if (dir) {
     const v = VEL_ANDAR * (teclas.has('shift') ? 1.7 : 1) * dt;
@@ -1746,15 +1855,18 @@ function procurarInteracao() {
   const cands = [];
   const il = ilhaEm(jog.x, jog.y);
   if (il?.geo) {
-    for (const l of il.geo.luzes) {
-      if (il.sonhos && !il.sonhos[l.k]) continue;
+    for (const l of il.geo.pessoas) {
+      if (!presente(il, l.k)) continue;
       const d = Math.hypot(il.x + l.x - jog.x, il.y + l.y - jog.y);
-      if (d < 36) cands.push({d, tipo: 'ler', rotulo: lidos.has(chaveSonho(il, l.k)) ? 'ler de novo' : 'ler o sonho',
-        il, k: l.k, x: il.x + l.x, y: il.y + l.y - 12});
+      if (d < 38) cands.push({d, tipo: 'falar', rotulo: 'conversar', il, k: l.k, x: il.x + l.x, y: il.y + l.y - 22});
     }
     if (il.geo.monumento) {
       const m = il.geo.monumento, d = Math.hypot(il.x + m.x - jog.x, il.y + m.y - jog.y);
-      if (d < 44) cands.push({d, tipo: 'monumento', rotulo: 'ler o seu sonho', il, x: il.x + m.x, y: il.y + m.y - 30});
+      if (d < 44) cands.push({d, tipo: 'monumento', rotulo: 'o seu sonho', il, x: il.x + m.x, y: il.y + m.y - 30});
+    }
+    for (const it of il.geo.itens) if (it.tipo === 'lembranca') {
+      const d = Math.hypot(il.x + it.x - jog.x, il.y + it.y - jog.y);
+      if (d < 26) cands.push({d: d + 4, tipo: 'lembranca', rotulo: 'lembrança', i: it.i, x: il.x + it.x, y: il.y + it.y - 14});
     }
   }
   const db = Math.hypot(barco.x - jog.x, barco.y - jog.y);
@@ -1766,21 +1878,22 @@ function agir() {
   const a = interacao;
   if (!a) return;
   Som.iniciar();
-  if (a.tipo === 'ler') lerSonho(a.il, a.k);
-  else if (a.tipo === 'monumento') lerProprio(a.il);
+  if (a.tipo === 'falar') falarCom(a.il, a.k);
+  else if (a.tipo === 'monumento') falarProprio(a.il);
+  else if (a.tipo === 'lembranca') verLembranca(a.i);
   else if (a.tipo === 'embarcar') embarcar();
   else if (a.tipo === 'desembarcar') desembarcar(a.p);
 }
 function embarcar() {
   jog.noBarco = true; jog.alvo = null; jog.x = barco.x; jog.y = barco.y;
+  esquecerAviso('O barco está na praia.');
   cam.unidades = UNID_BARCO;
   Som.sino(196, 2.4, 0.08);
-  fecharFicha();
   if (!primeira.embarque) {
     primeira.embarque = true;
-    avisar('As luzes na beira da tela são ilhas. Toque ou use as setas para navegar.', 6000);
-    avisar('As correntes ligam cada ilha às suas vizinhas de verdade — e levam o barco mais depressa.', 7000);
-    avisar('A carta náutica (M) guarda o que você já viu.', 5000);
+    avisar('As luzes na beira da tela são ilhas.', 4500);
+    if (foco) avisar('A estrela ✦ na borda aponta pra quem você procura.', 5000);
+    avisar('As correntes do mar levam o barco mais depressa.', 5000);
   }
   salvar();
 }
@@ -1836,22 +1949,13 @@ function preparoPerto() {
   }
   if (melhor) gerarGeo(melhor);
 }
-function tempero(il) {
-  const partes = [];
-  if (il.lit >= 0.5) partes.push(`${Math.round(il.lit * 100)}% dormindo`);
-  else if (il.fig >= 0.5) partes.push(`${Math.round(il.fig * 100)}% acordados`);
-  else partes.push('entre dormir e acordar');
-  if (il.pes >= 0.25) partes.push(`${Math.round(il.pes * 100)}% falam em pesadelo`);
-  return partes.join(' · ');
-}
 let chegadaTempo = null;
 function anunciarChegada(il) {
   const el = $('#chegada');
   el.querySelector('.nome').textContent = il.nome;
-  el.querySelector('.info').textContent = il.propria
-    ? (il.natal ? 'a ilha do seu sonho' : 'uma ilha do seu sonho')
-    : `${fmt(il.n)} sonhos · ${tempero(il)}`;
-  el.querySelector('.pal').textContent = il.propria ? '' : (il.pal || []).slice(0, 6).join(' · ');
+  const procurado = missoes.ativas.find(m => ondeEsta(m.a).il === il);
+  el.querySelector('.info').textContent = il.propria ? (il.natal ? 'a ilha do seu sonho' : 'uma ilha do seu sonho')
+    : procurado ? `${procurado.nomeA} mora aqui` : '';
   el.classList.add('on');
   clearTimeout(chegadaTempo);
   chegadaTempo = setTimeout(() => el.classList.remove('on'), 6500);
@@ -1859,37 +1963,47 @@ function anunciarChegada(il) {
 
 // ——— hud ———
 let ultimoHud = 0;
+// o que a estrela aponta: a pessoa da missão em foco (ou a ilha dela), ou a ilha do rumo
+function alvoAtual() {
+  const m = foco && missoes.ativas.find(x => x.id === foco);
+  if (m) {
+    const {il, k} = ondeEsta(m.a);
+    if (!il) return null;
+    const aqui = ondeEstou();
+    if (il.geo && !jog.noBarco && ilhaEm(aqui.x, aqui.y) === il) {
+      const pp = il.geo.pessoas.find(l => l.k === k);
+      if (pp) return {x: il.x + pp.x, y: il.y + pp.y - 12, r: 0, il, m, pessoa: true};
+    }
+    return {x: il.x, y: il.y, r: il.r, il, m};
+  }
+  const il = rumo !== null ? PORID.get(rumo) : null;
+  return il ? {x: il.x, y: il.y, r: il.r, il} : null;
+}
 function atualizarHud() {
   const aqui = ondeEstou();
-  let lugar, detalhe;
-  if (ilhaAtual) {
-    lugar = ilhaAtual.nome;
-    detalhe = ilhaAtual.propria ? (ilhaAtual.natal ? 'a ilha do seu sonho' : 'uma ilha do seu sonho')
-                                : `${fmt(ilhaAtual.n)} sonhos · ${tempero(ilhaAtual)}`;
-  } else {
-    lugar = humor < 0.35 ? 'mar do sono' : humor > 0.65 ? 'mar da vigília' : 'entre-marés';
-    detalhe = barco.naCorrente > 0.5 && jog.noBarco ? 'numa corrente' :
-      humor < 0.35 ? 'aqui se sonha dormindo' : humor > 0.65 ? 'aqui se sonha acordado' : 'entre o sono e a vigília';
-  }
-  $('#lugar').textContent = lugar;
-  $('#detalhe').textContent = detalhe;
-  const rt = $('#rumoTxt');
-  const alvo = rumo !== null ? PORID.get(rumo) : null;
+  $('#lugar').textContent = ilhaAtual ? ilhaAtual.nome
+    : humor < 0.35 ? 'mar do sono' : humor > 0.65 ? 'mar da vigília' : 'entre-marés';
+  const rt = $('#rumoTxt'), alvo = alvoAtual();
   rt.hidden = !alvo;
-  if (alvo) {
-    const dx = alvo.x - aqui.x, dy = alvo.y - aqui.y, d = Math.max(0, Math.hypot(dx, dy) - alvo.r);
-    rt.querySelector('i').style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
-    rt.querySelector('span').textContent = d < 60 ? `chegou: ${alvo.nome}` : `${alvo.nome} · ${d < 1000 ? fmt(d) : (d / 1000).toFixed(1).replace('.', ',') + ' mil'} passos`;
-  }
+  if (!alvo) return;
+  const dx = alvo.x - aqui.x, dy = alvo.y - aqui.y, d = Math.max(0, Math.hypot(dx, dy) - alvo.r);
+  rt.querySelector('i').style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
+  const nome = alvo.m ? (alvo.pessoa ? alvo.m.nomeA : `${alvo.m.nomeA} · ${alvo.il.nome}`) : alvo.il.nome;
+  rt.querySelector('span').textContent = `${alvo.m ? '✦ ' : ''}${nome} · ${d < 60 ? 'aqui' : d < 1000 ? 'perto' : (d / 1000).toFixed(1).replace('.', ',') + ' mil passos'}`;
 }
 
 // ——— horizonte: as ilhas fora da tela como luzes na borda ———
 function desenharHorizonte() {
-  const aqui = ondeEstou(), cx = W / 2, cy = H / 2, m = 16;
+  const aqui = ondeEstou(), cx = W / 2, cy = H / 2, m = 16, alvo = alvoAtual();
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  // a pessoa procurada, fora da tela, na mesma ilha: seta na borda
+  if (alvo?.pessoa) {
+    const sx = telaX(alvo.x), sy = telaY(alvo.y);
+    if (sx < 0 || sx > W || sy < 0 || sy > H) setaNaBorda(sx, sy);
+  }
   for (const il of TODAS) {
     const d = Math.hypot(il.x - aqui.x, il.y - aqui.y) - il.r;
-    const eRumo = rumo === il.id;
+    const eRumo = !!alvo && !alvo.pessoa && alvo.il === il;
     if (d > 7200 && !eRumo) continue;
     if (visivelNaTela(il, -20)) continue;
     const sx = telaX(il.x), sy = telaY(il.y), ang = Math.atan2(sy - cy, sx - cx);
@@ -1897,19 +2011,25 @@ function desenharHorizonte() {
     const tx = ux ? ((ux > 0 ? W - m : m) - cx) / ux : 1e9, ty = uy ? ((uy > 0 ? H - m : m) - cy) / uy : 1e9;
     const k = Math.min(tx, ty), px = cx + ux * k, py = cy + uy * k;
     const a = clamp(1 - (d - 900) / 6300, 0.15, 1), col = corDaIlha(il);
-    if (eRumo) {
-      ctx.save(); ctx.translate(px - ux * 6, py - uy * 6); ctx.rotate(ang);
-      ctx.fillStyle = 'rgba(255,190,92,.95)';
-      ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(-6, -6); ctx.lineTo(-3, 0); ctx.lineTo(-6, 6); ctx.fill();
-      ctx.restore();
-      continue;
-    }
+    if (eRumo) { setaNaBorda(sx, sy); continue; }
     const g = ctx.createRadialGradient(px, py, 0, px, py, 12);
     g.addColorStop(0, css(col, 0.5 * a)); g.addColorStop(1, css(col, 0));
     ctx.fillStyle = g; ctx.fillRect(px - 12, py - 12, 24, 24);
     ctx.fillStyle = css(col, 0.9 * a); circulo(ctx, px, py, 1.6 + Math.min(2.4, il.r / 180));
     if (visitadas.has(il.id)) { ctx.strokeStyle = css(col, 0.6 * a); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(px, py, 5.5, 0, TAU); ctx.stroke(); }
   }
+}
+function setaNaBorda(sx, sy) {
+  const cx = W / 2, cy = H / 2, m = 20, ang = Math.atan2(sy - cy, sx - cx), ux = Math.cos(ang), uy = Math.sin(ang);
+  const tx = ux ? ((ux > 0 ? W - m : m) - cx) / ux : 1e9, ty = uy ? ((uy > 0 ? H - m : m) - cy) / uy : 1e9;
+  const k = Math.min(tx, ty), px = cx + ux * k, py = cy + uy * k, pulso = 0.8 + 0.2 * Math.sin(T * 4);
+  const g = ctx.createRadialGradient(px, py, 0, px, py, 22);
+  g.addColorStop(0, `rgba(255,200,110,${0.45 * pulso})`); g.addColorStop(1, 'rgba(255,200,110,0)');
+  ctx.fillStyle = g; ctx.fillRect(px - 22, py - 22, 44, 44);
+  ctx.save(); ctx.translate(px - ux * 4, py - uy * 4); ctx.rotate(ang);
+  ctx.fillStyle = `rgba(255,205,120,${pulso})`;
+  ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(-7, -7); ctx.lineTo(-3, 0); ctx.lineTo(-7, 7); ctx.fill();
+  ctx.restore();
 }
 function desenharNomes() {
   if (cam.z > 0.75) return;
@@ -2037,11 +2157,12 @@ function atualizar(dt) {
     if ($('#carta').hidden) atualizarJogador(dt);
     const aqui = ondeEstou();
     // com a ficha aberta embaixo, a câmera sobe para a pessoa não ficar atrás dela
-    const ficha = $('#ficha'), cobre = ficha.hidden ? 0 : Math.max(0, H - ficha.getBoundingClientRect().top);
+    const ficha = $('#fala'), cobre = ficha.hidden ? 0 : Math.max(0, H - ficha.getBoundingClientRect().top);
     cam.x = lerp(cam.x, aqui.x, Math.min(1, dt * 4));
     cam.y = lerp(cam.y, aqui.y - (jog.noBarco ? 0 : 8) + (cobre > H * 0.25 ? cobre / 2 / cam.z : 0), Math.min(1, dt * 4));
-    if ((ultimoDescobrir += dt) > 0.4) { ultimoDescobrir = 0; descobrir(); }
+    if ((ultimoDescobrir += dt) > 0.4) { ultimoDescobrir = 0; descobrir(); conferirMissoes(); }
     preparoPerto();
+    atualizarFala(dt);
     interacao = procurarInteracao();
     if (jog.quer && mesmoObjeto(interacao, jog.quer)) { jog.quer = null; jog.alvo = null; agir(); }
     atualizarBotaoAcao();
@@ -2076,7 +2197,7 @@ function preparoAbertura() {
 }
 function atualizarBotaoAcao() {
   const b = $('#acao'), a = interacao;
-  const mostrar = !!a && $('#ficha').hidden && $('#carta').hidden;
+  const mostrar = !!a && !FALA.ativa && $('#carta').hidden;
   if (b.hidden !== !mostrar) b.hidden = !mostrar;
   if (mostrar && b.dataset.rot !== a.rotulo) {
     b.dataset.rot = a.rotulo;
@@ -2091,6 +2212,10 @@ function avisar(texto, dur = 5000) {
   filaAvisos.push({texto, dur});
   if (!avisando) proximoAviso();
 }
+function esquecerAviso(texto) {
+  const i = filaAvisos.findIndex(a => a.texto === texto);
+  if (i >= 0) filaAvisos.splice(i, 1);
+}
 function proximoAviso() {
   const a = filaAvisos.shift();
   if (!a) { avisando = false; return; }
@@ -2102,76 +2227,292 @@ function proximoAviso() {
   setTimeout(() => { p.classList.remove('on'); setTimeout(() => p.remove(), 1300); proximoAviso(); }, a.dur);
 }
 
-// ——— ler ———
-function lerSonho(il, k) {
+// ——— conversa ———
+// O texto aparece letra a letra; E, espaço, enter, clique ou toque adiantam.
+const FALA = {ativa: false, pags: [], i: 0, n: 0, opcoes: null, fim: null, voz: 260, escolhendo: false};
+function paginar(texto, max = 230) {
+  const pags = [];
+  let atual = '';
+  const poe = t => {
+    if (atual && (atual + ' ' + t).length > max) { pags.push(atual); atual = ''; }
+    atual += (atual ? ' ' : '') + t;
+  };
+  for (const frase of texto.replace(/\s*\n+\s*/g, ' ').trim().split(/(?<=[.!?…])\s+/)) {
+    if (frase.length <= max) poe(frase);
+    else for (const w of frase.split(' ')) poe(w);
+  }
+  if (atual) pags.push(atual);
+  return pags.length ? pags : [texto];
+}
+const retrato = $('#retrato'), rctx = retrato.getContext('2d');
+function desenharRetrato(ap) {
+  rctx.setTransform(1, 0, 0, 1, 0, 0);
+  rctx.clearRect(0, 0, retrato.width, retrato.height);
+  if (!ap) { rctx.setTransform(4, 0, 0, 4, 56, 92); DESENHO.lembranca(rctx, {x: 0, y: 0, i: 0}); return; }
+  rctx.setTransform(4.2, 0, 0, 4.2, 56, 108);
+  figura(rctx, 0, 0, ap, 1, 0, 0, null);
+}
+function conversar({ap = null, nome, sub = '', pags, opcoes = null, fim = null, voz = 260}) {
+  Object.assign(FALA, {ativa: true, pags: pags.filter(Boolean), i: 0, n: 0, opcoes, fim, voz, escolhendo: false});
+  if (!FALA.pags.length) FALA.pags = ['…'];
+  $('#fala .quem').innerHTML = esc(nome) + (sub ? `<span>${esc(sub)}</span>` : '');
+  desenharRetrato(ap);
+  $('#fala').hidden = false;
+  $('#dica').style.opacity = 0; dicaTempo = 0;
+  mostrarPagina();
+}
+function mostrarPagina() {
+  $('#fala .texto').textContent = '';
+  $('#fala .opcoes').innerHTML = '';
+  FALA.escolhendo = false;
+}
+function atualizarFala(dt) {
+  if (!FALA.ativa) return;
+  const pag = FALA.pags[FALA.i];
+  if (FALA.n >= pag.length) return;
+  const antes = FALA.n;
+  FALA.n = Math.min(pag.length, FALA.n + dt * 75);
+  const el = $('#fala .texto');
+  el.textContent = pag.slice(0, Math.floor(FALA.n));
+  el.scrollTop = el.scrollHeight;
+  if (Math.floor(FALA.n / 5) > Math.floor(antes / 5)) Som.blip(FALA.voz);
+  if (FALA.n >= pag.length) fimDaPagina();
+}
+function fimDaPagina() {
+  const op = $('#fala .opcoes'), ultima = FALA.i === FALA.pags.length - 1;
+  op.innerHTML = '';
+  if (ultima && FALA.opcoes) {
+    FALA.escolhendo = true;
+    FALA.opcoes.forEach((o, j) => {
+      const b = document.createElement('button');
+      b.textContent = o.rotulo;
+      if (o.fraco) b.className = 'fraco';
+      b.onclick = ev => { ev.stopPropagation(); escolher(j); };
+      op.appendChild(b);
+    });
+  } else op.innerHTML = `<span class="seguir">${ultima ? 'fechar' : 'continuar'} ▸</span>`;
+}
+function avancarFala() {
+  if (!FALA.ativa) return;
+  const pag = FALA.pags[FALA.i];
+  if (FALA.n < pag.length) { FALA.n = pag.length; $('#fala .texto').textContent = pag; fimDaPagina(); return; }
+  if (FALA.i < FALA.pags.length - 1) { FALA.i++; FALA.n = 0; mostrarPagina(); return; }
+  if (!FALA.escolhendo) fecharFala();
+}
+function escolher(j) {
+  const o = FALA.opcoes?.[j];
+  if (!o) return;
+  fecharFala(false);
+  o.acao?.();
+}
+function fecharFala(comFim = true) {
+  if (!FALA.ativa) return;
+  const fim = FALA.fim;
+  Object.assign(FALA, {ativa: false, fim: null, escolhendo: false});
+  $('#fala').hidden = true;
+  if (comFim && fim) fim();
+}
+$('#fala').addEventListener('click', () => avancarFala());
+
+// ——— missões ———
+// Cada pessoa sonhou com uma coisa que outra pessoa, noutra ilha, também
+// sonhou (as ligações vêm do gerar.py). O pedido dela é que você vá até lá.
+const missoes = {ativas: [], feitas: []};
+const conhecidos = new Map();                   // chave da pessoa → {nome, ilha, t, b, quando}
+const lembrancas = [];                          // {w, art, de, para}: acendem na ilha natal
+let foco = null;                                // a missão que a estrela aponta
+const EM_ART = {o: 'no', a: 'na', os: 'nos', as: 'nas'}, DE_ART = {o: 'do', a: 'da', os: 'dos', as: 'das'};
+const coisa = (art, w) => art ? `${art} ${w}` : w;
+const cap = t => t ? t[0].toUpperCase() + t.slice(1) : t;
+const naIlha = il => il ? (il.nome.startsWith('Ilha') ? 'na ' : 'em ') + il.nome : 'numa ilha';
+const daIlha = il => il ? (il.nome.startsWith('Ilha') ? 'da ' : 'de ') + il.nome : 'de longe';
+const pelaIlha = il => il ? (il.nome.startsWith('Ilha') ? 'pela ' : 'por ') + il.nome : 'por lá';
+const ele = p => p.f ? 'ela' : 'ele', dele = p => p.f ? 'dela' : 'dele';
+const obrigado = p => p.f ? 'obrigada' : 'obrigado';
+const plural = art => art === 'os' || art === 'as';
+const meu = art => ({o: 'meu', a: 'minha', os: 'meus', as: 'minhas'})[art] || 'meu';
+const escolhaDe = (chave, lista) => lista[hashTexto('fala:' + chave) % lista.length];
+const SAUDA = [
+  p => `Oi. Eu sou ${p.nome}. Posso te contar o que eu sonhei?`,
+  p => `Você chegou de barco? Eu sou ${p.nome}. Escuta o meu sonho.`,
+  p => `${p.nome}, prazer. Não consigo parar de pensar no que sonhei.`,
+  p => `Ah, alguém acordado. Eu sou ${p.nome}. Senta aqui.`,
+  p => `Eu sou ${p.nome}. Esta noite eu sonhei uma coisa…`,
+  p => `Que bom que você veio. Eu sou ${p.nome}, e preciso contar isso pra alguém.`,
+];
+const FECHO = [
+  () => 'É só isso. Às vezes a gente só precisa contar.',
+  p => `${cap(obrigado(p))} por ouvir.`,
+  () => 'Volta quando quiser.',
+  () => 'Acho que vou dormir de novo, pra ver se continua.',
+];
+const ACEITE = [
+  p => `${cap(obrigado(p))}. Vou ficar esperando.`,
+  () => 'Boa viagem. Siga a estrela.',
+  () => 'Eu sabia que você ia topar.',
+];
+function textoOferta(tipo, p, q, I, o) {
+  const x = coisa(o.art, o.w), pl = plural(o.art);
+  if (tipo === 'local') return [`${q.nome}, aqui mesmo nesta ilha, também sonhou com ${x}.`,
+    `Vai lá conversar com ${ele(q)}? Quero saber como foi o sonho ${dele(q)}.`];
+  if (tipo === 'entregar') return [`Quando eu acordei, ${x} ainda ${pl ? 'estavam' : 'estava'} comigo. ${pl ? 'Não são' : 'Não é'} ${meu(o.art)} — ${pl ? 'são' : 'é'} do sonho de ${q.nome}, ${naIlha(I)}.`,
+    `Você leva pra ${ele(q)}?`];
+  if (tipo === 'recado') return [`Se você passar ${pelaIlha(I)}, procura ${q.nome}.`,
+    `Diz pra ${ele(q)} que eu também sonhei com ${x}. ${cap(ele(q))} vai entender.`];
+  return [`Desde que acordei, não paro de pensar ${o.art ? EM_ART[o.art] + ' ' + o.w : 'em ' + o.w}.`,
+    `Dizem que ${q.nome}, ${naIlha(I)}, também sonhou com ${x}. Você iria até lá perguntar como foi?`];
+}
+function textoChegada(m, p, q) {
+  const x = coisa(m.art, m.w);
+  if (m.tipo === 'entregar') return [`${cap(x)}! Como isso veio parar com você?`,
+    `Foi ${p.nome} que mandou? ${cap(obrigado(q))}. Eu também sonhei com ${x}. Escuta:`];
+  if (m.tipo === 'recado') return [`${p.nome} disse isso? Que também sonhou com ${x}?`, 'Então não fui só eu. Escuta o meu:'];
+  return [`${p.nome} te mandou aqui? Então ${ele(p)} também sonhou com ${x}…`, 'Senta, que eu te conto o meu.'];
+}
+// o pedido que a pessoa ainda pode fazer: o primeiro alvo que você não conhece
+function ofertaDe(chave, s) {
+  if (!s?.lig?.length || missoes.ativas.some(m => m.g === chave) || missoes.feitas.some(m => m.g === chave)) return null;
+  for (const [ilha, k, w, art] of s.lig) {
+    const alvo = ilha + ':' + k;
+    if (alvo === chave || conhecidos.has(alvo) || missoes.ativas.some(m => m.a === alvo)) continue;
+    return {alvo, ilha, k, w, art};
+  }
+  return null;
+}
+function marcaDe(chave, s) {
+  if (missoes.ativas.some(m => m.a === chave)) return '?';
+  return ofertaDe(chave, s) ? '✦' : null;
+}
+function tipoDe(chave, o, aqui) {
+  if (o.ilha === aqui) return 'local';
+  let concreta = false;
+  if (PAL && MUNDO.motivos) { const r = raiz(normalizar(o.w)); concreta = Object.values(MUNDO.motivos).some(rs => rs.includes(r)); }
+  const h = hashTexto('tipo:' + chave) % 3;
+  if (concreta && h !== 2) return 'entregar';
+  return h === 0 ? 'recado' : 'encontrar';
+}
+function conhecer(chave, p, il, s) {
+  if (conhecidos.has(chave)) return;
+  conhecidos.set(chave, {nome: p.nome, ilha: il?.nome || '', t: s.t, b: s.b, quando: Date.now()});
+}
+async function falarCom(il, k) {
+  if (!il.sonhos) await sonhosDa(il);
   const s = il.sonhos?.[k];
-  const f = $('#ficha');
-  if (!s) {
-    sonhosDa(il).then(() => { if (il.sonhos?.[k]) lerSonho(il, k); });
-    return;
+  if (!s) return;
+  const chave = chaveDe(il, k), p = quem(chave);
+  const origem = il.propria && s.de !== undefined ? PORID.get(s.de) : null;
+  const base = {ap: p, nome: p.nome, sub: origem ? 'veio ' + daIlha(origem) : '', voz: p.voz};
+  const sonho = paginar(s.t), primeira = !conhecidos.has(chave);
+  conhecer(chave, p, origem || il, s);
+  const deNovo = {rotulo: 'ouvir o sonho de novo', acao: () => conversar({...base, pags: sonho})};
+  const alvoDe = missoes.ativas.find(m => m.a === chave);
+  if (alvoDe) return completar(alvoDe, il, k, s, p, base);
+  const minha = missoes.ativas.find(m => m.g === chave);
+  if (minha) {
+    const q = quem(minha.a), I = ondeEsta(minha.a).il;
+    return conversar({...base, pags: [minha.tipo === 'entregar'
+      ? `Ainda está com ${coisa(minha.art, minha.w)}? ${q.nome} mora ${naIlha(I)}.`
+      : `Já encontrou ${q.nome}? ${cap(ele(q))} mora ${naIlha(I)}.`],
+      opcoes: [deNovo, {rotulo: 'já vou', fraco: true}]});
   }
-  const c = corDoSonho(s.b);
-  f.querySelector('.de').innerHTML =
-    `<b>${esc(il.nome)}</b><span class="tipo" style="--cor:${css(c)}"><i></i>${nomeDoTipo(s.b)}</span>` +
-    `<span>${s.a}</span>`;
-  f.querySelector('.texto').textContent = s.t;
-  f.querySelector('.texto').scrollTop = 0;
-  const eco = f.querySelector('.eco');
-  const pe = f.querySelector('.pe');
-  pe.innerHTML = '';
-  if (s.de !== undefined && PORID.get(s.de)) {
-    const origem = PORID.get(s.de);
-    eco.hidden = false;
-    eco.innerHTML = `Este sonho ecoa o seu. Veio da ilha <em>${esc(origem.nome)}</em>, ` +
-      `${fmt(origem.n)} sonhos${s.ecoa?.length ? ` · em comum: ${esc(s.ecoa.slice(0, 5).join(', '))}` : ''}.`;
-    const b = document.createElement('button');
-    b.textContent = rumo === origem.id ? 'rumo traçado' : 'traçar rumo até lá';
-    b.onclick = () => { definirRumo(origem.id); b.textContent = 'rumo traçado'; };
-    pe.appendChild(b);
-    if (!vistas.has(origem.id)) ouvidas.add(origem.id);
-  } else eco.hidden = true;
-  const fechar = document.createElement('button');
-  fechar.className = 'fechar'; fechar.innerHTML = 'fechar <kbd>esc</kbd>'; fechar.onclick = fecharFicha;
-  pe.appendChild(fechar);
-  f.hidden = false;
-  const chave = chaveSonho(il, k);
-  const novo = !lidos.has(chave);
-  lidos.set(chave, {ilha: il.id, nome: il.nome, t: s.t, a: s.a, b: s.b, quando: Date.now()});
-  Som.sino(s.b & 1 ? 523 : s.b & 2 ? 659 : 587, 2.6, novo ? 0.07 : 0.04);
-  atualizarCaderno();
-  salvar();
+  if (missoes.feitas.some(m => m.g === chave)) {
+    return conversar({...base, pags: [escolhaDe(chave, [`${cap(obrigado(p))} por ter ido. Agora eu durmo em paz.`,
+      'Ainda sonho com aquilo, sabia? Mas agora é diferente.', `${cap(obrigado(p))}. Volta sempre.`])],
+      opcoes: [deNovo, {rotulo: 'tchau', fraco: true}]});
+  }
+  if (primeira) {
+    const abre = origem ? `Eu sou ${p.nome}, ${daIlha(origem)}. Vim atrás do seu sonho — o meu é parecido.`
+                        : escolhaDe(chave, SAUDA)(p);
+    return oferecer(chave, il, s, p, base, [abre, ...sonho]);
+  }
+  if (ofertaDe(chave, s)) return oferecer(chave, il, s, p, base, ['Voltou! Pensou no meu pedido?']);
+  conversar({...base, pags: [escolhaDe(chave, FECHO)(p)], opcoes: [deNovo, {rotulo: 'tchau', fraco: true}]});
 }
-function lerProprio(il) {
-  const f = $('#ficha');
-  f.querySelector('.de').innerHTML = `<b>${il.natal ? 'o seu sonho' : 'um sonho seu'}</b><span>${esc(il.nome)}</span>`;
-  f.querySelector('.texto').textContent = il.texto;
-  const eco = f.querySelector('.eco');
-  const ilhas = (il.ecoa || []).slice(0, 3).map(e => PORID.get(e.id)).filter(Boolean);
-  eco.hidden = !ilhas.length;
-  eco.innerHTML = ilhas.length ? `Ele ecoa mais em <em>${ilhas.map(i => esc(i.nome)).join('</em>, <em>')}</em>. ` +
-    'As correntes da sua ilha levam até elas.' : '';
-  const pe = f.querySelector('.pe');
-  pe.innerHTML = '';
-  if (ilhas[0]) {
-    const b = document.createElement('button');
-    b.textContent = 'traçar rumo até a mais próxima em sonho';
-    b.onclick = () => { definirRumo(ilhas[0].id); b.textContent = 'rumo traçado'; };
-    pe.appendChild(b);
+function oferecer(chave, il, s, p, base, antes, comFecho = true) {
+  const o = ofertaDe(chave, s);
+  if (!o) {
+    if (comFecho) conversar({...base, pags: [...antes, escolhaDe(chave, FECHO)(p)]});
+    return false;
   }
-  const fechar = document.createElement('button');
-  fechar.className = 'fechar'; fechar.innerHTML = 'fechar <kbd>esc</kbd>'; fechar.onclick = fecharFicha;
-  pe.appendChild(fechar);
-  f.hidden = false;
+  const q = quem(o.alvo), I = ondeEsta(o.alvo).il, tipo = tipoDe(chave, o, il.id);
+  conversar({...base, pags: [...antes, ...textoOferta(tipo, p, q, I, o)], opcoes: [
+    {rotulo: tipo === 'entregar' ? 'eu levo' : 'eu vou', acao: () => aceitar(chave, p, o, tipo, base)},
+    {rotulo: 'agora não', fraco: true},
+  ]});
+  return true;
+}
+function aceitar(g, p, o, tipo, base) {
+  const q = quem(o.alvo), I = ondeEsta(o.alvo).il;
+  const m = {id: g + '>' + o.alvo, g, a: o.alvo, w: o.w, art: o.art, tipo, nomeG: p.nome, nomeA: q.nome, quando: Date.now()};
+  missoes.ativas.push(m);
+  foco = m.id; rumo = null;
+  if (I && !vistas.has(I.id)) ouvidas.add(I.id);
+  conversar({...base, pags: [escolhaDe(g, ACEITE)(p)]});
+  avisar(tipo === 'entregar' ? `Você leva ${coisa(o.art, o.w)} de ${p.nome} para ${q.nome}.` : `Procure ${q.nome}, ${naIlha(I)}.`, 4500);
   Som.acorde([392, 494, 587], 0.05);
+  atualizarHud(); atualizarCaderno(); salvar();
 }
-function fecharFicha() { $('#ficha').hidden = true; }
+function completar(m, il, k, s, q, base) {
+  const p = quem(m.g), chave = chaveDe(il, k);
+  missoes.ativas = missoes.ativas.filter(x => x !== m);
+  missoes.feitas.push({...m, feita: Date.now()});
+  if (foco === m.id) foco = missoes.ativas.length ? missoes.ativas[missoes.ativas.length - 1].id : null;
+  lembrancas.push({w: m.w, art: m.art, de: m.nomeG, para: m.nomeA});
+  plantarLembrancas();
+  conversar({...base, pags: [...textoChegada(m, p, q), ...paginar(s.t)], fim: () => {
+    celebrar();
+    oferecer(chave, il, s, q, base, [escolhaDe(chave, ['E sabe de uma coisa? Eu também procuro alguém.',
+      'Agora que você está aqui… eu tenho um pedido.', 'Já que você anda pelo mar…'])], false);
+  }});
+  atualizarCaderno(); salvar();
+}
+function celebrar() {
+  Som.acorde([523, 659, 784, 1047], 0.06);
+  avisar(PROPRIAS.some(il => il.natal) ? 'Uma luz nova acendeu na sua ilha.' : 'Os dois sonhos se encontraram.', 4200);
+  atualizarHud();
+}
+// quem você procura sumiu (ganhou bandeira de cuidado depois): a missão acaba
+function conferirMissoes() {
+  for (const m of [...missoes.ativas]) {
+    const {il, k} = ondeEsta(m.a);
+    if (il?.sonhos && !il.sonhos[k]) {
+      missoes.ativas = missoes.ativas.filter(x => x !== m);
+      if (foco === m.id) foco = null;
+      avisar(`${m.nomeA} não está mais ${naIlha(il)}. Ninguém sabe pra onde foi.`, 4500);
+    }
+  }
+}
+function falarProprio(il) {
+  conversar({ap: aparenciaDoJogador(), nome: il.natal ? 'o seu sonho' : 'um sonho seu', pags: paginar(il.texto), voz: 300});
+}
+function verLembranca(i) {
+  const L = lembrancas[i];
+  if (!L) return;
+  conversar({nome: 'lembrança', pags: [`${cap(coisa(L.art, L.w))}. ${L.de} e ${L.para} sonharam com ${plural(L.art) ? 'eles' : 'isso'} sem se conhecer.`]});
+}
+// as lembranças acendem em volta da pedra do sonho, na ilha natal
+function plantarLembrancas() {
+  const il = PROPRIAS.find(x => x.natal);
+  if (!il?.geo?.monumento) return;
+  const g = il.geo, m = g.monumento;
+  g.itens = g.itens.filter(it => it.tipo !== 'lembranca');
+  lembrancas.forEach((L, i) => {
+    for (let tent = 0; tent < 60; tent++) {
+      const a = i * 2.39996 + tent * 0.61, r = 30 + 8 * Math.sqrt(i + 1) + tent * 2.5;
+      const x = m.x + Math.cos(a) * r, y = m.y + Math.sin(a) * r * 0.8, h = alturaLocal(g, x, y);
+      if (h > g.hCampo && h < 0.6) { g.itens.push({tipo: 'lembranca', x, y, i}); break; }
+    }
+  });
+  g.itens.sort((a, b) => a.y - b.y);
+}
 function definirRumo(id) {
   rumo = id;
-  if (!vistas.has(id)) ouvidas.add(id);
-  $('#cartaSemRumo').hidden = rumo === null;
+  if (id !== null) { foco = null; if (!vistas.has(id)) ouvidas.add(id); }
+  $('#cartaSemRumo').hidden = rumo === null && !foco;
   atualizarHud();
   salvar();
 }
+function focar(id) { foco = id; rumo = null; atualizarHud(); atualizarCaderno(); salvar(); }
 
 // ——— painéis ———
 function alternarPainel(nome) {
@@ -2179,12 +2520,11 @@ function alternarPainel(nome) {
   if (el.hidden) abrirPainel(nome); else fecharPainel(nome);
 }
 function abrirPainel(nome) {
-  if (nome !== 'sobre' && fase !== 'jogo') return;
-  for (const n of ['carta', 'caderno', 'sobre']) if (n !== nome) $('#' + n).hidden = true;
+  if (nome !== 'ajuda' && fase !== 'jogo') return;
+  for (const n of ['carta', 'caderno', 'ajuda']) if (n !== nome) $('#' + n).hidden = true;
   $('#' + nome).hidden = false;
   if (nome === 'carta') abrirCarta();
   if (nome === 'caderno') atualizarCaderno();
-  if (nome === 'sobre') montarSobre();
   $$('#botoes button[data-abre]').forEach(b => b.classList.toggle('on', b.dataset.abre === nome));
 }
 function fecharPainel(nome) {
@@ -2192,52 +2532,55 @@ function fecharPainel(nome) {
   $$('#botoes button[data-abre]').forEach(b => b.classList.toggle('on', false));
 }
 function fecharTudo() {
-  if (!$('#ficha').hidden) { fecharFicha(); return; }
-  for (const n of ['carta', 'caderno', 'sobre']) fecharPainel(n);
+  if (FALA.ativa) { fecharFala(); return; }
+  for (const n of ['carta', 'caderno', 'ajuda']) fecharPainel(n);
 }
 $$('[data-abre]').forEach(b => b.addEventListener('click', () => { Som.iniciar(); alternarPainel(b.dataset.abre); }));
 $$('[data-fecha]').forEach(b => b.addEventListener('click', () => fecharPainel(b.dataset.fecha)));
 
-function montarSobre() {
-  const m = MUNDO?.medidas;
-  const n = MUNDO ? fmt(MUNDO.total) : '444.591', k = MUNDO ? MUNDO.ilhas.length : 240;
-  $('#sobreTexto').innerHTML = `
-    <p>Cada ilha é um <b>aglomerado de relatos</b> do arquivo da Escuta Planetária: ${n} relatos
-      públicos de sonho e de desejo, de 2015 a 2026. O arquivo põe cada relato num planeta, pela
-      semelhança do que ele diz — e nada mais. Aqui o planeta foi cortado em ${k} aglomerados;
-      cada um virou uma ilha, do tamanho do número de sonhos que guarda.</p>
-    <p><b>Ilhas vizinhas são aglomerados vizinhos.</b> Estender uma bola num mar plano custa alguma
-      vizinhança: das ${m ? m.vizinhas : 6} ilhas mais próximas de cada uma no planeta,
-      ${m ? Math.round(m.preservadas_tsne * 100) : 69}% continuam entre as mais próximas aqui
-      (${m ? Math.round(m.preservadas_pca * 100) : 36}% se o mar fosse só uma sombra do planeta;
-      ao acaso, ${m ? (m.acaso * 100).toFixed(1).replace('.', ',') : '2,5'}%). As <b>correntes</b>
-      ligam cada ilha às suas vizinhas de verdade — e levam o barco mais depressa.</p>
-    <p>Os <b>nomes</b> são as duas palavras mais características de cada aglomerado: frequentes nele,
-      raras no resto do arquivo. Onde centenas de pessoas escreveram a mesma coisa ("meu sonho",
-      "que pesadelo"), o nome é essa frase. As <b>cores</b> são as do planeta: azul, sonhos
-      dormindo; âmbar, sonhos acordados (desejos); violeta, os incertos. O que mobilia cada ilha —
-      casas, lápides, portas, fogueiras, dentes — vem das palavras mais comuns ali do que no
-      resto do arquivo. Cada luz é um sonho de verdade, tirado do aglomerado.</p>
-    <p>A <b>sua ilha</b> nasce onde as palavras do seu sonho são mais características. Ele não passa
-      por modelo nenhum nem sai deste navegador: é lido aqui, pelas raízes das palavras, e fica
-      guardado só aqui. Os sonhos que aparecem nela são os que mais se parecem com o seu, entre
-      os das ilhas onde ele ecoa.</p>
-    <p>Relatos marcados para cuidado — ideação suicida e autolesão — não aparecem, como no planeta.</p>
-    <p class="miudo">Andar: setas ou WASD (shift corre) · no celular, toque onde quer ir ou segure
-      para guiar · <kbd>E</kbd> lê, embarca e desembarca · <kbd>M</kbd> carta · <kbd>C</kbd> caderno ·
-      roda ou pinça: zoom.</p>
-    <p class="miudo"><a href="../planeta-v2/">o planeta</a> · <a href="../">Escuta Planetária</a></p>`;
-}
-
 // ——— caderno ———
 function atualizarCaderno() {
   if ($('#caderno').hidden) return;
-  $('#nVisitadas').textContent = fmt([...visitadas].filter(id => id < 1000).length);
-  $('#nLidos').textContent = fmt(lidos.size);
-  $('#nPassos').textContent = (passosMar / 1000).toFixed(1).replace('.', ',');
+  const ml = $('#missoesLista');
+  ml.innerHTML = '';
+  if (!missoes.ativas.length && !missoes.feitas.length)
+    ml.innerHTML = '<p class="miudo">Nenhuma ainda. Converse com quem tem uma estrela ✦ sobre a cabeça.</p>';
+  for (const m of [...missoes.ativas].reverse()) {
+    const I = ondeEsta(m.a).il, d = document.createElement('div');
+    d.className = 'missao';
+    d.innerHTML = '<p class="t"></p><div class="pe"></div>';
+    d.querySelector('.t').textContent = m.tipo === 'entregar'
+      ? `Levar ${coisa(m.art, m.w)} de ${m.nomeG} até ${m.nomeA}, ${naIlha(I)}.`
+      : `Encontrar ${m.nomeA}, ${naIlha(I)}, que também sonhou com ${coisa(m.art, m.w)}.`;
+    const b = document.createElement('button');
+    b.textContent = foco === m.id ? 'a estrela aponta pra cá' : 'seguir a estrela';
+    b.classList.toggle('on', foco === m.id);
+    b.onclick = () => focar(m.id);
+    d.querySelector('.pe').appendChild(b);
+    ml.appendChild(d);
+  }
+  for (const m of [...missoes.feitas].reverse().slice(0, 60)) {
+    const d = document.createElement('div');
+    d.className = 'missao feita';
+    d.innerHTML = '<p class="t"></p>';
+    d.querySelector('.t').textContent = `${m.nomeG} e ${m.nomeA} sonharam com ${coisa(m.art, m.w)}. ✓`;
+    ml.appendChild(d);
+  }
+  const gl = $('#genteLista');
+  gl.innerHTML = conhecidos.size ? '' : '<p class="miudo">Ninguém ainda.</p>';
+  for (const g of [...conhecidos.values()].sort((a, b) => b.quando - a.quando).slice(0, 150)) {
+    const d = document.createElement('div');
+    d.className = 'lido';
+    d.style.setProperty('--cor', css(corDoSonho(g.b || 1)));
+    d.innerHTML = `<div class="onde"><i></i><span></span></div><p class="t"></p>`;
+    d.querySelector('span').textContent = `${g.nome} · ${g.ilha}`;
+    d.querySelector('.t').textContent = g.t;
+    d.onclick = () => d.classList.toggle('aberto');
+    gl.appendChild(d);
+  }
   const pr = $('#proprios');
   pr.innerHTML = '';
-  if (!PROPRIAS.length) pr.innerHTML = '<p class="miudo">Você ainda não contou um sonho: nasceu numa ilha que não é sua.</p>';
+  if (!PROPRIAS.length) pr.innerHTML = '<p class="miudo">Você ainda não contou um sonho: acordou numa ilha que não é sua.</p>';
   for (const il of PROPRIAS) {
     const d = document.createElement('div');
     d.className = 'proprio';
@@ -2248,20 +2591,6 @@ function atualizarCaderno() {
     b.onclick = () => { definirRumo(il.id); atualizarCaderno(); };
     d.querySelector('.pe').appendChild(b);
     pr.appendChild(d);
-  }
-  const lista = $('#lidosLista');
-  if (!lidos.size) return;
-  lista.innerHTML = '';
-  const itens = [...lidos.values()].sort((a, b) => b.quando - a.quando).slice(0, 200);
-  for (const s of itens) {
-    const d = document.createElement('div');
-    d.className = 'lido';
-    d.style.setProperty('--cor', css(corDoSonho(s.b)));
-    d.innerHTML = `<div class="onde"><i></i><span></span></div><p class="t"></p>`;
-    d.querySelector('span').textContent = `${s.nome} · ${s.a}`;
-    d.querySelector('.t').textContent = s.t;
-    d.onclick = () => d.classList.toggle('aberto');
-    lista.appendChild(d);
   }
 }
 $('#sonho2').addEventListener('input', e => { $('#sonhar2').disabled = palavrasNoTexto(e.target.value) < 3; });
@@ -2276,7 +2605,7 @@ $('#sonhar2').addEventListener('click', async () => {
   surgirIlha(il);
 });
 $('#apagar').addEventListener('click', () => {
-  if (!confirm('Apagar a viagem guardada neste navegador e recomeçar?')) return;
+  if (!confirm('Esquecer esta viagem e começar de novo?')) return;
   try { localStorage.removeItem(CHAVE); } catch (e) { /* nada guardado */ }
   location.reload();
 });
@@ -2297,15 +2626,7 @@ function abrirCarta() {
   }
   carta.cx = (x0 + x1) / 2; carta.cy = (y0 + y1) / 2;
   carta.s = clamp(Math.min(W * 0.78 / Math.max(1, x1 - x0), H * 0.62 / Math.max(1, y1 - y0)), Math.min(W, H) / 60000, Math.min(W, H) / 3000);
-  $('#cartaSemRumo').hidden = rumo === null;
-  const vis = [...visitadas].filter(id => id < 1000).length, vis2 = [...vistas].filter(id => id < 1000).length;
-  $('#cartaConta').textContent = `${vis2} de ${ILHAS.length} ilhas vistas · ${vis} pisadas` +
-    (ouvidas.size ? ` · ${ouvidas.size} de ouvir falar` : '');
-  $('#cartaLegenda').innerHTML =
-    `<i style="background:${css(COR_TIPO.sono)}"></i>mais sonho dormindo` +
-    `<i style="background:${css(COR_TIPO.vigilia)}"></i>mais sonho acordado` +
-    `<i style="background:transparent;border:1px dashed #6f7488"></i>de ouvir falar` +
-    `<br>toque numa ilha para traçar o rumo · arraste para mover`;
+  $('#cartaSemRumo').hidden = rumo === null && !foco;
   desenharCarta();
 }
 const conhecida = il => il.propria || vistas.has(il.id) || ouvidas.has(il.id);
@@ -2339,7 +2660,7 @@ function desenharCarta() {
     const aqui = ondeEstou(); c.lineTo(X(aqui.x), Y(aqui.y)); c.stroke();
   }
   // ilhas
-  const rotulos = [];
+  const rotulos = [], alvoCarta = alvoAtual();
   for (const il of TODAS) {
     if (!conhecida(il)) continue;
     const col = il.propria ? [255, 236, 200] : corDaIlha(il);
@@ -2357,9 +2678,11 @@ function desenharCarta() {
       c.beginPath(); c.arc(x, y, r, 0, TAU); c.stroke(); c.setLineDash([]);
     }
     if (il.propria) { c.strokeStyle = 'rgba(255,236,200,.9)'; c.lineWidth = 1.2 * d; c.beginPath(); c.arc(x, y, r + 5 * d, 0, TAU); c.stroke(); }
-    if (rumo === il.id) {
+    if (alvoCarta?.il === il) {
       c.strokeStyle = 'rgba(255,190,92,.95)'; c.lineWidth = 1.5 * d;
       c.beginPath(); c.arc(x, y, r + 9 * d, 0, TAU); c.stroke();
+      if (alvoCarta.m) { c.fillStyle = 'rgba(255,205,120,.95)'; c.font = `${14 * d}px Spectral, serif`; c.textAlign = 'center';
+        c.fillText('✦', x + r + 12 * d, y - r - 4 * d); c.textAlign = 'start'; }
     }
     rotulos.push({il, x, y: y - r - 6 * d, peso: (pisada ? 3 : vista ? 2 : 1) + il.n / 1e5 + (il.propria ? 5 : 0), vista});
   }
@@ -2424,7 +2747,7 @@ function desenharCarta() {
   $('#cartaMais').onclick = () => { carta.s = clamp(carta.s * 1.5, 0.004, 0.6); desenharCarta(); };
   $('#cartaMenos').onclick = () => { carta.s = clamp(carta.s / 1.5, 0.004, 0.6); desenharCarta(); };
   $('#cartaCentro').onclick = () => { const a = ondeEstou(); carta.cx = a.x; carta.cy = a.y; desenharCarta(); };
-  $('#cartaSemRumo').onclick = () => { rumo = null; $('#cartaSemRumo').hidden = true; atualizarHud(); desenharCarta(); salvar(); };
+  $('#cartaSemRumo').onclick = () => { rumo = null; foco = null; $('#cartaSemRumo').hidden = true; atualizarHud(); desenharCarta(); salvar(); };
 })();
 function escolherNaCarta(sx, sy) {
   const mx = (sx - W / 2) / carta.s + carta.cx, my = (sy - H / 2) / carta.s + carta.cy;
@@ -2436,7 +2759,6 @@ function escolherNaCarta(sx, sy) {
   }
   if (!melhor) return;
   definirRumo(rumo === melhor.id ? null : melhor.id);
-  if (rumo === null) $('#cartaSemRumo').hidden = true;
   desenharCarta();
   if (rumo !== null) avisar(`Rumo traçado: ${melhor.nome}.`, 3000);
 }
@@ -2479,6 +2801,14 @@ const Som = {
       g.gain.exponentialRampToValueAtTime(0.0001, t + dur / mult);
       o.connect(g); g.connect(this.mestre); o.start(t); o.stop(t + dur);
     }
+  },
+  blip(freq) {
+    if (!this.ac || !this.ligado) return;
+    const ac = this.ac, t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'triangle'; o.frequency.value = freq * (0.9 + Math.random() * 0.2);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.02, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+    o.connect(g); g.connect(this.mestre); o.start(t); o.stop(t + 0.08);
   },
   acorde(freqs, vol = 0.06) { freqs.forEach((f, i) => setTimeout(() => this.sino(f, 3, vol), i * 140)); },
   alternar() {
@@ -2528,13 +2858,13 @@ async function escolherEcos(texto, c, top) {
   for (const [ordem, t] of top.slice(0, 3).entries()) {
     const il = ILHAS[t.id];
     const sonhos = await sonhosDa(il);
-    for (const s of sonhos) {
-      if (s.t.length < 12) continue;
+    for (const [k0, s] of sonhos.entries()) {
+      if (!s || s.t.length < 12) continue;
       const comum = new Map();
       for (const {raiz: r, forma} of fatiar(s.t)) if (minhas.has(r) && !comum.has(r)) comum.set(r, c.formas.get(r) || forma);
       let p = 0;
       for (const r of comum.keys()) p += idf(r);
-      cands.push({s, de: il.id, p: p - ordem * 0.5, ecoa: [...comum.values()]});
+      cands.push({s, de: il.id, k0, p: p - ordem * 0.5});
     }
   }
   cands.sort((a, b) => b.p - a.p);
@@ -2544,7 +2874,7 @@ async function escolherEcos(texto, c, top) {
     if (vistosTexto.has(x.s.t)) continue;
     if (x.p <= 0 && escolhidos.length >= 4) break;
     vistosTexto.add(x.s.t);
-    escolhidos.push({t: x.s.t, a: x.s.a, b: x.s.b, p: x.s.p, de: x.de, ecoa: x.ecoa});
+    escolhidos.push({t: x.s.t, b: x.s.b, p: x.s.p, de: x.de, k0: x.k0, lig: x.s.lig || []});
   }
   return escolhidos;
 }
@@ -2558,15 +2888,24 @@ function pesoCaracteristico(r) {
   return m / 4;
 }
 function nomeDoSonho(c) {
-  // as palavras do sonho que mais caracterizam algum aglomerado; desempate
-  // pela raridade. Verbo conjugado ("nadava", "caíam") só se faltar nome.
-  const fs = [...c.formas.entries()].filter(([, f]) => f.length >= 3)
+  // a coisa do sonho que mais caracteriza algum canto do mar vira o nome do
+  // lugar ("Ilha dos Dentes"); desempate pela raridade
+  const fs = [...c.formas.entries()].filter(([, f]) => f.length >= 3 && !PARECE_VERBO.test(normalizar(f)))
     .sort((a, b) => (pesoCaracteristico(b[0]) - pesoCaracteristico(a[0])) || (idf(b[0]) - idf(a[0])));
-  const nomes = fs.filter(([, f]) => !PARECE_VERBO.test(normalizar(f)));
-  const ws = (nomes.length >= 2 ? nomes : fs).map(([, f]) => f);
-  if (ws.length >= 2) return `${ws[0]} e ${ws[1]}`;
-  if (ws.length === 1) return ws[0];
-  return 'sem palavras';
+  let nome = null;
+  for (const [r, f] of fs) {
+    const k = IDX.get(r);
+    let art = k === undefined ? '' : PAL.artigos?.[k] || '';
+    if (!art) continue;
+    const pl = /s$/.test(normalizar(f));             // o número vem da palavra como foi escrita
+    art = pl && art.length === 1 ? art + 's' : !pl && art.length === 2 ? art[0] : art;
+    nome = `Ilha ${DE_ART[art]} ${cap(f)}`;
+    break;
+  }
+  nome = nome || (fs[0] ? `Ilha ${cap(fs[0][1])}` : 'Ilha do Sonho');
+  let final = nome, n = 2;
+  while (TODAS.some(il => il.nome === final)) final = `${nome} ${['', '', 'II', 'III', 'IV', 'V'][Math.min(n++, 5)]}`;
+  return final;
 }
 async function criarIlhaPropria(texto, natal, salvo = null) {
   const c = casar(texto);
@@ -2646,10 +2985,11 @@ async function nascer(texto) {
   vistas.add(il.id); visitadas.add(il.id);
   for (const e of il.ecoa.slice(0, 3)) ouvidas.add(e.id);
   rota = [[Math.round(jog.x), Math.round(jog.y)]];
+  plantarLembrancas();
   comecarNascimento(il, [
     'Você nasceu na ilha do seu sonho.',
-    il.sonhos.length ? `Nela brilham ${il.sonhos.length} sonhos de outras pessoas que ecoam o seu. Cada luz veio de uma ilha deste mar.`
-                     : 'Nenhum sonho do arquivo usa as palavras do seu: a sua ilha nasceu longe de todas.',
+    il.sonhos.length ? 'Algumas pessoas chegaram atrás dele. Quem tem uma estrela ✦ tem um pedido.'
+                     : 'Seu sonho é tão estranho que nasceu longe de tudo.',
     'O barco está na praia.',
   ]);
 }
@@ -2681,7 +3021,7 @@ function atualizarNascimento(dt) {
   if (n.t > 4.3 && !jog.visivel) { jog.visivel = true; Som.sino(784, 3, 0.05); }
   if (n.t > 4.8 && !n.falou) {
     n.falou = true;
-    n.falas.forEach((f, i) => avisar(f, i === 1 ? 6500 : 4200));
+    n.falas.forEach((f, i) => avisar(f, i === 1 ? 5500 : 4000));
   }
   if (n.t > 5.4) {
     fase = 'jogo';
@@ -2701,8 +3041,8 @@ function surgirIlha(il) {                       // outro sonho: outra ilha, lá 
   const aqui = ondeEstou(), d = Math.hypot(il.x - aqui.x, il.y - aqui.y);
   const dirs = ['leste', 'sudeste', 'sul', 'sudoeste', 'oeste', 'noroeste', 'norte', 'nordeste'];
   const a = Math.atan2(il.y - aqui.y, il.x - aqui.x), k = ((Math.round(a / (TAU / 8)) % 8) + 8) % 8;
-  avisar(`Uma ilha nova surgiu: ${il.nome}.`, 4000);
-  avisar(`Fica a ${(d / 1000).toFixed(1).replace('.', ',')} mil passos, a ${dirs[k]}. O rumo está traçado.`, 5500);
+  avisar(`Uma ilha nova surgiu no mar: ${il.nome}.`, 4000);
+  avisar(`Fica a ${dirs[k]}, a ${(d / 1000).toFixed(1).replace('.', ',')} mil passos. O rumo está traçado.`, 5000);
   Som.acorde([294, 370, 440, 587], 0.05);
   salvar();
 }
@@ -2715,8 +3055,8 @@ function comecarJogo() {
   const toque = matchMedia('(pointer: coarse)').matches;
   const dica = $('#dica');
   dica.innerHTML = toque
-    ? 'toque onde quer ir · segure para guiar · toque na luz para ler'
-    : '<kbd>setas</kbd> ou <kbd>WASD</kbd> andam · <kbd>E</kbd> lê, embarca e desembarca · <kbd>M</kbd> carta · <kbd>C</kbd> caderno';
+    ? 'toque onde quer ir · toque numa pessoa para conversar'
+    : '<kbd>setas</kbd> ou <kbd>WASD</kbd> andam · <kbd>E</kbd> conversa e embarca · <kbd>M</kbd> carta · <kbd>C</kbd> caderno';
   dica.hidden = false; dica.style.opacity = 1; dicaTempo = 16;
   descobrir();
   atualizarHud();
@@ -2724,24 +3064,26 @@ function comecarJogo() {
 }
 
 // ——— guardar (só neste navegador) ———
-const CHAVE = 'arquipelago-onirico:v1';
+const CHAVE = 'arquipelago-onirico:v1';          // a chave fica; o formato dentro é v 2
 const assinaturaMundo = () => MUNDO ? `${MUNDO.planeta.bytes_pontos}:${MUNDO.total}:${MUNDO.ilhas.length}` : '';
 function salvar() {
   if (fase !== 'jogo' && fase !== 'nascendo') return;
-  const dados = {v: 1, mundo: assinaturaMundo(), t: Date.now(), natal: natalId,
+  const dados = {v: 2, mundo: assinaturaMundo(), t: Date.now(), natal: natalId,
     proprias: PROPRIAS.map(il => ({id: il.id, natal: il.natal, texto: il.texto, x: il.x, y: il.y, nome: il.nome, ecos: il.sonhos})),
     jog: {x: Math.round(jog.x), y: Math.round(jog.y), noBarco: jog.noBarco, cor: jog.cor},
     barco: {x: Math.round(barco.x), y: Math.round(barco.y), ang: +barco.ang.toFixed(3)},
     vistas: [...vistas], visitadas: [...visitadas], ouvidas: [...ouvidas],
-    lidos: [...lidos.entries()].slice(-400), rota: rota.slice(-1500), rumo, passos: Math.round(passosMar)};
+    missoes, foco, conhecidos: [...conhecidos.entries()].slice(-400), lembrancas,
+    rota: rota.slice(-1500), rumo, passos: Math.round(passosMar)};
   try { localStorage.setItem(CHAVE, JSON.stringify(dados)); } catch (e) { /* sem onde guardar: segue sem */ }
 }
 function lerSalvo() {
-  try { const d = JSON.parse(localStorage.getItem(CHAVE)); return d && d.v === 1 ? d : null; } catch (e) { return null; }
+  try { const d = JSON.parse(localStorage.getItem(CHAVE)); return d && (d.v === 1 || d.v === 2) ? d : null; } catch (e) { return null; }
 }
 async function continuar(d) {
   await carregarPalavras();
-  const mesmoMundo = d.mundo === assinaturaMundo();
+  // viagem da versão sem gente (v 1), ou mar regerado: as ilhas próprias renascem
+  const mesmoMundo = d.mundo === assinaturaMundo() && d.v === 2;
   PROPRIAS = [];
   for (const p of d.proprias || []) {
     // se o mar foi regerado, a ilha do sonho renasce onde ele ecoa no mar novo
@@ -2756,7 +3098,10 @@ async function continuar(d) {
     for (const k of d.vistas || []) vistas.add(k);
     for (const k of d.visitadas || []) visitadas.add(k);
     for (const k of d.ouvidas || []) ouvidas.add(k);
-    for (const [k, v] of d.lidos || []) lidos.set(k, v);
+    for (const [k, v] of d.conhecidos || []) conhecidos.set(k, v);
+    if (d.missoes) { missoes.ativas = d.missoes.ativas || []; missoes.feitas = d.missoes.feitas || []; }
+    foco = d.foco ?? null;
+    lembrancas.push(...(d.lembrancas || []));
     rota = d.rota || [];
     rumo = d.rumo ?? null;
     passosMar = d.passos || 0;
@@ -2783,8 +3128,8 @@ async function continuar(d) {
   setTimeout(() => { $('#abertura').hidden = true; }, 1500);
   Som.iniciar();
   comecarJogo();
-  if (rumo !== null) $('#cartaSemRumo').hidden = false;
-  avisar(mesmoMundo ? 'De volta ao mar.' : 'O mar mudou desde a última vez: as ilhas foram refeitas, e a sua renasceu onde o seu sonho ecoa agora.', 5000);
+  if (rumo !== null || foco) $('#cartaSemRumo').hidden = false;
+  avisar(mesmoMundo ? 'De volta ao mar.' : 'O mar mudou enquanto você dormia. A sua ilha renasceu em outro lugar.', 5000);
 }
 async function semSonho() {
   // acorda numa ilha que não é sua: de sonho dormindo, ao acaso
@@ -2808,8 +3153,9 @@ async function semSonho() {
   setTimeout(() => { $('#abertura').hidden = true; }, 1500);
   Som.iniciar();
   comecarJogo();
-  avisar('Você acordou na praia de uma ilha que não é sua.', 4500);
-  avisar('Quando lembrar de um sonho, conte no caderno — e a sua ilha vai surgir no mar.', 6000);
+  avisar('Você acordou numa ilha que não é sua.', 4000);
+  avisar('Converse com quem tem uma estrela ✦ sobre a cabeça.', 4500);
+  avisar('Quando lembrar de um sonho, conte no caderno — e a sua ilha vai surgir no mar.', 5500);
 }
 
 // ——— começo ———
@@ -2831,10 +3177,11 @@ async function comecar() {
   try {
     await carregarMundo();
   } catch (err) {
-    $('#estado').textContent = 'Não consegui carregar o mar (' + err.message + ').';
+    $('#estado').textContent = 'O mar não respondeu. Recarregue a página daqui a pouco.';
+    console.error(err);
     return;
   }
-  carregarPalavras().catch(() => { $('#estado').textContent = 'Não consegui carregar as palavras do arquivo.'; });
+  carregarPalavras().catch(() => { $('#estado').textContent = 'O mar não respondeu. Recarregue a página daqui a pouco.'; });
   carregarCuidado();
   // a abertura passeia sobre um pedaço do mar
   const r = acaso(Date.now() & 0xffffffff), il = ILHAS[Math.floor(r() * ILHAS.length)];
