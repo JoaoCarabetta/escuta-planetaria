@@ -1,0 +1,5 @@
+{
+ "p_literal": 0.66,
+ "p_figurado": 0.5,
+ "como": "máx. acerto exato do portão na validação de 344 do final_v35 (342 sem ambíguo, semente 2015): platô 0.61-0.75, escolhido o meio; p_figurado mantido em 0,50 (ganho < 5 casos). Limiar alternativo que iguala a taxa marcada à real: 0.55. Demais classes do portão em 0,5. Aplicar sobre p_literal/p_figurado de predicoes_v36; não reinferir."
+}

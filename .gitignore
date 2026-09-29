@@ -28,3 +28,17 @@ aluno/*.pt
 aluno/*.log
 arquivo/conferencia_embeddings.txt
 rubrica/lotes/
+planeta-v3/dados/projecao.npy
+planeta-v3/dados/projecao_ids.txt
+
+# fita de Möbius: mapas 2D intermediários (mobius.py os refaz)
+planeta-v3/dados/umap2d_*.npy
+
+# fora do repositório (28/09): backup local, probabilidades por relato (risco não pode ser público), projeções intermediárias
+backups_v3_antes_afeto_v2/
+aluno/*_prob.npy
+aluno/*_prob_ids.txt
+planeta-v2/dados/projecao_v2.npy
+planeta-v2/dados/projecao_v2_ids.txt
+planeta-v3/*.bak
+planeta-v3/*.log

@@ -1,0 +1,122 @@
+{
+ "carga:prazerosa": [
+  42,
+  19,
+  "23–64",
+  "aviso"
+ ],
+ "carga:aflitiva": [
+  80,
+  20,
+  "58–92",
+  "aviso"
+ ],
+ "carga:mista": [
+  33,
+  3,
+  "6–79",
+  "nao"
+ ],
+ "carga:estranha": [
+  50,
+  10,
+  "24–76",
+  "aviso"
+ ],
+ "carga:sem_afeto_dito": [
+  97,
+  143,
+  "92–98",
+  "sim"
+ ],
+ "despertar:decepcao": [
+  12,
+  8,
+  "2–47",
+  "nao"
+ ],
+ "despertar:acordou_mal": [
+  83,
+  6,
+  "44–97",
+  "nao"
+ ],
+ "despertar:acordou_bem": [
+  40,
+  5,
+  "12–77",
+  "nao"
+ ],
+ "despertar:desorientado": [
+  83,
+  6,
+  "44–97",
+  "nao"
+ ],
+ "despertar:acordou_neutro": [
+  80,
+  5,
+  "38–96",
+  "nao"
+ ],
+ "origem:nao_diz": [
+  90,
+  10,
+  "60–98",
+  "aviso"
+ ],
+ "origem:a_si": [
+  73,
+  11,
+  "43–90",
+  "aviso"
+ ],
+ "origem:entidade_religiosa": [
+  100,
+  1,
+  "21–100",
+  "nao"
+ ],
+ "origem:espirito_proprio": [
+  100,
+  2,
+  "34–100",
+  "nao"
+ ],
+ "origem:universo_destino": [
+  100,
+  1,
+  "21–100",
+  "nao"
+ ],
+ "origem:morto": [
+  0,
+  1,
+  "0–79",
+  "nao"
+ ],
+ "origem:outra": [
+  15,
+  13,
+  "4–42",
+  "aviso"
+ ],
+ "conteudo:narrado": [
+  99,
+  180,
+  "97–100",
+  "sim"
+ ],
+ "conteudo:so_mencionado": [
+  75,
+  12,
+  "47–91",
+  "aviso"
+ ],
+ "tem_atrib:tem_atrib": [
+  93,
+  15,
+  "70–99",
+  "aviso"
+ ]
+}

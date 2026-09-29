@@ -1,0 +1,25 @@
+{
+ "pontos": 493016,
+ "lidos": 3669,
+ "lidos_opus": 3587,
+ "lidos_fitipe": 82,
+ "palpites": 489347,
+ "fora_por_cuidado": 4339,
+ "cuidado_ids": 4421,
+ "cuidado_por_fonte": {
+  "anotações sab": 174,
+  "conferência de risco": 3094,
+  "cuidado manual": 2,
+  "anotação v3.x": 134,
+  "anotação Sonnet 28/09": 40,
+  "palpite do aluno, não conferido": 977
+ },
+ "cuidado_extra_copia": 89,
+ "cuidado_extra_texto": 6,
+ "formas": {
+  "forma_post": 332648,
+  "forma_comentario": 143792,
+  "forma_continuacao": 16070,
+  "forma_bluesky_nao_verificado": 506
+ }
+}
