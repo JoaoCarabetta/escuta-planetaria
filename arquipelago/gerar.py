@@ -28,27 +28,41 @@ Decisões (medidas na geração de 28/09, 444.591 relatos):
     verdadeiras de cada ilha vão no mundo.json como `viz`: a página as
     desenha como correntes marítimas, e é por elas que o barco anda mais
     rápido — o mar mostra onde a planificação mentiu.
-  - NOMES: as duas palavras mais características de cada aglomerado
-    (frequentes nele e raras no resto do arquivo). Aglomerados de fórmula
-    ("meu sonho", "que pesadelo" — centenas de pessoas escrevendo só isso)
-    não têm palavra característica; o nome é a própria fórmula, entre aspas.
+  - NOMES: nome de lugar feito da coisa mais característica do aglomerado
+    (frequente nele e rara no resto do arquivo): "Ilha do Elevador", "Ilha
+    dos Dentes". O artigo — gênero e número — é o que mais aparece antes da
+    palavra nos próprios relatos (ver `artigos_do_arquivo`); palavra que
+    quase nunca vem depois de artigo (verbo, adjetivo) não batiza. Se a
+    primeira já batizou outra ilha, vai a seguinte, depois duas juntas.
+    Aglomerados de fórmula ("meu sonho", "que pesadelo" — centenas de pessoas
+    escrevendo só isso) ficam com a própria fórmula, entre aspas.
   - O SONHO DE QUEM JOGA não passa por embedding (o bge-m3 não roda no
     navegador): casa-se pelas raízes das palavras. Para cada raiz, as ilhas
     onde ela é característica, com peso idf × log(quanto ela é mais comum ali
     do que no arquivo, por palavra distinta escrita — ver `elevacao`). O
     índice leva as próprias regras de fatiar, para que a página corte o texto
     exatamente como este script cortou.
-  - AMOSTRA: cada ilha leva de 6 a 28 sonhos (mais para as maiores), metade
+  - GENTE: cada ilha leva de 5 a 12 sonhos (mais para as maiores), metade
     os mais centrais do aglomerado e metade ao acaso, sem repetir texto,
-    preferindo relatos de 25 a 1.100 caracteres. Os textos já são públicos
-    na página do planeta; aqui vão só essas amostras.
+    preferindo relatos de 25 a 1.100 caracteres. Cada sonho vira uma pessoa
+    na ilha (2.666 no mar). Os textos já são públicos na página do planeta;
+    aqui vão só essas amostras.
+  - MISSÕES: duas pessoas se ligam quando os sonhos delas têm a mesma coisa
+    ("o show", "o sapo", "a mãe"). Vale a mais rara no arquivo, com bônus
+    para quem mora numa ilha vizinha; até 3 ligações por pessoa, cada uma
+    em ilha diferente, no máximo uma na mesma ilha. "Coisa" é palavra que
+    vem com artigo em ao menos 35% das vezes, não é nome de gente, não vem
+    grudada antes de outro nome ("a própria mãe") nem quase sempre antes de
+    «de» ("ao invés de"); xingamento e violência crua ficam de fora. 1.511
+    das 2.666 pessoas têm a quem mandar quem joga.
 
 Saída (arquipelago/dados/):
   mundo.json      as ilhas: posição no mar, raio, nome, palavras, tempero
                   (quanto é sonho dormindo, desejo, pesadelo), motivos que
                   mobíliam a ilha, vizinhas verdadeiras
   palavras.json   o índice raiz → ilhas, com as regras de fatiar
-  ilhas/<n>.json  a amostra de sonhos de cada ilha (baixada ao chegar perto)
+  ilhas/<n>.json  a gente de cada ilha: o sonho, o tempero e as ligações
+                  [ilha, pessoa, coisa, artigo] (baixada ao chegar perto)
 """
 import json
 import math
@@ -350,6 +364,106 @@ def elevacao(x, U_c, x_arquivo, U):
     return ((x + ENCOLHE * rg) / (U_c + ENCOLHE)) / rg
 
 
+# ——— gênero e número das coisas, pelo artigo que o arquivo põe antes delas ———
+# Para as ilhas terem nome de lugar ("Ilha do Elevador", "Ilha dos Dentes") e as
+# pessoas do jogo falarem direito ("trouxe o elevador?"), cada forma escrita
+# ganha o artigo que mais aparece antes dela nos relatos. Forma que quase nunca
+# vem depois de artigo (verbo, adjetivo) fica sem — e não vira nome nem missão.
+DETERMINANTES = {
+    'o': 'ms', 'a': 'fs', 'os': 'mp', 'as': 'fp', 'um': 'ms', 'uma': 'fs', 'uns': 'mp', 'umas': 'fp',
+    'meu': 'ms', 'minha': 'fs', 'meus': 'mp', 'minhas': 'fp', 'seu': 'ms', 'sua': 'fs', 'seus': 'mp',
+    'suas': 'fp', 'teu': 'ms', 'tua': 'fs', 'nosso': 'ms', 'nossa': 'fs', 'esse': 'ms', 'essa': 'fs',
+    'esses': 'mp', 'essas': 'fp', 'este': 'ms', 'esta': 'fs', 'aquele': 'ms', 'aquela': 'fs',
+    'do': 'ms', 'da': 'fs', 'dos': 'mp', 'das': 'fp', 'no': 'ms', 'na': 'fs', 'nos': 'mp', 'nas': 'fp',
+    'pelo': 'ms', 'pela': 'fs', 'ao': 'ms', 'aos': 'mp', 'num': 'ms', 'numa': 'fs'}
+_DET = re.compile(r'\b(' + '|'.join(sorted(DETERMINANTES, key=lambda d: (-len(d), d)))
+                  + r')\s+([a-z\u00e0-\u00f6\u00f8-\u00ff]{3,})')
+ARTIGO = {'ms': 'o', 'fs': 'a', 'mp': 'os', 'fp': 'as'}
+DE = {'o': 'do', 'a': 'da', 'os': 'dos', 'as': 'das'}
+# o artigo pega, mas não serve de nome de lugar
+NAO_LUGAR = set(normalizar(w) for w in """
+vez vezes coisa coisas dia dias gente pessoa pessoas parte forma jeito lado meio resto fim final caso
+motivo ideia mesmo mesma outra outro outros outras primeira primeiro última último segunda segundo única
+único maior melhor pior próxima próximo certa certo real bom boa grande pequena pequeno nova novo velha
+velho mais menos semana mês hoje ontem amanhã frente cima baixo dentro fora hora agora todo toda nada
+tudo algo alguém ninguém vivo sério péssimo delicioso mutual home flop msg suficiente monte cara mano
+""".split())
+# nem é coisa que alguém procure pelo mar
+NAO_E_COISA = NAO_LUGAR | set(normalizar(w) for w in """
+vida noite noites hora horas ano anos tempo tempos mundo lugar momento vontade verdade sentido problema
+história cena situação madrugada manhã tarde opção dúvida prazer releitura futuro futuros amgs senhor
+senhora nome contrário quão maiores menores piores melhores últimos últimas primeiros primeiras queridos
+querido pouquinho modo mega efeito efeitos máximo mínimo restante longo significado contexto ponto início
+começo fase época chance sensação assunto tópico item objeto fds wpp valor custo peso formato foco
+resultado objetivo lance topo vermos sub ice oli terceira terceiro quinta quinto sexta sexto sétima sétimo
+oitava oitavo nona nono décima décimo
+""".split())
+# nem vira pedido: xingamento e violência crua ficam só no relato de quem sonhou
+FEIO = set(normalizar(w) for w in """
+vagabunda vagabundo desgraçado desgraçada maldito maldita bosta bichinha muie fracassado fracassada
+facada massacre assassinato tiro tiros surra garrafada porrada antidepressivo antidepressivos bunda
+rabo seios peitos macho quenga grelo broxada
+""".split())
+# "a" sozinho também é preposição ("começou a cantar"): vale menos como artigo
+PESO_DET = {'a': 0.25}
+_MAIUSCULA_NO_MEIO = re.compile('(?<=[a-z\u00e0-\u00ff,;] )([A-Z\u00c0-\u00dd][a-z\u00e0-\u00ff]+)')
+# e o que vem logo depois de «artigo + forma»: outro nome ("a própria mãe",
+# "o décimo andar") diz que a forma é adjetivo; um «de» quase sempre ("ao invés
+# de", "o fato de") diz que ela sozinha não é coisa nenhuma
+_DET_SEGUINTE = re.compile(_DET.pattern + r'(?=\s+([a-z\u00e0-\u00f6\u00f8-\u00ff]+))?')
+_DE = {'de', 'do', 'da', 'dos', 'das'}
+
+
+def artigos_do_arquivo(textos, indices):
+    """forma escrita → (artigo, quanto vem com artigo, quanto é nome próprio,
+    quanto vem colada antes de outro nome, quanto vem antes de «de»),
+    só das formas que têm gênero claro"""
+    votos, ocorre, proprio = defaultdict(Counter), Counter(), Counter()
+    for i in indices:
+        limpo = _LIMPAR.sub(' ', textos[i][:3000])
+        s = limpo.lower()
+        ocorre.update(w for w in _PALAVRA.findall(s) if len(w) >= 3)
+        proprio.update(w.lower() for w in _MAIUSCULA_NO_MEIO.findall(limpo))
+        for d, w in _DET.findall(s):
+            votos[w][DETERMINANTES[d]] += PESO_DET.get(d, 1)
+    info = {}
+    for w, v in votos.items():
+        total = sum(v.values())
+        if total < 5 or normalizar(w) in _PARADAS:
+            continue
+        classe, q = max(v.items(), key=lambda x: (x[1], x[0]))
+        artigo = ARTIGO[classe]
+        if q / total < 0.6 or (artigo in ('os', 'as') and not w.endswith('s')):
+            continue                              # gênero incerto, ou "as piranha"
+        info[w] = (artigo, total / ocorre[w], proprio[w] / ocorre[w])
+    nome = {w for w, (_, razao, _) in info.items() if razao >= 0.35}
+    vezes, antes, de = Counter(), Counter(), Counter()
+    for i in indices:
+        for _, w, seguinte in _DET_SEGUINTE.findall(_LIMPAR.sub(' ', textos[i][:3000]).lower()):
+            if w not in info:
+                continue
+            vezes[w] += 1
+            if seguinte in _DE:
+                de[w] += 1
+            elif seguinte != w and seguinte in nome:
+                antes[w] += 1
+    return {w: x + (antes[w] / max(1, vezes[w]), de[w] / max(1, vezes[w])) for w, x in info.items()}
+
+
+def sigla(forma):
+    return forma.upper() if not re.search('[aeiouáéíóúâêôãõà]', forma) else forma   # BTS, CCXP
+
+
+def titulo(forma):
+    if len(forma) <= 3 and not re.search('[aeiouáéíóúâêôãõà]', forma):
+        return forma.upper()                      # sigla: RPG, CLT, BBB
+    return forma[:1].upper() + forma[1:]
+
+
+def lugar(forma, artigo):
+    return f'Ilha {DE[artigo]} {titulo(forma)}'
+
+
 def caracteristicas(df_c, n_c, U_c, df, U, lift_min=2.0, doc_min=5):
     """raízes frequentes no aglomerado e raras no arquivo, da mais à menos"""
     esc = []
@@ -408,6 +522,18 @@ def main():
     # forma de exibição: a grafia mais comum da raiz (com acento)
     forma = {r: min(fc.items(), key=lambda x: (-x[1], x[0]))[0] for r, fc in formas.items()}
     print(f'  {len(df)} raízes')
+    print('artigos (gênero e número de cada coisa)…', flush=True)
+    info = artigos_do_arquivo(textos, idx)
+    # para batizar ilha: vem com artigo em ao menos 15% das vezes (nome próprio vale:
+    # "Ilha do Jungkook"); para missão, 35%, não pode ser nome de gente nem vir
+    # grudada antes de outro nome (¼ das vezes) ou de um «de» (⅔)
+    fora = NAO_BATIZA | PALAVRAO
+    artigo = {w: a for w, (a, razao, *_) in info.items()
+              if razao >= 0.15 and normalizar(w) not in NAO_LUGAR | fora}
+    coisa = {w: a for w, (a, razao, prop, antes, de) in info.items()
+             if razao >= 0.35 and prop < 0.3 and antes < 0.25 and de < 0.66
+             and normalizar(w) not in NAO_E_COISA | fora | FEIO}
+    print(f'  {len(artigo)} formas batizam ilha · {len(coisa)} viram missão')
 
     # ——— layout ———
     print('estendendo o mar (t-SNE dos centróides)…', flush=True)
@@ -448,30 +574,33 @@ def main():
         curtos = Counter(re.sub(r'\s+', ' ', textos[idx[j]].strip().lower())
                          for j in membros if len(textos[idx[j]].strip()) <= 40)
         formulas = sorted(curtos.items(), key=lambda x: (-x[1], x[0]))
+        def formula(minimo):
+            """a primeira fórmula dita que ainda não batizou ilha; se todas já,
+            a mais dita (com numeral)"""
+            boas = [f'Ilha «{f}»' for f, q in formulas if q >= max(3, minimo * n_c)
+                    and not set(re.findall(r'\w+', normalizar(f))) & PALAVRAO]
+            return next((b for b in boas if b not in usados), boas[0] if boas else None)
+
         if formulas and formulas[0][1] >= 0.25 * n_c:
-            for f, q in formulas:
-                if q < max(3, 0.01 * n_c):
-                    break
-                if set(re.findall(r'\w+', normalizar(f))) & PALAVRAO:
-                    continue
-                if f'«{f}»' not in usados:
-                    nome = f'«{f}»'
-                    break
-        if nome is None and len(palavras) >= 2:
-            pares = [(a, z) for z in range(1, len(palavras)) for a in range(z)]
-            for a, z in pares:
-                pa, pz = normalizar(palavras[a]), normalizar(palavras[z])
-                if pa[:4] == pz[:4]:            # "dormi e dormir"
-                    continue
-                if f'{palavras[a]} e {palavras[z]}' not in usados:
-                    nome = f'{palavras[a]} e {palavras[z]}'
-                    break
+            nome = formula(0.01)
+        # nome de lugar: a coisa mais característica ("Ilha do Elevador"); se
+        # já batizou outra ilha, a seguinte; depois, duas juntas
+        coisas = [f for f in dict.fromkeys(forma[r] for r in cands[:12]) if f in artigo][:6]
+        for f in coisas:
+            if nome is None and lugar(f, artigo[f]) not in usados:
+                nome = lugar(f, artigo[f])
+        for z in range(1, len(coisas)):
+            for a in range(z):
+                dupla = f'{lugar(coisas[a], artigo[coisas[a]])} e {DE[artigo[coisas[z]]]} {titulo(coisas[z])}'
+                if nome is None and dupla not in usados:
+                    nome = dupla
         if nome is None:
-            base = palavras[0] if palavras else (f'«{formulas[0][0]}»' if formulas else 'ilha')
-            nome, k2 = base, 2
-            while nome in usados:
-                nome = f'{base} {k2}'
-                k2 += 1
+            nome = formula(0.05) or ('Ilha ' + ' e '.join(titulo(p) for p in palavras[:2])
+                                     if palavras else 'Ilha Sem Nome')
+        base, k2 = nome, 2
+        while nome in usados:
+            nome = f'{base} {["", "", "II", "III", "IV", "V", "VI"][min(k2, 6)]}'
+            k2 += 1
         usados.add(nome)
         mot = {}
         for m, rs in MOTIVO_RAIZES.items():
@@ -501,9 +630,10 @@ def main():
     print('escolhendo os sonhos de cada ilha…', flush=True)
     rng = np.random.default_rng(SEMENTE)
     total_amostra = 0
+    amostras = []
     for c in range(K):
         membros = np.nonzero(rotulo == c)[0]
-        quantos = int(np.clip(round(6 + 4 * math.log2(max(conta[c], 1) / 100)), 6, 28))
+        quantos = int(np.clip(round(4 + 2 * math.log2(max(conta[c], 1) / 100)), 5, 12))
         d = ((X[membros] - C[c]) ** 2).sum(1)
         ordem_centro = membros[np.argsort(d, kind='stable')]
         ordem_acaso = rng.permutation(membros)
@@ -537,18 +667,69 @@ def main():
             if len(t) > TEXTO_MAX:
                 t = t[:TEXTO_MAX].rsplit(' ', 1)[0] + '…'
             bb = int(bits[j])
-            sonhos.append({'t': t, 'a': int(anos[j]),
+            sonhos.append({'t': t,
                            'b': (bb & 7) | ((bb >> 5) & 8),     # 1 dormindo · 2 desejo · 4 incerto · 8 pesadelo
                            'p': i})
         ilhas[c]['ns'] = len(sonhos)
         total_amostra += len(sonhos)
+        amostras.append(sonhos)
+    print(f'  {total_amostra} sonhos nas amostras')
+
+    # ——— missões: cada sonho aponta para outros que sonharam a mesma coisa ———
+    # Cada sonho da amostra vira uma pessoa no jogo. A missão dela é achar quem,
+    # noutro canto do mar, sonhou com a mesma coisa (um substantivo raro que os
+    # dois dizem). Preferem-se as ilhas vizinhas de verdade (as das correntes):
+    # a viagem segue a proximidade dos sonhos. Três alvos por pessoa, em ilhas
+    # diferentes, para a página escolher um que a pessoa ainda não conheça.
+    print('ligando os sonhos (missões)…', flush=True)
+    onde = defaultdict(list)                      # raiz → [(ilha, índice)]
+    for c, sonhos in enumerate(amostras):
+        for k, s in enumerate(sonhos):
+            s['_coisas'] = {}
+            for r, f in fatiar(s['t']):
+                if r not in s['_coisas'] and f in coisa and df[r] >= 3:
+                    s['_coisas'][r] = f
+            for r in s['_coisas']:
+                onde[r].append((c, k))
+    vizinhas_de = [set(il['viz']) for il in ilhas]
+    com_missao = 0
+    for c, sonhos in enumerate(amostras):
+        for k, s in enumerate(sonhos):
+            cands = []
+            for r, f in s['_coisas'].items():
+                raridade = math.log(N / df[r])
+                for c2, k2 in onde[r]:
+                    if c2 == c and k2 == k:
+                        continue
+                    if c2 == c:
+                        perto = 0.4
+                    elif c2 in vizinhas_de[c]:
+                        perto = 2.0
+                    else:
+                        perto = 1.6 * math.exp(-math.dist(Y[c], Y[c2]) / 9000)
+                    cands.append((raridade + perto, c2, k2, f))
+            cands.sort(key=lambda x: (-x[0], x[1], x[2], x[3]))
+            lig, usadas, local = [], set(), False
+            for _, c2, k2, f in cands:
+                if c2 in usadas or (c2 == c and local):
+                    continue
+                usadas.add(c2)
+                local = local or c2 == c
+                lig.append([c2, k2, sigla(f), coisa[f]])  # ilha, pessoa, a coisa, o artigo dela
+                if len(lig) == 3:
+                    break
+            s['lig'] = lig
+            com_missao += bool(lig)
+    for c, sonhos in enumerate(amostras):
+        for s in sonhos:
+            del s['_coisas']
         json.dump({'id': c, 'sonhos': sonhos}, open(SAIDA / 'ilhas' / f'{c}.json', 'w'),
                   ensure_ascii=False, separators=(',', ':'))
-    print(f'  {total_amostra} sonhos nas amostras')
+    print(f'  {com_missao} de {total_amostra} pessoas têm missão')
 
     # ——— índice raiz → ilhas ———
     print('índice das palavras…', flush=True)
-    raizes, dfs, listas = [], [], []
+    raizes, dfs, listas, artigos = [], [], [], []
     for r in sorted(df):
         if df[r] < 5 or df[r] > N // 8:
             continue
@@ -571,6 +752,7 @@ def main():
         raizes.append(r)
         dfs.append(df[r])
         listas.append(plano)
+        artigos.append(artigo.get(forma[r], ''))
     json.dump({
         'versao': 1,
         'total': N,
@@ -582,6 +764,7 @@ def main():
         'raizes': raizes,
         'df': dfs,
         'ilhas': listas,        # por raiz: [ilha, peso×4, ilha, peso×4, …]
+        'artigos': artigos,     # por raiz: o artigo da forma mais comum ('' se não é coisa)
     }, open(SAIDA / 'palavras.json', 'w'), ensure_ascii=False, separators=(',', ':'))
     print(f'  {len(raizes)} raízes no índice')
 
