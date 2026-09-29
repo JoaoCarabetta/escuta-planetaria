@@ -197,6 +197,7 @@ def main():
         job = None
         for cand in con.execute("""SELECT job, comunidade, termo, cursor_utc FROM coleta_jobs
                                    WHERE status IN ('pendente','pausado','rodando','erro')
+                                   AND job NOT LIKE 'reddit_c:%'   -- comentários: coleta/comentarios.py
                                    ORDER BY ordem"""):
             if cand[0] not in pular:
                 job = cand

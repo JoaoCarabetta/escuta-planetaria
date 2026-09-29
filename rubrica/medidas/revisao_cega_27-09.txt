@@ -1,0 +1,63 @@
+('*', 'alta') {'n': 27, 'portao_ok': 27, 'ambos_lit': 17, 'carga_igual': 5, 'carga_toca': 7, 'desp_igual': 10}
+('*', 'duvida') {'n': 27, 'portao_ok': 22, 'ambos_lit': 17, 'carga_igual': 9, 'carga_toca': 11, 'desp_igual': 14}
+('*', 'media') {'n': 29, 'portao_ok': 26, 'ambos_lit': 20, 'carga_igual': 2, 'carga_toca': 5, 'desp_igual': 10}
+('afeto', '*') {'n': 50, 'portao_ok': 47, 'ambos_lit': 47, 'carga_igual': 14, 'carga_toca': 19, 'desp_igual': 30}
+('afeto', 'alta') {'n': 16, 'portao_ok': 16, 'ambos_lit': 16, 'carga_igual': 5, 'carga_toca': 7, 'desp_igual': 10}
+('afeto', 'duvida') {'n': 17, 'portao_ok': 14, 'ambos_lit': 14, 'carga_igual': 7, 'carga_toca': 8, 'desp_igual': 13}
+('afeto', 'media') {'n': 17, 'portao_ok': 17, 'ambos_lit': 17, 'carga_igual': 2, 'carga_toca': 4, 'desp_igual': 7}
+('longo', '*') {'n': 33, 'portao_ok': 28, 'ambos_lit': 7, 'carga_igual': 2, 'carga_toca': 4, 'desp_igual': 4}
+('longo', 'alta') {'n': 11, 'portao_ok': 11, 'ambos_lit': 1, 'carga_igual': 0, 'carga_toca': 0, 'desp_igual': 0}
+('longo', 'duvida') {'n': 10, 'portao_ok': 8, 'ambos_lit': 3, 'carga_igual': 2, 'carga_toca': 3, 'desp_igual': 1}
+('longo', 'media') {'n': 12, 'portao_ok': 9, 'ambos_lit': 3, 'carga_igual': 0, 'carga_toca': 1, 'desp_igual': 3}
+--- portão divergente
+3 longo media M_lit= True F_lit= False |F:  |M: 'era um sonho meu de infância' (conhecer o Rio) é desejo figurado realizado; 'presumo que 
+10 afeto duvida M_lit= True F_lit= False |F: a primeira frase é trecho de música. mas seria lido como ruim dentro do sonho e ruim ao ac |M: valência aflitiva ('sonho ruim'). Parece fôrma/meme do pretexto para ligar ('por isso eu t
+19 longo media M_lit= True F_lit= False |F:  |M: 'por conta de alguns sonhos mais... você entendeu' — alusão a sonhos de teor romântico/sex
+27 longo duvida M_lit= True F_lit= False |F:  |M: 'Tenho pesadelos com isso toda semana' (engordar de novo) — sonho recorrente sobre transto
+37 afeto duvida M_lit= True F_lit= False |F:  |M: 'inúmeros sonhos premonitórios' movidos pelo medo (vigília) de tsunami/juízo final; conteú
+41 longo duvida M_lit= True F_lit= False |F: fala sobre pesadelo |M: 'Pesadelo todo dia que não tenho insônia' literal recorrente, sem conteúdo descrito. 'que 
+53 afeto duvida M_lit= True F_lit= False |F: comenta sobre pesadelos que tinha quando dormia de barriga cheia |M: Desabafo sobre imagens intrusivas ao adormecer (hipnagógico), não um sonho narrado; "pensa
+57 longo media M_lit= False F_lit= True |F: só passa rapidamente por uma ideia de sonho recorrente. o que me fez inferir que dentro do |M: 'eu sonhei que te dava um beijo novamente' — fantasia acordada sobre reencontro, carta nun
+--- carga divergente (ambos literal)
+1 afeto alta M ["afeto_sem_conteudo"] F ['prazerosa'] | desp M [] F ['nada']
+5 afeto media M ["afeto_sem_conteudo"] F ['prazerosa'] | desp M [] F ['nada']
+7 afeto media M ["sem_afeto_dito"] F ['neutra'] | desp M [] F []
+8 afeto alta M ["afeto_sem_conteudo"] F ['aflitiva'] | desp M [] F ['nada']
+12 afeto alta M ["estranha"] F ['sem_afeto_dito'] | desp M [] F ['nada']
+14 longo alta M ["sem_conteudo"] F ['aflitiva', 'mista'] | desp M [] F ['acordou_mal']
+15 afeto media M ["estranha", "mista"] F ['prazerosa'] | desp M [] F ['nada', 'acordou_bem']
+18 afeto alta M ["sem_conteudo"] F ['prazerosa', 'mista'] | desp M ['acordou_bem'] F ['alivio', 'acordou_mal']
+20 afeto alta M ["afeto_sem_conteudo"] F ['estranha'] | desp M [] F ['acordou_neutro']
+22 afeto media M ["sem_afeto_dito"] F ['aflitiva'] | desp M [] F ['acordou_mal']
+28 afeto media M ["aflitiva"] F ['mista'] | desp M ['acordou_mal'] F ['acordou_mal']
+30 afeto duvida M ["mista"] F ['prazerosa'] | desp M [] F ['nada']
+31 afeto media M ["sem_afeto_dito"] F ['neutra', 'sem_afeto_dito'] | desp M [] F ['decepcao']
+32 afeto alta M ["estranha"] F ['estranha', 'mista'] | desp M [] F []
+33 longo duvida M ["sem_afeto_dito"] F ['sem_afeto_dito', 'neutra'] | desp M [] F ['nada']
+34 afeto alta M ["sem_conteudo"] F ['prazerosa'] | desp M ['acordou_bem'] F ['acordou_bem']
+35 afeto alta M ["sem_conteudo"] F ['sem_afeto_dito'] | desp M [] F ['acordou_neutro']
+38 afeto alta M ["afeto_sem_conteudo"] F ['estranha'] | desp M [] F ['desorientado', 'acordou_mal']
+44 afeto media M ["sem_conteudo"] F ['sem_afeto_dito'] | desp M ['acordou_mal'] F ['acordou_mal', 'decepcao']
+46 afeto media M ["sem_afeto_dito"] F ['estranha', 'neutra'] | desp M ['desorientado'] F []
+55 afeto duvida M ["estranha"] F ['neutra', 'sem_afeto_dito', 'estranha'] | desp M [] F ['nada']
+56 longo media M ["aflitiva"] F ['neutra', 'estranha'] | desp M [] F ['nada']
+58 afeto media M ["afeto_sem_conteudo"] F ['prazerosa'] | desp M ['decepcao'] F ['decepcao']
+59 longo media M ["prazerosa"] F ['neutra', 'sem_afeto_dito'] | desp M [] F ['nada']
+60 afeto duvida M ["prazerosa"] F ['neutra', 'estranha'] | desp M [] F ['nada']
+63 afeto duvida M ["afeto_sem_conteudo"] F [] | desp M ['acordou_mal'] F []
+64 afeto media M ["afeto_sem_conteudo"] F ['prazerosa'] | desp M [] F ['acordou_mal']
+65 afeto media M ["sem_afeto_dito"] F ['mista', 'estranha', 'aflitiva'] | desp M [] F ['nada']
+66 afeto alta M ["aflitiva"] F ['aflitiva', 'mista'] | desp M ['acordou_mal'] F ['acordou_mal']
+67 afeto media M ["sem_conteudo"] F ['sem_afeto_dito', 'sem_conteudo'] | desp M [] F ['nada']
+68 longo media M ["sem_afeto_dito"] F ['neutra', 'sem_afeto_dito'] | desp M [] F ['nada']
+71 afeto media M ["sem_conteudo"] F ['sem_afeto_dito'] | desp M ['acordou_mal'] F ['acordou_mal', 'decepcao']
+73 afeto duvida M ["sem_afeto_dito"] F [] | desp M [] F []
+76 afeto media M ["afeto_sem_conteudo"] F ['aflitiva'] | desp M ['acordou_mal'] F ['acordou_mal', 'desorientado']
+78 afeto duvida M ["sem_conteudo"] F ['prazerosa'] | desp M ['acordou_bem'] F ['acordou_bem']
+80 afeto duvida M ["sem_conteudo"] F ['sem_afeto_dito', 'neutra'] | desp M [] F ['nada']
+82 afeto media M ["sem_afeto_dito"] F ['neutra', 'estranha'] | desp M ['desorientado'] F ['acordou_neutro', 'desorientado']
+83 afeto alta M ["afeto_sem_conteudo"] F ['aflitiva'] | desp M ['acordou_mal'] F ['acordou_mal']
+Counter({'prazerosa': 17, 'sem_afeto_dito': 15, 'aflitiva': 13, 'neutra': 11, 'estranha': 9, 'mista': 7, 'sem_conteudo': 1})
+Counter({'nada': 21, 'acordou_mal': 16, 'decepcao': 7, 'acordou_bem': 5, 'acordou_neutro': 4, 'desorientado': 4, 'alivio': 2})
+Counter({'nao_dormido': 28, 'figurado': 21, 'meta': 7, 'literal': 3})
+comentários: 39

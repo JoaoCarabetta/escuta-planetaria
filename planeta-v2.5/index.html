@@ -383,7 +383,16 @@ dado('duplicatas_exatas.json').then(r => r.ok ? r.json() : {}).catch(() => ({}))
   for (const k in d) for (const j of d[k].esconde) OCULTOS.add(j);
   if (typeof N !== 'undefined' && N && VIS){ recalcularEscala(); atualizarContas(); }
 });
+// CUIDADO (25/09): relatos com bandeira — quase todos ideação suicida ou
+// autolesão ditas acordado — ficam fora da página pública até o Fitipe ler
+// e decidir. Continuam no banco e na contagem. dados/cuidado.json.
+let CUIDADO = new Set();
+dado('cuidado.json').then(r => r.ok ? r.json() : []).catch(() => []).then(l => {
+  CUIDADO = new Set(l);
+  if (typeof N !== 'undefined' && N && VIS){ recalcularEscala(); atualizarContas(); }
+});
 function visivel(i){
+  if (CUIDADO.has(i)) return false;
   if (OCULTOS && OCULTOS.has(i)) return false;
   const nat = NAT[i];
   if (nat !== 0){
@@ -625,6 +634,9 @@ function explorarQuadro(t){
   if (!VIS) recalcularEscala();
   const base = baseCamera(), m = MAT, foc = Math.min(W,H) * 0.9;
   const DW = cv.width, DH = cv.height;
+  // tela de largura zero (aba escondida, painel abrindo): ImageData(0,…)
+  // dava erro e o laço de desenho morria para sempre. Pula o quadro.
+  if (!DW || !DH){ if (typeof EXPLORA === 'undefined' || !EXPLORA.ativo) requestAnimationFrame(desenhar); return; }
   if (!ACC || IMG.width !== DW || IMG.height !== DH){
     ACC = new Float32Array(DW*DH*3); IMG = new ImageData(DW, DH);
     camadaPts.width = DW; camadaPts.height = DH;
@@ -879,6 +891,9 @@ function desenhar(t){
   if (!CR) prepararCores();
   if (!VIS) recalcularEscala();
   const DW = cv.width, DH = cv.height;
+  // tela de largura zero (aba escondida, painel abrindo): ImageData(0,…)
+  // dava erro e o laço de desenho morria para sempre. Pula o quadro.
+  if (!DW || !DH){ if (typeof EXPLORA === 'undefined' || !EXPLORA.ativo) requestAnimationFrame(desenhar); return; }
   if (!ACC || IMG.width !== DW || IMG.height !== DH){
     ACC = new Float32Array(DW*DH*3); IMG = new ImageData(DW, DH);
     camadaPts.width = DW; camadaPts.height = DH;
@@ -1497,7 +1512,7 @@ function listar(){
   // estava desenhado — o anel de seleção ficava boiando no vazio.
   const acesos = [...buscaSet].filter(visivel);
   // cópias escondidas (duplicatas exatas) não são "fora dos filtros": não contam
-  const copias = OCULTOS ? [...buscaSet].filter(i => OCULTOS.has(i)).length : 0;
+  const copias = [...buscaSet].filter(i => (OCULTOS && OCULTOS.has(i)) || CUIDADO.has(i)).length;
   const escondidos = buscaSet.size - acesos.length - copias;
   $('#conta').textContent = (acesos.length
     ? `${acesos.length.toLocaleString('pt-BR')} aceso${acesos.length>1?'s':''}`
